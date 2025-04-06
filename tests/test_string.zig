@@ -6,11 +6,11 @@ const testing = std.testing;
 const log = std.log.scoped(.zdt_test_string);
 
 const c_locale = @cImport(@cInclude("locale.h"));
-const time_mask = switch (builtin.os.tag) {
-    .linux => c_locale.LC_ALL,
-    // .linux => c_locale.LC_TIME_MASK, // does not suffice, not sure why
-    else => c_locale.LC_TIME,
-};
+const time_mask = c_locale.LC_TIME; // switch (builtin.os.tag) {
+// .linux => c_locale.LC_ALL,
+// .linux => c_locale.LC_TIME_MASK, // does not suffice, not sure why
+//     else => c_locale.LC_TIME,
+// };
 
 const zdt = @import("zdt");
 const Datetime = zdt.Datetime;
