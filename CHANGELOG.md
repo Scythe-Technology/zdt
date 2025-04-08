@@ -13,6 +13,10 @@ Types of changes
 
 ## [Unreleased]
 
+### Changed
+
+- moved to Codeberg
+
 ## 2025-04-05, v0.6.4
 
 ### Changed

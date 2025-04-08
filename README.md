@@ -1,6 +1,6 @@
 <!-- -*- coding: utf-8 -*- -->
 
-[![Zig](https://img.shields.io/badge/-Zig-F7A41D?style=flat&logo=zig&logoColor=white)](https://ziglang.org/) ⚡ [![tests](https://github.com/FObersteiner/zdt/actions/workflows/zdt-tests.yml/badge.svg)](https://github.com/FObersteiner/zdt/actions/workflows/zdt-tests.yml)  [![GitHub Release](https://img.shields.io/github/v/release/FObersteiner/zdt)](https://github.com/FObersteiner/zdt/releases)  [![tzdata](https://img.shields.io/badge/tzdata-2025b-blue)](https://www.iana.org/time-zones)  [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://github.com/FObersteiner/zdt/blob/master/LICENSE)
+[![Zig](https://img.shields.io/badge/-Zig-F7A41D?style=flat&logo=zig&logoColor=white)](https://ziglang.org/) ⚡ [![tzdata](https://img.shields.io/badge/tzdata-2025b-blue)](https://www.iana.org/time-zones)  [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://codeberg.org/FObersteiner/zdt/src/branch/main/LICENSE)
 
 # zdt
 
@@ -11,12 +11,7 @@
 - datetime - including duration arithmetic
 - timezones - IANA tzdb / TZif, POSIX, fixed offsets
 - parsers/formatters - ISO8601 (datetime and durations), custom datetime parsing/formatting à la `strptime` / `strftime`
-
-### Links
-
-- [API overview](https://github.com/FObersteiner/zdt/wiki/API-overview)
-- [Examples](https://github.com/FObersteiner/zdt/tree/master/examples)
-- [Roadmap](https://github.com/FObersteiner/zdt/wiki/Roadmap)
+- [Examples](https://codeberg.org/FObersteiner/zdt/src/branch/main/examples)
 
 ### [Demo](https://github.com/FObersteiner/zdt/blob/master/examples/demo.zig)
 
@@ -73,10 +68,6 @@
   // Easter this year is on April 20, 2025
 ```
 
-## Documentation
-
-See [Wiki](https://github.com/FObersteiner/zdt/wiki)
-
 ## Credits
 
 Special thanks to the creators of the following resources:
@@ -87,7 +78,7 @@ Special thanks to the creators of the following resources:
 
 ## Development
 
-See [changelog](https://github.com/FObersteiner/zdt/blob/master/CHANGELOG.md)
+See [changelog](https://codeberg.org/FObersteiner/zdt/src/branch/main/CHANGELOG.md)
 
 - To update the time zone database and the version info, run the following build step: `zig build update-tzdb`. Some of the code generation is done with Python scripts, which require Python >= 3.9 but no third party packages, i.e. a system installation will do.
 
