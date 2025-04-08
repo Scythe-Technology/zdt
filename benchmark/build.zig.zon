@@ -8,8 +8,8 @@
             .hash = "12202e5d349ac802def6af5a85bc591abcbb8b718a22c209e8b07689a96cd59464ae",
         },
         .zdt_045 = .{
-            .url = "https://github.com/FObersteiner/zdt/archive/refs/tags/v0.4.5.tar.gz",
-            .hash = "1220770d2ef9e42764b080adc3024cc7833c8d5e9e025e7f1241b7d53b0a905589c6",
+            .url = "https://codeberg.org/FObersteiner/zdt/archive/v0.4.5.tar.gz",
+            .hash = "zdt-0.4.5-AAAAAMZ_EAB3DS755CdksICtwwJMx4M8jV6eAl5_EkG3",
         },
         .zdt_latest = .{
             .path = "../",
