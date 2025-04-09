@@ -6,7 +6,7 @@
 
 **Time<ins>z</ins>oned <ins>D</ins>ate<ins>t</ins>ime in Zig.** Opinionated, and mostly for learning purposes.
 
-## Features
+## Core Features
 
 - datetime - including duration arithmetic
 - timezones - IANA tzdb / TZif, POSIX, fixed offsets
