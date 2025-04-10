@@ -12,6 +12,7 @@
 - timezones - IANA tzdb / TZif, POSIX, fixed offsets
 - parsers/formatters - ISO8601 (datetime and durations), custom datetime parsing/formatting à la `strptime` / `strftime`
 - [Examples](https://codeberg.org/FObersteiner/zdt/src/branch/main/examples)
+- [Autodocs](https://fobersteiner.codeberg.page/#zdt)
 
 ### [Demo](https://github.com/FObersteiner/zdt/blob/master/examples/demo.zig)
 
