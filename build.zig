@@ -198,7 +198,6 @@ pub fn build(b: *std.Build) !void {
     // run on a local server e.g. via
     // python -m http.server -b 127.0.0.1 [some-unused-port] -d [your-docs-dir]
     const generate_docs = b.step("docs", "auto-generate documentation");
-
     {
         const install_docs = b.addInstallDirectory(.{
             .source_dir = zdt.getEmittedDocs(),
