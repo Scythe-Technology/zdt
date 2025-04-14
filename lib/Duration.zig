@@ -14,9 +14,9 @@ const maxDigits: usize = 99;
 /// Do not modify directly.
 __sec: i64 = 0,
 
-/// Fractional seconds in nanoseconds, always positive.
+/// Fractional seconds in nanoseconds, always >= 0.
 /// Do not modify directly.
-__nsec: u32 = 0, // fraction is always positive
+__nsec: u32 = 0,
 
 /// Create a duration from multiple of specific a timespan
 pub fn fromTimespanMultiple(n: i128, timespan: Timespan) Duration {
@@ -29,8 +29,10 @@ pub fn fromTimespanMultiple(n: i128, timespan: Timespan) Duration {
 
 /// Create a duration from an 'ISO8601 duration' style string, e.g.
 ///
-/// PT9H - 9 hours
-/// PT1.234S - 1 second, 234 milliseconds
+/// ```
+/// "PT9H" : 9 hours
+/// "PT1.234S" : 1 second, 234 milliseconds
+/// ```
 ///
 /// Restrictions:
 /// - Since the Duration type represents an absolute difference in time,
@@ -90,7 +92,7 @@ pub fn asNanoseconds(duration: Duration) i128 {
     return duration.__sec * 1_000_000_000 + duration.__nsec;
 }
 
-/// Formatted printing for Duration type. Defaults to 'ISO8601 duration'-like format.
+/// Formatted printing for Duration type. Defaults to 'ISO8601-duration'-like format.
 pub fn format(
     duration: Duration,
     comptime fmt: []const u8,
@@ -121,8 +123,7 @@ pub fn format(
     if (rd.seconds == 0 and rd.nanoseconds == 0) return;
 
     var frac = duration.__nsec;
-    // truncate zeros from fractional part
-    if (frac > 0) {
+    if (frac > 0) { // truncate zeros from fractional part
         while (frac % 10 == 0) : (frac /= 10) {}
     }
 
@@ -225,7 +226,7 @@ pub const RelativeDelta = struct {
         return result;
     }
 
-    /// Make a Duration from a RelativeDelta
+    /// Make a Duration from a RelativeDelta.
     pub fn toDuration(reldelta: RelativeDelta) FormatError!Duration {
         if (reldelta.years != 0 or reldelta.months != 0) return FormatError.InvalidFormat;
         const total_secs: i64 = @as(i64, reldelta.weeks) * 7 * 86400 + //
@@ -279,6 +280,7 @@ pub const RelativeDelta = struct {
 
         // need flags to keep track of what has been parsed already,
         // and in which order.
+        //
         // quantity/token:  Y m W d T H M S
         // bit/order:       7 6 5 4 3 2 1 0
         var flags: u8 = 0;
@@ -306,7 +308,8 @@ pub const RelativeDelta = struct {
                     } else {
                         if (flags > 0b111111) return FormatError.InvalidFormat;
                         // if no 'T' was parsed before, flags 0, 1 and 2 must be 0:
-                        if (flags & 0b1000 == 0 and flags & 0b111 != 0) return FormatError.InvalidFormat;
+                        if (flags & 0b1000 == 0 and flags & 0b111 != 0)
+                            return FormatError.InvalidFormat;
                         idx -= 1;
                         flags |= 1 << 6;
                         const quantity = try parseAndAdvanceYmWdHM(u32, string, &idx);
@@ -328,7 +331,8 @@ pub const RelativeDelta = struct {
                 },
                 'D' => {
                     if (flags > 0b1111) return FormatError.InvalidFormat;
-                    if (flags & 0b1000 == 0 and flags & 0b111 != 0) return FormatError.InvalidFormat;
+                    if (flags & 0b1000 == 0 and flags & 0b111 != 0)
+                        return FormatError.InvalidFormat;
                     idx -= 1;
                     flags |= 1 << 4;
                     const quantity = try parseAndAdvanceYmWdHM(u32, string, &idx);
@@ -336,7 +340,8 @@ pub const RelativeDelta = struct {
                 },
                 'W' => {
                     if (flags > 0b11111) return FormatError.InvalidFormat;
-                    if (flags & 0b1000 == 0 and flags & 0b111 != 0) return FormatError.InvalidFormat;
+                    if (flags & 0b1000 == 0 and flags & 0b111 != 0)
+                        return FormatError.InvalidFormat;
                     idx -= 1;
                     flags |= 1 << 5;
                     const quantity = try parseAndAdvanceYmWdHM(u32, string, &idx);
@@ -344,7 +349,8 @@ pub const RelativeDelta = struct {
                 },
                 'Y' => {
                     if (flags & 1 << 7 != 0) return FormatError.InvalidFormat;
-                    if (flags & 0b1000 == 0 and flags & 0b111 != 0) return FormatError.InvalidFormat;
+                    if (flags & 0b1000 == 0 and flags & 0b111 != 0)
+                        return FormatError.InvalidFormat;
                     idx -= 1;
                     flags |= 1 << 7;
                     const quantity = try parseAndAdvanceYmWdHM(u32, string, &idx);
@@ -360,7 +366,7 @@ pub const RelativeDelta = struct {
 
 /// Backwards-looking parse chars from 'string' seconds and nanoseconds (sum),
 /// end index is the value of 'idx_ptr' when the function is called.
-/// start index is determined automatically.
+/// Start index is determined automatically.
 ///
 /// This is a procedure; it modifies input pointer 'sec' and 'nsec' values in-place.
 /// This way, we can work around the fact that there are no multiple-return functions
@@ -399,7 +405,7 @@ fn parseAndAdvanceS(string: []const u8, idx_ptr: *usize, sec: *u32, nsec: *u32) 
     }
 }
 
-/// backwards-looking parse chars from 'string' to int (base 10),
+/// Backwards-looking parse chars from 'string' to int (base 10),
 /// end index is the value of 'idx_ptr' when the function is called.
 /// start index is determined automatically.
 fn parseAndAdvanceYmWdHM(comptime T: type, string: []const u8, idx_ptr: *usize) FormatError!T {
