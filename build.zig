@@ -201,7 +201,7 @@ pub fn build(b: *std.Build) !void {
     {
         const install_docs = b.addInstallDirectory(.{
             .source_dir = zdt.getEmittedDocs(),
-            .install_dir = std.Build.InstallDir{ .custom = "../autodoc" },
+            .install_dir = std.Build.InstallDir{ .custom = "../docs/autodoc" },
             .install_subdir = "",
         });
         generate_docs.dependOn(&install_docs.step);

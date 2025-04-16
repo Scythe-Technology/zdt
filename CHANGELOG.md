@@ -16,6 +16,8 @@ Types of changes
 ### Changed
 
 - moved to Codeberg
+- revised docstrings
+- moved github wiki content to `./docs`
 
 ## 2025-04-05, v0.6.4
 
