@@ -63,13 +63,11 @@ pub fn build(b: *std.Build) !void {
             "The default is '/usr/share/zoneinfo/'."),
     ) orelse tzdb_prefix_default;
 
-    const zdt_module = b.addModule("zdt", .{
-        .root_source_file = b.path("zdt.zig"),
-    });
+    const zdt_module = b.addModule("zdt", .{ .root_source_file = b.path("lib/root.zig") });
 
     const zdt = b.addStaticLibrary(.{
         .name = "zdt",
-        .root_source_file = b.path("zdt.zig"),
+        .root_source_file = b.path("lib/root.zig"),
         .target = target,
         .optimize = optimize,
         .version = zdt_version,
@@ -144,7 +142,7 @@ pub fn build(b: *std.Build) !void {
         // unit tests in lib/*.zig files
         const root_test = b.addTest(.{
             .name = "zdt_root",
-            .root_source_file = b.path("zdt.zig"),
+            .root_source_file = b.path("lib/root.zig"),
             .target = target,
             .optimize = optimize,
             // .test_runner = "./test_runner.zig",

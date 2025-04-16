@@ -4,7 +4,6 @@
     .version = "0.6.4",
     .minimum_zig_version = "0.14.0",
     .paths = .{
-        "zdt.zig",
         // benchmark directory not included
         "lib", // anything from lib
         "scripts/gen_tzdb_prefix.zig",
