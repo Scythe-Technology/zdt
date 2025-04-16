@@ -81,7 +81,7 @@ pub fn sub(this: Duration, other: Duration) Duration {
     return .{ .__sec = s, .__nsec = @intCast(ns) };
 }
 
-/// Convert a duration to seconds, don't forget the nanos.
+/// Convert a duration to seconds, don't forget the nanos just because they're small 😎
 pub fn asSeconds(duration: Duration) i64 {
     if (duration.__nsec > 500_000_000) return duration.__sec + 1;
     return duration.__sec;
