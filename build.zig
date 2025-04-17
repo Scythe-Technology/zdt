@@ -65,7 +65,7 @@ pub fn build(b: *std.Build) !void {
 
     const zdt_module = b.addModule("zdt", .{ .root_source_file = b.path("lib/root.zig") });
 
-    const zdt = b.addStaticLibrary(.{
+    const zdt = b.addLibrary(.{
         .name = "zdt",
         .root_source_file = b.path("lib/root.zig"),
         .target = target,
