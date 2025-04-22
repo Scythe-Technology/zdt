@@ -15,12 +15,7 @@ const Tz = zdt.Timezone;
 const UTCoffset = zdt.UTCoffset;
 const ZdtError = zdt.ZdtError;
 
-const TestCase = struct {
-    string: []const u8,
-    dt: Datetime,
-    directive: []const u8 = "",
-    prc: ?usize = null,
-};
+// ----
 
 const masks_to_try = [_]c_int{
     c_locale.LC_TIME,
@@ -54,6 +49,15 @@ fn locale_ok() bool {
     }
     return true;
 }
+
+// ----
+
+const TestCase = struct {
+    string: []const u8,
+    dt: Datetime,
+    directive: []const u8 = "",
+    prc: ?usize = null,
+};
 
 // ---- Datetime to String ----
 
