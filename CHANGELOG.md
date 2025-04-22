@@ -24,6 +24,7 @@ Types of changes
 ### Changed
 
 - revised error return values for all functions: specify returned error sets whenever possible (exceptions: `anyerror` if there is an `anytype` input parameter)
+- make locale-specific test more robust by testing different masks when trying to obtain the current locale
 
 ### Fixed
 
