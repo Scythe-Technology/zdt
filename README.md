@@ -6,12 +6,19 @@
 
 **Time<ins>z</ins>oned <ins>D</ins>ate<ins>t</ins>ime in Zig.** Opinionated, and mostly for learning purposes.
 
-## Features
+## Core Features
 
 - datetime - including duration arithmetic
 - timezones - IANA tzdb / TZif, POSIX, fixed offsets
 - parsers/formatters - ISO8601 (datetime and durations), custom datetime parsing/formatting à la `strptime` / `strftime`
+
+## Resources
+
+- [API overview](https://codeberg.org/FObersteiner/zdt/src/branch/main/docs/02-API-overview.md)
+- [Autodocs](https://fobersteiner.codeberg.page/#zdt)
 - [Examples](https://codeberg.org/FObersteiner/zdt/src/branch/main/examples)
+- [String parsing / formatting directives](https://codeberg.org/FObersteiner/zdt/src/branch/main/docs/03-String-parsing-and-formatting.md)
+- [Roadmap](https://codeberg.org/FObersteiner/zdt/src/branch/main/docs/05-Roadmap.md)
 
 ### [Demo](https://github.com/FObersteiner/zdt/blob/master/examples/demo.zig)
 
