@@ -12,14 +12,14 @@ const maxDigits: usize = 99;
 
 /// Any duration represented in seconds.
 /// Do not modify directly.
-__sec: i64 = 0,
+__sec: i128 = 0,
 
 /// Fractional seconds in nanoseconds, always >= 0.
 /// Do not modify directly.
 __nsec: u32 = 0,
 
 /// Create a duration from multiple of specific a timespan
-pub fn fromTimespanMultiple(n: i128, timespan: Timespan) Duration {
+pub fn fromTimespanMultiple(n: i64, timespan: Timespan) Duration {
     const ns: i128 = @as(i128, @intCast(@intFromEnum(timespan))) * n;
     return .{
         .__sec = @intCast(@divFloor(ns, 1_000_000_000)),
@@ -54,15 +54,33 @@ pub fn toTimespanMultiple(duration: Duration, timespan: Timespan) i128 {
     return @intCast(result);
 }
 
-/// Representation with fractional seconds
+/// Representation as seconds with fractional seconds
 pub fn totalSeconds(duration: Duration) f64 {
     const ns = duration.asNanoseconds();
     return @floatCast(@as(f128, @floatFromInt(ns)) / 1_000_000_000);
 }
 
+/// Representation as minutes with fractional minutes
+pub fn totalMinutes(duration: Duration) f64 {
+    const ns = duration.asNanoseconds();
+    return @floatCast(@as(f128, @floatFromInt(ns)) / 60_000_000_000);
+}
+
+/// Representation as hours with fractional hours
+pub fn totalHours(duration: Duration) f64 {
+    const ns = duration.asNanoseconds();
+    return @floatCast(@as(f128, @floatFromInt(ns)) / 3_600_000_000_000);
+}
+
+/// Representation as days with fractional days
+pub fn totalDays(duration: Duration) f64 {
+    const ns = duration.asNanoseconds();
+    return @floatCast(@as(f128, @floatFromInt(ns)) / 86_400_000_000_000);
+}
+
 /// Add a duration to another. Makes a new Duration.P
 pub fn add(this: Duration, other: Duration) Duration {
-    const s: i64 = this.__sec + other.__sec;
+    const s: i128 = this.__sec + other.__sec;
     const ns: u32 = this.__nsec + other.__nsec;
     return .{
         .__sec = s + @divFloor(ns, 1_000_000_000),
@@ -72,7 +90,7 @@ pub fn add(this: Duration, other: Duration) Duration {
 
 /// Subtract a duration from another. Makes a new Duration.
 pub fn sub(this: Duration, other: Duration) Duration {
-    var s: i64 = this.__sec - other.__sec;
+    var s: i128 = this.__sec - other.__sec;
     var ns: i32 = @as(i32, @intCast(this.__nsec)) - @as(i32, @intCast(other.__nsec));
     if (ns < 0) {
         s -= 1;
@@ -82,7 +100,7 @@ pub fn sub(this: Duration, other: Duration) Duration {
 }
 
 /// Convert a duration to seconds, don't forget the nanos just because they're small 😎
-pub fn asSeconds(duration: Duration) i64 {
+pub fn asSeconds(duration: Duration) i128 {
     if (duration.__nsec > 500_000_000) return duration.__sec + 1;
     return duration.__sec;
 }
@@ -208,7 +226,7 @@ pub const RelativeDelta = struct {
             .negative = if (duration.__sec < 0) true else false,
         };
 
-        var secs: u64 = @abs(duration.__sec);
+        var secs: u128 = @abs(duration.__sec);
         result.weeks = @truncate(secs / (86400 * 7));
         secs -|= @as(u64, result.weeks) * (86400 * 7);
 
