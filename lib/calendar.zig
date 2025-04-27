@@ -1,4 +1,4 @@
-//! calendric stuff
+//! calendrical calculations
 
 const std = @import("std");
 const log = std.log.scoped(.zdt__calendar);
@@ -98,7 +98,7 @@ pub const leaps = [_]u64{
 };
 
 /// Find the index in 'leap' where the respective value
-/// directly preceedes or is equal to input 'unixtime'
+/// directly precedes or is equal to input 'unixtime'
 fn preceedingLeapIndex(unixtime: i64) usize {
     return blk: {
         var left: usize = 0;
@@ -123,7 +123,7 @@ test "leap index" {
     try testing.expectEqual(1, preceedingLeapIndex(94694400));
 }
 
-/// Analyze if a given Unix time falls on a leapsecond
+/// Analyze if a given Unix time falls on a leap second
 pub fn mightBeLeap(unixtime: i64) bool {
     if (unixtime < leaps[0] - 1) return false;
     if (unixtime >= leaps[leaps.len - 1]) return false;
@@ -195,7 +195,7 @@ pub fn unixdaysFromDate(ymd: [3]u16) i32 {
 /// The result is time zone naive, however resembles UTC since that is what
 /// the Unix epoch refers to.
 /// Based on Howard Hinnant 'date' algorithms, https://howardhinnant.github.io/date_algorithms.html
-pub fn dateFromUnixdays(unix_days: i32) [3]u16 { // i23 should covert the range used here ?!
+pub fn dateFromUnixdays(unix_days: i32) [3]u16 {
     // shift the epoch from 1970-01-01 to 0000-03-01
     // ...so long ago that all the times are positive => round to zero and round down coincide
     const z: u32 = @intCast(unix_days + 719468);
@@ -210,7 +210,7 @@ pub fn dateFromUnixdays(unix_days: i32) [3]u16 { // i23 should covert the range 
     const doe = z - era * 146097; // [0, 146096]
 
     // year-of-era
-    // start by appoximation (divide by 365), then account for leap years
+    // start by approximation (divide by 365), then account for leap years
     const yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365; // [0, 399]
 
     // day-of-year
@@ -243,9 +243,9 @@ pub fn dateFromUnixdays(unix_days: i32) [3]u16 { // i23 should covert the range 
 // Neri & Schneiders paper on the use of Euclidian affine functions to calendar
 // algorithms, <https://dx.doi.org/10.1002/spe.3172>.
 
-// variant proposed by @Validark (Niles) in a discussion on
+// variant proposed by @Validark in a discussion on
 // <https://ziggit.dev/t/benchmarking-isdigit/> - compiles to asm with one
-// short branch (not a leap year, hitted ~75% of the time) and one longer
+// short branch (not a leap year, hit ~75% of the time) and one longer
 // branch.
 // Determine if 'year' is a leap year.
 // pub fn isLeapYear(y: u16) bool {
@@ -611,7 +611,7 @@ test "leap correction" {
     try testing.expectEqual(@as(u8, 37), corr);
 }
 
-test "against Pyhton ordinal" {
+test "against Python ordinal" {
     var days_want: i32 = 1962788;
     var days_hin = unixdaysFromDate([_]u16{ 7343, 12, 7 });
     var days_neri = dateToRD([_]u16{ 7343, 12, 7 });
