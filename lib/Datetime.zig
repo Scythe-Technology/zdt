@@ -933,7 +933,7 @@ pub fn EasterDateJulian(year: u16) ZdtError!Datetime {
 /// For example
 /// ```
 /// std.debug.print("{%Y-%m}", .{dt});
-///   ...would evaluate to
+/// //  ...would evaluate to
 /// "2025-03"
 /// ```
 pub fn format(
