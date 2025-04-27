@@ -591,6 +591,16 @@ pub fn nowUTC() Datetime {
     ) catch unreachable;
 }
 
+/// Check if a datetime is within a leap year
+pub fn isLeapYear(dt: *const Datetime) bool {
+    return cal.isLeapYear(dt.year);
+}
+
+/// Check if a datetime is within February of a leap year
+pub fn isLeapMonth(dt: *const Datetime) bool {
+    return cal.isLeapMonth(dt.year, dt.month);
+}
+
 /// Compare two instances with respect to their Unix time.
 /// Ignores the time zone - however, both datetimes must either be aware or naive.
 pub fn compareUT(this: Datetime, other: Datetime) TzError!std.math.Order {
@@ -761,14 +771,12 @@ pub fn monthEnum(dt: Datetime) Month {
 
 /// Number of the weekday starting at 0 == Sunday (strftime/strptime: `%w`).
 pub fn weekdayNumber(dt: Datetime) u8 {
-    const days = cal.dateToRD([3]u16{ dt.year, dt.month, dt.day });
-    return cal.weekdayFromUnixdays(days);
+    return cal.weekdayFromUnixdays(cal.dateToRD([3]u16{ dt.year, dt.month, dt.day }));
 }
 
 /// ISO-number of the weekday, starting at 1 == Monday (strftime/strptime: `%u`).
 pub fn weekdayIsoNumber(dt: Datetime) u8 {
-    const days = cal.dateToRD([3]u16{ dt.year, dt.month, dt.day });
-    return cal.ISOweekdayFromUnixdays(days);
+    return cal.ISOweekdayFromUnixdays(cal.dateToRD([3]u16{ dt.year, dt.month, dt.day }));
 }
 
 /// Roll datetime forward to the specified next weekday. Makes a new datetime.

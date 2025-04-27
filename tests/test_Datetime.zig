@@ -166,6 +166,21 @@ test "Epoch" {
     try testing.expectEqualStrings(epoch.tzName(), "UTC");
 }
 
+test "leap year and month" {
+    var dt = try Datetime.fromFields(.{ .year = 2000 });
+    try testing.expect(dt.isLeapYear());
+    try testing.expectEqual(false, dt.isLeapMonth());
+    dt = try Datetime.fromFields(.{ .year = 2000, .month = 2 });
+    try testing.expect(dt.isLeapMonth());
+
+    dt = try Datetime.fromFields(.{ .year = 2021, .month = 2 });
+    try testing.expectEqual(false, dt.isLeapYear());
+    try testing.expectEqual(false, dt.isLeapMonth());
+
+    dt = try Datetime.fromFields(.{ .year = 2100 });
+    try testing.expectEqual(false, dt.isLeapYear());
+}
+
 test "default format ISO8601, naive" {
     var str = std.ArrayList(u8).init(testing.allocator);
     defer str.deinit();
