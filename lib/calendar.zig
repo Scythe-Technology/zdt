@@ -116,28 +116,12 @@ fn preceedingLeapIndex(unixtime: i64) usize {
     };
 }
 
-test "leap index" {
-    try testing.expectEqual(0, preceedingLeapIndex(0));
-    try testing.expectEqual(0, preceedingLeapIndex(78796800));
-    try testing.expectEqual(0, preceedingLeapIndex(78796801));
-    try testing.expectEqual(1, preceedingLeapIndex(94694400));
-}
-
 /// Analyze if a given Unix time falls on a leap second
 pub fn mightBeLeap(unixtime: i64) bool {
     if (unixtime < leaps[0] - 1) return false;
     if (unixtime >= leaps[leaps.len - 1]) return false;
     const idx = preceedingLeapIndex(unixtime - 1);
     return leaps[idx + 1] == unixtime + 1;
-}
-
-test "might be leap second" {
-    try testing.expect(!mightBeLeap(0));
-    try testing.expect(!mightBeLeap(820454398));
-    try testing.expect(mightBeLeap(820454399));
-    try testing.expect(!mightBeLeap(820454400));
-    try testing.expect(mightBeLeap(1483228799));
-    try testing.expect(!mightBeLeap(1483228800));
 }
 
 /// For a given Unix time in seconds, give me the number of leap seconds that
@@ -263,22 +247,29 @@ pub fn daysInMonth(m: u8, is_leap: bool) u8 {
 /// proleptic Gregorian calendar. Selected to place Unix epoch roughly in the
 /// center of the value space, can be arbitrary within type limits.
 const ERA_OFFSET: i32 = 3670;
+
 /// Every era has 146097 days
 const DAYS_IN_ERA: i32 = 146097;
+
 /// Every era has 400 years
 const YEARS_IN_ERA: i32 = 400;
+
 /// Number of days from 0000-03-01 to Unix epoch 1970-01-01
 const DAYS_TO_UNIX_EPOCH: i32 = 719468;
+
 /// Offset to be added to given day values
 const DAY_OFFSET: i32 = ERA_OFFSET * DAYS_IN_ERA + DAYS_TO_UNIX_EPOCH;
+
 /// Offset to be added to given year values
 const YEAR_OFFSET: i32 = ERA_OFFSET * YEARS_IN_ERA;
+
 /// Seconds in a single 24 hour calendar day
 const SECS_IN_DAY: i64 = 86400;
+
 /// Offset to be added to given second values
 const SECS_OFFSET: i64 = DAY_OFFSET * SECS_IN_DAY;
 
-/// Convert Rata Die / days since 0001-01-01 to Gregorian date
+/// Convert Rata Die / days since 1970-01-01 to Gregorian date.
 pub fn rdToDate(rd: i32) [3]u16 {
     const n0: u32 = @intCast(rd +% DAY_OFFSET);
     // century
@@ -303,8 +294,14 @@ pub fn rdToDate(rd: i32) [3]u16 {
     return [3]u16{ @intCast(y), @intCast(m), @intCast(d) };
 }
 
-/// Convert Gregorian date to Rata Die / days since 0001-01-01
+/// Convert Gregorian date to Rata Die / days since 1970-01-01.
+///
+/// Input: [3]u16{year, month, day}
+///
+/// Constraints: month >= 1, day >= 1
 pub fn dateToRD(ymd: [3]u16) i32 {
+    assert(ymd[1] >= 1);
+    assert(ymd[2] >= 1);
     const y1: u32 = @intCast(ymd[0] +% YEAR_OFFSET);
     // map
     const jf: u32 = @intFromBool(ymd[1] < 3);
@@ -358,6 +355,37 @@ pub fn julianEaster(year: u16) [3]u16 {
 }
 
 //----------------------------------------------------------------------------------------------------
+
+test "min max" {
+    // those values do not make much sense but the function arithmetic must not fail:
+    try testing.expect(dateToRD([3]u16{ 0, 1, 1 }) < 0);
+    try testing.expect(dateToRD([3]u16{ std.math.maxInt(u16), std.math.maxInt(u16), std.math.maxInt(u16) }) > 0);
+
+    // rd to date is more constrained; see asserts
+    // const min_date = rdToDate(dateToRD([3]u16{ 0, 1, 1 }));
+    // log.warn("Minimum Datetime: {any}\n", .{min_date});
+    // log.warn("rd: {any}\n", .{dateToRD([3]u16{ 0, 1, 1 })});
+    // log.warn("asdfasf {any}\n", .{rdToDate(-719468)});
+
+    // const max_date = rdToDate(dateToRD([3]u16{ std.math.maxInt(u16), std.math.maxInt(u16), std.math.maxInt(u16) }));
+    // log.warn("Maximum Datetime: {any}\n", .{max_date});
+}
+
+test "leap index" {
+    try testing.expectEqual(0, preceedingLeapIndex(0));
+    try testing.expectEqual(0, preceedingLeapIndex(78796800));
+    try testing.expectEqual(0, preceedingLeapIndex(78796801));
+    try testing.expectEqual(1, preceedingLeapIndex(94694400));
+}
+
+test "might be leap second" {
+    try testing.expect(!mightBeLeap(0));
+    try testing.expect(!mightBeLeap(820454398));
+    try testing.expect(mightBeLeap(820454399));
+    try testing.expect(!mightBeLeap(820454400));
+    try testing.expect(mightBeLeap(1483228799));
+    try testing.expect(!mightBeLeap(1483228800));
+}
 
 test "days_in_month" {
     var d = daysInMonth(2, std.time.epoch.isLeapYear(2020));

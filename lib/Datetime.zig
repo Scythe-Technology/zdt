@@ -577,8 +577,11 @@ pub fn floorTo(dt: *const Datetime, timespan: Duration.Timespan) ZdtError!Dateti
 /// The current time with nanosecond resolution.
 /// If 'null' is supplied as tz_options, naive datetime resembling UTC is returned.
 pub fn now(opts: ?tz_options) ZdtError!Datetime {
-    const t = std.time.nanoTimestamp();
-    return try Datetime.fromUnix(@intCast(t), Duration.Resolution.nanosecond, opts);
+    return try Datetime.fromUnix(
+        std.time.nanoTimestamp(),
+        Duration.Resolution.nanosecond,
+        opts,
+    );
 }
 
 /// Current UTC time is fail-safe since it contains a pre-defined time zone.
