@@ -13,6 +13,15 @@ Types of changes
 
 ## [Unreleased]
 
+### Added
+
+- `Datetime.isLeapYear` - returns if a datetime is in a leap year
+- `Datetime.isLeapMonth` - returns if a datetime is in a February of a leap year
+
+### Changed
+
+- revised test location; internal tests are in respective zig files now
+
 ## 2025-04-23, v0.6.5
 
 ### Added

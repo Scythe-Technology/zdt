@@ -577,8 +577,11 @@ pub fn floorTo(dt: *const Datetime, timespan: Duration.Timespan) ZdtError!Dateti
 /// The current time with nanosecond resolution.
 /// If 'null' is supplied as tz_options, naive datetime resembling UTC is returned.
 pub fn now(opts: ?tz_options) ZdtError!Datetime {
-    const t = std.time.nanoTimestamp();
-    return try Datetime.fromUnix(@intCast(t), Duration.Resolution.nanosecond, opts);
+    return try Datetime.fromUnix(
+        std.time.nanoTimestamp(),
+        Duration.Resolution.nanosecond,
+        opts,
+    );
 }
 
 /// Current UTC time is fail-safe since it contains a pre-defined time zone.
@@ -589,6 +592,16 @@ pub fn nowUTC() Datetime {
         Duration.Resolution.nanosecond,
         .{ .utc_offset = UTCoffset.UTC },
     ) catch unreachable;
+}
+
+/// Check if a datetime is within a leap year
+pub fn isLeapYear(dt: *const Datetime) bool {
+    return cal.isLeapYear(dt.year);
+}
+
+/// Check if a datetime is within February of a leap year
+pub fn isLeapMonth(dt: *const Datetime) bool {
+    return cal.isLeapMonth(dt.year, dt.month);
 }
 
 /// Compare two instances with respect to their Unix time.
@@ -761,14 +774,12 @@ pub fn monthEnum(dt: Datetime) Month {
 
 /// Number of the weekday starting at 0 == Sunday (strftime/strptime: `%w`).
 pub fn weekdayNumber(dt: Datetime) u8 {
-    const days = cal.dateToRD([3]u16{ dt.year, dt.month, dt.day });
-    return cal.weekdayFromUnixdays(days);
+    return cal.weekdayFromUnixdays(cal.dateToRD([3]u16{ dt.year, dt.month, dt.day }));
 }
 
 /// ISO-number of the weekday, starting at 1 == Monday (strftime/strptime: `%u`).
 pub fn weekdayIsoNumber(dt: Datetime) u8 {
-    const days = cal.dateToRD([3]u16{ dt.year, dt.month, dt.day });
-    return cal.ISOweekdayFromUnixdays(days);
+    return cal.ISOweekdayFromUnixdays(cal.dateToRD([3]u16{ dt.year, dt.month, dt.day }));
 }
 
 /// Roll datetime forward to the specified next weekday. Makes a new datetime.
@@ -933,7 +944,7 @@ pub fn EasterDateJulian(year: u16) ZdtError!Datetime {
 /// For example
 /// ```
 /// std.debug.print("{%Y-%m}", .{dt});
-///   ...would evaluate to
+/// //  ...would evaluate to
 /// "2025-03"
 /// ```
 pub fn format(

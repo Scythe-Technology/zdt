@@ -46,13 +46,17 @@ test "validate datetime fields" {
     fields = Datetime.Fields{ .second = 99 };
     err = fields.validate();
     try testing.expectError(ZdtError.SecondOutOfRange, err);
+
+    fields = Datetime.Fields{ .nanosecond = 1_000_000_001 };
+    err = fields.validate();
+    try testing.expectError(ZdtError.NanosecondOutOfRange, err);
 }
 
 test "Datetime from empty field struct" {
     const dt = try Datetime.fromFields(.{});
     try testing.expectEqual(@as(u16, 1), dt.year);
     try testing.expectEqual(@as(u8, 1), dt.month);
-    try testing.expectEqual(@as(u5, 1), dt.day);
+    try testing.expectEqual(@as(u8, 1), dt.day);
     try testing.expect(dt.tz == null);
 }
 
@@ -60,7 +64,7 @@ test "Datetime from populated field struct" {
     const dt = try Datetime.fromFields(.{ .year = 2023, .month = 12 });
     try testing.expectEqual(@as(u16, 2023), dt.year);
     try testing.expectEqual(@as(u8, 12), dt.month);
-    try testing.expectEqual(@as(u5, 1), dt.day);
+    try testing.expectEqual(@as(u8, 1), dt.day);
     try testing.expect(dt.tz == null);
     try testing.expectEqual(false, dt.isAware());
     try testing.expectEqual(true, dt.isNaive());
@@ -160,6 +164,21 @@ test "Epoch" {
     try testing.expectEqual(false, epoch.isNaive());
     try testing.expectEqualStrings(epoch.tzAbbreviation(), "Z");
     try testing.expectEqualStrings(epoch.tzName(), "UTC");
+}
+
+test "leap year and month" {
+    var dt = try Datetime.fromFields(.{ .year = 2000 });
+    try testing.expect(dt.isLeapYear());
+    try testing.expectEqual(false, dt.isLeapMonth());
+    dt = try Datetime.fromFields(.{ .year = 2000, .month = 2 });
+    try testing.expect(dt.isLeapMonth());
+
+    dt = try Datetime.fromFields(.{ .year = 2021, .month = 2 });
+    try testing.expectEqual(false, dt.isLeapYear());
+    try testing.expectEqual(false, dt.isLeapMonth());
+
+    dt = try Datetime.fromFields(.{ .year = 2100 });
+    try testing.expectEqual(false, dt.isLeapYear());
 }
 
 test "default format ISO8601, naive" {
