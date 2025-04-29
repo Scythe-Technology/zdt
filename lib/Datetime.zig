@@ -17,10 +17,22 @@ const RangeError = @import("./errors.zig").RangeError;
 const TzError = @import("./errors.zig").TzError;
 const ZdtError = @import("./errors.zig").ZdtError;
 
+// TODO : revise --vv
 pub const min_year: u16 = 1; // r.d.; 0001-01-01
 pub const max_year: u16 = 9999;
+// new:
+// min: -32768
+// max: -32767
+// ----------------^^
+
+// TODO : revise --vv
 pub const unix_s_min: i64 = -62135596800;
 pub const unix_s_max: i64 = 253402300799;
+// new:
+// min: -1096193865600 s // -32768,1,1
+// max: 971890963200 s // 32767,1,1
+// ----------------^^
+
 pub const epoch = Datetime{ .year = 1970, .unix_sec = 0, .utc_offset = UTCoffset.UTC };
 pub const century: u16 = 2000;
 
@@ -252,7 +264,7 @@ pub const OptFields = struct {
 pub fn fromFields(fields: Fields) ZdtError!Datetime {
     _ = try fields.validate();
 
-    const d = cal.dateToRD([_]u16{ fields.year, fields.month, fields.day });
+    const d = cal.dateToRD(.{ fields.year, fields.month, fields.day });
     // Note : need to truncate seconds to 59 so that Unix time is 'correct'
     const s = if (fields.second == 60) 59 else fields.second;
     var dt = Datetime{
@@ -662,7 +674,7 @@ pub fn addRelative(dt: *const Datetime, rel_delta: Duration.RelativeDelta) ZdtEr
         );
 
     const days_off: i32 = @intCast(nrd.days + nrd.weeks * 7 + new_time[4]);
-    var rd_day = cal.dateToRD([3]u16{ dt.year, @as(u16, dt.month), @as(u16, dt.day) });
+    var rd_day = cal.dateToRD(.{ dt.year, @as(u16, dt.month), @as(u16, dt.day) });
     rd_day = if (nrd.negative) rd_day - days_off else rd_day + days_off;
     const new_date = cal.rdToDate(rd_day);
 
@@ -774,12 +786,12 @@ pub fn monthEnum(dt: Datetime) Month {
 
 /// Number of the weekday starting at 0 == Sunday (strftime/strptime: `%w`).
 pub fn weekdayNumber(dt: Datetime) u8 {
-    return cal.weekdayFromUnixdays(cal.dateToRD([3]u16{ dt.year, dt.month, dt.day }));
+    return cal.weekdayFromUnixdays(cal.dateToRD(.{ dt.year, dt.month, dt.day }));
 }
 
 /// ISO-number of the weekday, starting at 1 == Monday (strftime/strptime: `%u`).
 pub fn weekdayIsoNumber(dt: Datetime) u8 {
-    return cal.ISOweekdayFromUnixdays(cal.dateToRD([3]u16{ dt.year, dt.month, dt.day }));
+    return cal.ISOweekdayFromUnixdays(cal.dateToRD(.{ dt.year, dt.month, dt.day }));
 }
 
 /// Roll datetime forward to the specified next weekday. Makes a new datetime.

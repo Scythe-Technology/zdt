@@ -7,96 +7,37 @@ const zbench = @import("zbench");
 
 var gpa = std.heap.GeneralPurposeAllocator(.{}){};
 
-/// Calculate days since the Unix epoch (1970-01-01) from a year-month-day tuple,
-/// representing a Gregorian calendar date.
-/// (!) assumes the caller has checked the validity of the input.
 /// Based on Howard Hinnant 'date' algorithms, https://howardhinnant.github.io/date_algorithms.html
 pub fn unixdaysFromDate(ymd: [3]u16) i32 {
-    // year: account for era starting in Mar (computational calendar)
     const y = if (ymd[1] <= 2) ymd[0] - 1 else ymd[0];
-
-    // era - multiples of 400 years
-    // H. Hinnant's code uses an Int here; however, since we do not allow
-    // year <= 0, we can use the same unsigned type used in the ymd array.
     const era = y / 400;
-
-    // year-of-era
     const yoe = (y - era * 400); // [0, 399]
-
-    // day-of-year
     const doy = (153 * (if (ymd[1] > 2) ymd[1] - 3 else ymd[1] + 9) + 2) / 5 + ymd[2] - 1; // [0, 365]
-
-    // day-of-era
     const doe: u32 = @as(u32, yoe) * 365 + yoe / 4 - yoe / 100 + doy; // [0, 146096]
-
-    // cast down to 32 bits, which are sufficient
     const tmp: i32 = @intCast(@as(u32, era) * 146097 + doe);
 
     return tmp - 719468;
 }
 
-/// Calculate a Gregorian calendar date (year-month-day) from days since
-/// the Unix epoch (1970-01-01).
-/// The result is time zone naive, however resembles UTC since that is what
-/// the Unix epoch refers to.
 /// Based on Howard Hinnant 'date' algorithms, https://howardhinnant.github.io/date_algorithms.html
 pub fn dateFromUnixdays(unix_days: i32) [3]u16 {
-    // shift the epoch from 1970-01-01 to 0000-03-01
-    // ...so long ago that all the times are positive => round to zero and round down coincide
     const z: u32 = @intCast(unix_days + 719468);
-
-    // compute the era from the serial date by dividing by the number of days in an era (146097)
-    // floored or Euclidean division must be used to correctly handle negative days
     const era = if (z >= 0) z / 146097 else z - 14096;
-
-    // day-of-era
-    // found by subtracting the era number times the number of days per era, from the serial date
-    // this is the same as the modulo operation, but assuming floored or Euclidean division
     const doe = z - era * 146097; // [0, 146096]
-
-    // year-of-era
-    // start by approximation (divide by 365), then account for leap years
     const yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365; // [0, 399]
-
-    // day-of-year
-    // subtract from the day-of-era the days that have occurred in all prior years of this era
-    // note: this is relative to the era which starts Mar 01
     const doy = doe - (365 * yoe + yoe / 4 - yoe / 100); // [0, 365]
-
-    // month
-    // compute the day-of-year from the first day of month m'
-    // where m' is in the range [0...11] representing [Mar...Feb]
     const mp = (5 * doy + 2) / 153; // [0, 11]
-
-    // day
     const d: u16 = @intCast(doy - (153 * mp + 2) / 5 + 1); // [1, 31]
-
-    // month; account for era starting with Mar
     const m: u16 = @intCast(if (mp < 10) mp + 3 else mp - 9);
-
-    // year from era and year-of-era
     const y: u16 = @intCast(if (m <= 2) yoe + era * 400 + 1 else yoe + era * 400);
 
     return [_]u16{ y, m, d };
 }
 
-// ----------------------------------------------------------------------------
-// Like the two algorithms 'dateFromUnixdays' and 'unixdaysFromDate' above,
-// the following code hasn't grown on my fields.
-// It is mostly adapted from Travis Staloc,
 // <https://github.com/travisstaloch/date-zig/>, which in turn is based on
 // Neri & Schneiders paper on the use of Euclidian affine functions to calendar
+
 // algorithms, <https://dx.doi.org/10.1002/spe.3172>.
-
-// variant proposed by @Validark in a discussion on
-// <https://ziggit.dev/t/benchmarking-isdigit/> - compiles to asm with one
-// short branch (not a leap year, hit ~75% of the time) and one longer
-// branch.
-// Determine if 'year' is a leap year.
-// pub fn isLeapYear(y: u16) bool {
-//     return (y % 4) == 0 and (y % 25 != 0 or (y & 15) == 0);
-// }
-
 /// Adjustment from Unix epoch to make calculations use positive integers
 ///
 /// Unit is eras, which is defined to be 400 years, as that is the period of the
@@ -125,7 +66,6 @@ const SECS_IN_DAY: i64 = 86400;
 /// Offset to be added to given second values
 const SECS_OFFSET: i64 = DAY_OFFSET * SECS_IN_DAY;
 
-/// Convert Rata Die / days since 1970-01-01 to Gregorian date.
 pub fn rdToDate(rd: i32) [3]u16 {
     const n0: u32 = @intCast(rd +% DAY_OFFSET);
     // century
@@ -150,11 +90,6 @@ pub fn rdToDate(rd: i32) [3]u16 {
     return [3]u16{ @intCast(y), @intCast(m), @intCast(d) };
 }
 
-/// Convert Gregorian date to Rata Die / days since 1970-01-01.
-///
-/// Input: [3]u16{year, month, day}
-///
-/// Constraints: month >= 1, day >= 1
 pub fn dateToRD(ymd: [3]u16) i32 {
     assert(ymd[1] >= 1);
     assert(ymd[2] >= 1);
@@ -174,6 +109,69 @@ pub fn dateToRD(ymd: [3]u16) i32 {
     const n = y3 +% m +% d1;
     return @as(i32, @intCast(n)) -% DAY_OFFSET;
 }
+
+// ----- revised versions, based on the Neri/Schneider paper / C++ version
+
+pub const Date = struct {
+    year: i32 = 0,
+    month: u32 = 0,
+    day: u32 = 0,
+};
+
+// Shift and correction constants.
+pub const s: u32 = 82;
+pub const K: u32 = 719468 + 146097 * s;
+pub const L: u32 = 400 * s;
+
+pub fn rdToDateCpp(N_U: i32) Date {
+    // Rata die shift
+    const N: u32 = @as(u32, @bitCast(N_U)) +% K;
+
+    // Century
+    const N_1: u32 = 4 * N + 3;
+    const C: u32 = N_1 / 146097;
+    const N_C: u32 = (N_1 % 146097) / 4;
+
+    // Year
+    const N_2: u32 = 4 * N_C + 3;
+    const P_2: u64 = @as(u64, 2939745) * N_2;
+    const Z: u32 = @intCast(P_2 / 4294967296);
+    const N_Y: u32 = @intCast((P_2 % 4294967296) / 2939745 / 4);
+    const Y: u32 = 100 * C + Z;
+
+    // Month and day
+    const N_3: u32 = 2141 * N_Y + 197913;
+    const M: u32 = N_3 / 65536;
+    const D: u32 = (N_3 % 65536) / 2141;
+
+    // Map. (Notice the year correction, including type change.)
+    const J: u32 = if (N_Y >= 306) 1 else 0;
+    const Y_G: i32 = @intCast(@as(i32, @bitCast(Y -% L)) + @as(i32, @intCast(J)));
+    const M_G: u32 = if (J != 0) M - 12 else M;
+    const D_G: u32 = D + 1;
+
+    return .{ .year = Y_G, .month = M_G, .day = D_G };
+}
+
+pub fn dateToRDcpp(Y_G: i32, M_G: u32, D_G: u32) i32 {
+    // Map. (Notice the year correction, including type change.)
+    const J: u32 = if (M_G <= 2) 1 else 0;
+    const Y: u32 = @as(u32, @bitCast(Y_G)) +% L - J;
+    const M: u32 = if (J != 0) M_G + 12 else M_G;
+    const D: u32 = D_G - 1;
+    const C: u32 = Y / 100;
+
+    // Rata die
+    const y_star: u32 = 1461 * Y / 4 - C + C / 4;
+    const m_star: u32 = (979 * M - 2919) / 32;
+    const N: u32 = y_star + m_star + D;
+
+    // Rata die shift
+    const N_U: i32 = @as(i32, @bitCast(N)) - K;
+
+    return N_U;
+}
+// -----
 
 fn benchHinnantDate2RD(_: std.mem.Allocator) void {
     var y: u16 = 1;
@@ -199,10 +197,27 @@ fn benchNeriSchnDate2RD(_: std.mem.Allocator) void {
     }
 }
 
+fn benchNeriSchnDate2RDcpp(_: std.mem.Allocator) void {
+    var y: i32 = 1;
+    while (y < 10000) : (y += 100) {
+        const d = dateToRDcpp(y, 3, 1);
+        std.mem.doNotOptimizeAway(d);
+    }
+}
+
 fn benchNeriSchnRD2Date(_: std.mem.Allocator) void {
     var d: i32 = -10000;
     while (d < 100000) : (d += 1000) {
-        _ = rdToDate(d);
+        const dt = rdToDate(d);
+        std.mem.doNotOptimizeAway(dt);
+    }
+}
+
+fn benchNeriSchnRD2DateCpp(_: std.mem.Allocator) void {
+    var d: i32 = -10000;
+    while (d < 100000) : (d += 1000) {
+        const dt = rdToDateCpp(d);
+        std.mem.doNotOptimizeAway(dt);
     }
 }
 
@@ -211,10 +226,13 @@ pub fn run() !void {
     var bench = zbench.Benchmark.init(gpa.allocator(), .{});
     defer bench.deinit();
 
-    try bench.add("hinnant date-2-rd", benchHinnantDate2RD, .{ .iterations = config.N });
-    try bench.add("hinnant rd-2-date", benchHinnantRD2Date, .{ .iterations = config.N });
-    try bench.add("neri-schn. date-2-rd", benchNeriSchnDate2RD, .{ .iterations = config.N });
-    try bench.add("neri-schn. rd-2-date", benchNeriSchnRD2Date, .{ .iterations = config.N });
+    try bench.add("hin date-2-rd", benchHinnantDate2RD, .{ .iterations = config.N });
+    try bench.add("ner date-2-rd (trs)", benchNeriSchnDate2RD, .{ .iterations = config.N });
+    try bench.add("ner date-2-rd (cpp)", benchNeriSchnDate2RDcpp, .{ .iterations = config.N });
+
+    try bench.add("hin rd-2-date", benchHinnantRD2Date, .{ .iterations = config.N });
+    try bench.add("ner rd-2-date (trs)", benchNeriSchnRD2Date, .{ .iterations = config.N });
+    try bench.add("ner rd-2-date (cpp)", benchNeriSchnRD2DateCpp, .{ .iterations = config.N });
 
     try stdout.writeAll("\n");
     try bench.run(stdout);

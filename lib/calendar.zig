@@ -5,6 +5,13 @@ const log = std.log.scoped(.zdt__calendar);
 const assert = std.debug.assert;
 const testing = std.testing;
 
+/// Date type to be used with the rd-2-date and date-2-rd functions.
+pub const Date = struct {
+    year: i32 = 0,
+    month: u32 = 1,
+    day: u32 = 1,
+};
+
 pub fn isLeapYear(year: u16) bool {
     if (@mod(year, 4) != 0)
         return false;
@@ -146,10 +153,21 @@ pub fn leapCorrection(unixtime: i64) u8 {
     return @intCast(index + 11);
 }
 
+/// Days per month, depending on if it comes from a leap year.
+/// See <10.1002/spe.3172.>.
+pub fn daysInMonth(m: u8, is_leap: bool) u8 {
+    return if (m != 2) 30 | (m ^ (m >> 3)) else if (is_leap) 29 else 28;
+}
+
+//--- Gregorian Date <--> Days since the Unix epoch -----------------------------------------------
+
 /// Calculate days since the Unix epoch (1970-01-01) from a year-month-day tuple,
 /// representing a Gregorian calendar date.
+///
 /// (!) assumes the caller has checked the validity of the input.
-/// Based on Howard Hinnant 'date' algorithms, https://howardhinnant.github.io/date_algorithms.html
+///
+/// Based on Howard Hinnant 'date' algorithms,
+/// <https://howardhinnant.github.io/date_algorithms.html>.
 pub fn unixdaysFromDate(ymd: [3]u16) i32 {
     // year: account for era starting in Mar (computational calendar)
     const y = if (ymd[1] <= 2) ymd[0] - 1 else ymd[0];
@@ -178,7 +196,9 @@ pub fn unixdaysFromDate(ymd: [3]u16) i32 {
 /// the Unix epoch (1970-01-01).
 /// The result is time zone naive, however resembles UTC since that is what
 /// the Unix epoch refers to.
-/// Based on Howard Hinnant 'date' algorithms, https://howardhinnant.github.io/date_algorithms.html
+///
+/// Based on Howard Hinnant 'date' algorithms,
+/// <https://howardhinnant.github.io/date_algorithms.html>.
 pub fn dateFromUnixdays(unix_days: i32) [3]u16 {
     // shift the epoch from 1970-01-01 to 0000-03-01
     // ...so long ago that all the times are positive => round to zero and round down coincide
@@ -220,104 +240,73 @@ pub fn dateFromUnixdays(unix_days: i32) [3]u16 {
 }
 
 // ----------------------------------------------------------------------------
-// Like the two algorithms 'dateFromUnixdays' and 'unixdaysFromDate' above,
-// the following code hasn't grown on my fields.
-// It is mostly adapted from Travis Staloc,
-// <https://github.com/travisstaloch/date-zig/>, which in turn is based on
-// Neri & Schneiders paper on the use of Euclidian affine functions to calendar
-// algorithms, <https://dx.doi.org/10.1002/spe.3172>.
+// The following algorithms were translated from the supplemental material to
+//
+// Neri C, Schneider L. "Euclidean affine functions and their application to calendar algorithms".
+// Softw Pract Exper. 2022;1-34.
+// DOI: 10.1002/spe.3172.
+//
+// The C++ version can be found here:
+// <https://github.com/cassioneri/eaf/blob/main/algorithms/neri_schneider.hpp>
+// Shift and correction constants.
+//
+//
+pub const s: u32 = 82;
+pub const K: u32 = 719468 + 146097 * s;
+pub const L: u32 = 400 * s;
 
-// variant proposed by @Validark in a discussion on
-// <https://ziggit.dev/t/benchmarking-isdigit/> - compiles to asm with one
-// short branch (not a leap year, hit ~75% of the time) and one longer
-// branch.
-// Determine if 'year' is a leap year.
-// pub fn isLeapYear(y: u16) bool {
-//     return (y % 4) == 0 and (y % 25 != 0 or (y & 15) == 0);
-// }
+/// Convert days since 1970-01-01 ('rata die') to Gregorian date.
+pub fn rdToDate(N_U: i32) Date {
+    // Rata die shift
+    const N: u32 = @as(u32, @bitCast(N_U)) +% K;
 
-/// Days per month, depending on if it comes from a leap year.
-pub fn daysInMonth(m: u8, is_leap: bool) u8 {
-    return if (m != 2) 30 | (m ^ (m >> 3)) else if (is_leap) 29 else 28;
+    // Century
+    const N_1: u32 = 4 * N + 3;
+    const C: u32 = N_1 / 146097;
+    const N_C: u32 = (N_1 % 146097) / 4;
+
+    // Year
+    const N_2: u32 = 4 * N_C + 3;
+    const P_2: u64 = @as(u64, 2939745) * N_2;
+    const Z: u32 = @intCast(P_2 / 4294967296);
+    const N_Y: u32 = @intCast((P_2 % 4294967296) / 2939745 / 4);
+    const Y: u32 = 100 * C + Z;
+
+    // Month and day
+    const N_3: u32 = 2141 * N_Y + 197913;
+    const M: u32 = N_3 / 65536;
+    const D: u32 = (N_3 % 65536) / 2141;
+
+    // Map. (Notice the year correction, including type change.)
+    const J: u32 = @intFromBool(N_Y >= 306);
+    const Y_G: i32 = @intCast(@as(i32, @bitCast(Y -% L)) + @as(i32, @intCast(J)));
+    const M_G: u32 = if (J != 0) M - 12 else M;
+    const D_G: u32 = D + 1;
+
+    return .{ .year = Y_G, .month = M_G, .day = D_G };
 }
 
-/// Adjustment from Unix epoch to make calculations use positive integers
-///
-/// Unit is eras, which is defined to be 400 years, as that is the period of the
-/// proleptic Gregorian calendar. Selected to place Unix epoch roughly in the
-/// center of the value space, can be arbitrary within type limits.
-const ERA_OFFSET: i32 = 3670;
+/// Convert Gregorian date to days since 1970-01-01 ('rata die').
+pub fn dateToRD(date: Date) i32 {
+    // Map. (Notice the year correction, including type change.)
+    const J: u32 = @intFromBool(date.month <= 2);
+    const Y: u32 = @as(u32, @bitCast(date.year)) +% L - J;
+    const M: u32 = if (J != 0) date.month + 12 else date.month;
+    const D: u32 = date.day - 1;
+    const C: u32 = Y / 100;
 
-/// Every era has 146097 days
-const DAYS_IN_ERA: i32 = 146097;
+    // Rata die
+    const y_star: u32 = 1461 * Y / 4 - C + C / 4;
+    const m_star: u32 = (979 * M - 2919) / 32;
+    const N: u32 = y_star + m_star + D;
 
-/// Every era has 400 years
-const YEARS_IN_ERA: i32 = 400;
+    // Rata die shift
+    const N_U: i32 = @as(i32, @bitCast(N)) - K;
 
-/// Number of days from 0000-03-01 to Unix epoch 1970-01-01
-const DAYS_TO_UNIX_EPOCH: i32 = 719468;
-
-/// Offset to be added to given day values
-const DAY_OFFSET: i32 = ERA_OFFSET * DAYS_IN_ERA + DAYS_TO_UNIX_EPOCH;
-
-/// Offset to be added to given year values
-const YEAR_OFFSET: i32 = ERA_OFFSET * YEARS_IN_ERA;
-
-/// Seconds in a single 24 hour calendar day
-const SECS_IN_DAY: i64 = 86400;
-
-/// Offset to be added to given second values
-const SECS_OFFSET: i64 = DAY_OFFSET * SECS_IN_DAY;
-
-/// Convert Rata Die / days since 1970-01-01 to Gregorian date.
-pub fn rdToDate(rd: i32) [3]u16 {
-    const n0: u32 = @intCast(rd +% DAY_OFFSET);
-    // century
-    const n1 = 4 * n0 + 3;
-    const c = n1 / 146097;
-    const r = n1 % 146097;
-    // year
-    const n2 = r | 3;
-    const p: u64 = 2939745 * @as(u64, n2);
-    const z: u32 = @truncate(p / (1 << 32));
-    const n3: u32 = @truncate((p % (1 << 32)) / 2939745 / 4);
-    const j = @intFromBool(n3 >= 306);
-    const y1: u32 = 100 * c + z + j;
-    // month and day
-    const n4 = 2141 * n3 + 197913;
-    const m1 = n4 / (1 << 16);
-    const d1 = n4 % (1 << 16) / 2141;
-    // map
-    const y = (@as(i32, @intCast(y1))) -% (YEAR_OFFSET);
-    const m = if (j != 0) m1 - 12 else m1;
-    const d = d1 + 1;
-    return [3]u16{ @intCast(y), @intCast(m), @intCast(d) };
+    return N_U;
 }
 
-/// Convert Gregorian date to Rata Die / days since 1970-01-01.
-///
-/// Input: [3]u16{year, month, day}
-///
-/// Constraints: month >= 1, day >= 1
-pub fn dateToRD(ymd: [3]u16) i32 {
-    assert(ymd[1] >= 1);
-    assert(ymd[2] >= 1);
-    const y1: u32 = @intCast(ymd[0] +% YEAR_OFFSET);
-    // map
-    const jf: u32 = @intFromBool(ymd[1] < 3);
-    const y2 = y1 -% jf;
-    const m1 = @as(u32, ymd[1]) + 12 * jf;
-    const d1 = @as(u32, ymd[2]) -% 1;
-    // century
-    const c = y2 / 100;
-    // year
-    const y3 = 1461 * y2 / 4 - c + c / 4;
-    // month
-    const m = (979 * m1 - 2919) / 32;
-    // result
-    const n = y3 +% m +% d1;
-    return @as(i32, @intCast(n)) -% DAY_OFFSET;
-}
+//--- EASTER --------------------------------------------------------------------------------------
 
 /// Calculate the Gregorian calendar Easter date, according to
 /// <https://en.wikipedia.org/wiki/Date_of_Easter#Anonymous%20Gregorian%20algorithm>
@@ -354,21 +343,26 @@ pub fn julianEaster(year: u16) [3]u16 {
     return [3]u16{ year, @intCast(n), @intCast(o) };
 }
 
-//----------------------------------------------------------------------------------------------------
+//--- TESTS ---------------------------------------------------------------------------------------
 
-test "min max" {
-    // those values do not make much sense but the function arithmetic must not fail:
-    try testing.expect(dateToRD([3]u16{ 0, 1, 1 }) < 0);
-    try testing.expect(dateToRD([3]u16{ std.math.maxInt(u16), std.math.maxInt(u16), std.math.maxInt(u16) }) > 0);
+test "round-trip rd-date" {
+    var y: i32 = -32768;
+    while (y <= 32767) : (y += 1) {
+        const rd = dateToRD(y, 1, 1);
+        const dt = rdToDate(rd);
+        try testing.expectEqual(Date{ .year = y, .month = 1, .day = 1 }, dt);
+    }
+}
 
-    // rd to date is more constrained; see asserts
-    // const min_date = rdToDate(dateToRD([3]u16{ 0, 1, 1 }));
-    // log.warn("Minimum Datetime: {any}\n", .{min_date});
-    // log.warn("rd: {any}\n", .{dateToRD([3]u16{ 0, 1, 1 })});
-    // log.warn("asdfasf {any}\n", .{rdToDate(-719468)});
-
-    // const max_date = rdToDate(dateToRD([3]u16{ std.math.maxInt(u16), std.math.maxInt(u16), std.math.maxInt(u16) }));
-    // log.warn("Maximum Datetime: {any}\n", .{max_date});
+test "round-trip date-rd" {
+    var now: i32 = -32768;
+    var dt: Date = undefined;
+    const max: i32 = dateToRD(32767, 12, 31);
+    while (now <= max) : (now += 1) {
+        dt = rdToDate(now);
+        const rd = dateToRD(dt.year, dt.month, dt.day);
+        try testing.expectEqual(now, rd);
+    }
 }
 
 test "leap index" {
