@@ -17,11 +17,11 @@ const RangeError = @import("./errors.zig").RangeError;
 const TzError = @import("./errors.zig").TzError;
 const ZdtError = @import("./errors.zig").ZdtError;
 
-pub const min_year: i16 = cal.YEAR_MIN;
-pub const max_year: i16 = cal.YEAR_MAX;
+pub const min_year: i16 = 0;
+pub const max_year: i16 = 9999;
 
-pub const unix_s_min: i64 = -12687794 * @as(i64, s_per_day); // {-32768,1,1,0,0,0,0}
-pub const unix_s_max: i64 = (11248738 * @as(i64, s_per_day)) - 1; // {32767,12,31,23,59,59}
+pub const unix_s_min: i64 = -719528 * @as(i64, s_per_day); // {0,1,1,0,0,0,0}
+pub const unix_s_max: i64 = (2932897 * @as(i64, s_per_day)) - 1; // {9999,12,31,23,59,59}
 
 pub const epoch = Datetime{ .year = 1970, .unix_sec = 0, .utc_offset = UTCoffset.UTC };
 pub const century: i16 = 2000;

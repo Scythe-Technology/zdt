@@ -161,11 +161,19 @@ test "Datetime Min Max fields vs seconds roundtrip" {
 
     const too_large_s = Datetime.fromUnix(Datetime.unix_s_max + 1, Duration.Resolution.second, null);
     try testing.expectError(ZdtError.UnixOutOfRange, too_large_s);
-    const too_large_ns = Datetime.fromUnix(@as(i128, Datetime.unix_s_max + 1) * std.time.ns_per_s, Duration.Resolution.second, null);
+    const too_large_ns = Datetime.fromUnix(
+        @as(i128, Datetime.unix_s_max + 1) * std.time.ns_per_s,
+        Duration.Resolution.second,
+        null,
+    );
     try testing.expectError(ZdtError.UnixOutOfRange, too_large_ns);
     const too_small_s = Datetime.fromUnix(Datetime.unix_s_min - 1, Duration.Resolution.second, null);
     try testing.expectError(ZdtError.UnixOutOfRange, too_small_s);
-    const too_small_ns = Datetime.fromUnix(@as(i128, Datetime.unix_s_min - 1) * std.time.ns_per_s, Duration.Resolution.second, null);
+    const too_small_ns = Datetime.fromUnix(
+        @as(i128, Datetime.unix_s_min - 1) * std.time.ns_per_s,
+        Duration.Resolution.second,
+        null,
+    );
     try testing.expectError(ZdtError.UnixOutOfRange, too_small_ns);
 }
 
@@ -212,7 +220,13 @@ test "default format ISO8601, naive" {
 
 test "format offset" {
     var offset = try UTCoffset.fromSeconds(3600, "", false);
-    var dt = try Datetime.fromFields(.{ .year = 2021, .month = 2, .day = 18, .hour = 17, .tz_options = .{ .utc_offset = offset } });
+    var dt = try Datetime.fromFields(.{
+        .year = 2021,
+        .month = 2,
+        .day = 18,
+        .hour = 17,
+        .tz_options = .{ .utc_offset = offset },
+    });
 
     var str = std.ArrayList(u8).init(testing.allocator);
     try dt.formatOffset(.{ .fill = ':' }, str.writer());
