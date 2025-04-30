@@ -24,7 +24,7 @@ pub fn isLeapYear(year: i16) bool {
 }
 
 /// Number of days in a certain month of any year.
-pub fn lastDayOfMonth(year: u16, month: u8) u8 {
+pub fn lastDayOfMonth(year: i16, month: u8) u8 {
     return daysInMonth(month, isLeapYear(year));
 }
 
@@ -56,7 +56,7 @@ pub fn weekdayDifference(x: u8, y: u8) i8 {
 
 /// Calculate the day of the year. Result is [1, 366].
 /// See also https://astronomy.stackexchange.com/q/2407
-pub fn dayOfYear(year: u16, month: u8, day: u8) u16 {
+pub fn dayOfYear(year: i16, month: u8, day: u8) u16 {
     const _month: i16 = @as(i16, month);
     const _day: i16 = @as(i16, day);
     const base_offset: i16 = @divFloor(_month * 275, 9);
@@ -65,13 +65,13 @@ pub fn dayOfYear(year: u16, month: u8, day: u8) u16 {
     return @intCast(base_offset - (feb_offset * leap_offset) + _day - 30);
 }
 
-fn firstday(y: i16) i16 {
-    return @mod((y + @divFloor(y, 4) - @divFloor(y, 100) + @divFloor(y, 400)), 7);
+fn firstday(year: i16) i16 {
+    return @mod((year + @divFloor(year, 4) - @divFloor(year, 100) + @divFloor(year, 400)), 7);
 }
 
 /// Number of ISO weeks per year
-pub fn weeksPerYear(y: u16) u8 {
-    return if (firstday(@as(i16, @intCast(y))) == 4 or firstday(@as(i16, @intCast(y - 1))) == 3) 53 else 52;
+pub fn weeksPerYear(year: i16) u8 {
+    return if (firstday(@as(i16, @intCast(year))) == 4 or firstday(@as(i16, @intCast(year - 1))) == 3) 53 else 52;
 }
 
 /// Mapping of Unix time [s] to number of leap seconds n_leap; n_leap = array-index + 11;
@@ -416,7 +416,7 @@ test "round-trip rd-date" {
 }
 
 test "round-trip date-rd" {
-    var now: i32 = YEAR_MIN;
+    var now: i32 = -12687794;
     var dt: Date = undefined;
     const max: i32 = dateToRD(.{ .year = YEAR_MAX, .month = 12, .day = 31 });
     while (now <= max) : (now += 1) {

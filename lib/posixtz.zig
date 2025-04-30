@@ -74,10 +74,10 @@ pub const PosixTz = struct {
 
         /// Returned value is the Unix time of the transition in given year,
         /// including the local UTC offset (!)
-        pub fn toUnixTimeLocal(rule: Rule, year: u16) i64 {
+        pub fn toUnixTimeLocal(rule: Rule, year: i16) i64 {
             const is_leap: bool = cal.isLeapYear(year);
-            const start_of_year = cal.dateToRD([3]u16{ year, 1, 1 });
-            var t = @as(i64, start_of_year) * std.time.s_per_day;
+            const start_of_year: i32 = cal.dateToRD(.{ .year = year, .month = 1, .day = 1 });
+            var t: i64 = @as(i64, start_of_year) * std.time.s_per_day;
 
             switch (rule) {
                 .JulianDay => |j| {
@@ -89,7 +89,7 @@ pub const PosixTz = struct {
                     t += std.time.s_per_day * @as(i64, j.day) + j.time;
                 },
                 .MonthNthWeekDay => |mwd| {
-                    const days_since_epoch: i32 = cal.dateToRD([3]u16{ year, mwd.month, 1 });
+                    const days_since_epoch: i32 = cal.dateToRD(.{ .year = year, .month = mwd.month, .day = 1 });
                     const first_weekday_of_month = cal.weekdayFromUnixdays(days_since_epoch);
                     const weekday_offset_for_month = if (first_weekday_of_month <= mwd.day)
                         // the first matching weekday is during the first week of the month
@@ -127,10 +127,8 @@ pub const PosixTz = struct {
         };
         if (tz.dst_range) |range| {
             const ymd = cal.rdToDate(@truncate(@divFloor(unix_seconds, std.time.s_per_day)));
-            const year = ymd[0];
-
-            const start_dst = range.start.toUnixTimeLocal(year) - tz.std_offset;
-            const end_dst = range.end.toUnixTimeLocal(year) - tz.dst_offset.?;
+            const start_dst = range.start.toUnixTimeLocal(@as(i16, @intCast(ymd.year))) - tz.std_offset;
+            const end_dst = range.end.toUnixTimeLocal(@as(i16, @intCast(ymd.year))) - tz.dst_offset.?;
             const is_dst_all_year = range.start.isAtStartOfYear() and range.end.isAtEndOfYear();
 
             if (is_dst_all_year) {

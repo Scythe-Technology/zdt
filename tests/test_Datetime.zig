@@ -31,10 +31,6 @@ test "validate datetime fields" {
     err = fields.validate();
     try testing.expectError(ZdtError.MonthOutOfRange, err);
 
-    fields = Datetime.Fields{ .year = 10000, .month = 1, .day = 1 };
-    err = fields.validate();
-    try testing.expectError(ZdtError.YearOutOfRange, err);
-
     fields = Datetime.Fields{ .hour = 99 };
     err = fields.validate();
     try testing.expectError(ZdtError.HourOutOfRange, err);
@@ -54,7 +50,7 @@ test "validate datetime fields" {
 
 test "Datetime from empty field struct" {
     const dt = try Datetime.fromFields(.{});
-    try testing.expectEqual(@as(u16, 1), dt.year);
+    try testing.expectEqual(@as(i16, 1), dt.year);
     try testing.expectEqual(@as(u8, 1), dt.month);
     try testing.expectEqual(@as(u8, 1), dt.day);
     try testing.expect(dt.tz == null);
@@ -62,7 +58,7 @@ test "Datetime from empty field struct" {
 
 test "Datetime from populated field struct" {
     const dt = try Datetime.fromFields(.{ .year = 2023, .month = 12 });
-    try testing.expectEqual(@as(u16, 2023), dt.year);
+    try testing.expectEqual(@as(i16, 2023), dt.year);
     try testing.expectEqual(@as(u8, 12), dt.month);
     try testing.expectEqual(@as(u8, 1), dt.day);
     try testing.expect(dt.tz == null);
@@ -123,24 +119,43 @@ test "Dateime from invalid fields" {
 }
 
 test "Datetime Min Max from fields" {
-    var fields = Datetime.Fields{ .year = Datetime.min_year, .month = 1, .day = 1 };
+    var fields = Datetime.Fields{
+        .year = Datetime.min_year,
+        .month = 1,
+        .day = 1,
+    };
     var dt = try Datetime.fromFields(fields);
-    try testing.expect(dt.year == Datetime.min_year);
-    try testing.expect(dt.unix_sec == Datetime.unix_s_min);
+    try testing.expectEqual(dt.year, Datetime.min_year);
+    try testing.expectEqual(dt.unix_sec, Datetime.unix_s_min);
 
-    fields = Datetime.Fields{ .year = Datetime.max_year, .month = 12, .day = 31, .hour = 23, .minute = 59, .second = 59, .nanosecond = 999999999 };
+    fields = Datetime.Fields{
+        .year = Datetime.max_year,
+        .month = 12,
+        .day = 31,
+        .hour = 23,
+        .minute = 59,
+        .second = 59,
+        .nanosecond = 999999999,
+    };
     dt = try Datetime.fromFields(fields);
-    try testing.expect(dt.year == Datetime.max_year);
-    try testing.expect(dt.hour == 23);
+    try testing.expectEqual(dt.year, Datetime.max_year);
+    try testing.expectEqual(dt.hour, 23);
     try testing.expectEqual(Datetime.unix_s_max, dt.unix_sec);
 }
 
 test "Datetime Min Max fields vs seconds roundtrip" {
     const max_from_seconds = try Datetime.fromUnix(Datetime.unix_s_max, Duration.Resolution.second, null);
-    const max_from_fields = try Datetime.fromFields(.{ .year = Datetime.max_year, .month = 12, .day = 31, .hour = 23, .minute = 59, .second = 59 });
+    const max_from_fields = try Datetime.fromFields(.{
+        .year = Datetime.max_year,
+        .month = 12,
+        .day = 31,
+        .hour = 23,
+        .minute = 59,
+        .second = 59,
+    });
     try testing.expect(std.meta.eql(max_from_fields, max_from_seconds));
 
-    const min_from_fields = try Datetime.fromFields(.{ .year = 1 });
+    const min_from_fields = try Datetime.fromFields(.{ .year = Datetime.min_year });
     const min_from_seconds = try Datetime.fromUnix(Datetime.unix_s_min, Duration.Resolution.second, null);
     try testing.expect(std.meta.eql(min_from_fields, min_from_seconds));
 

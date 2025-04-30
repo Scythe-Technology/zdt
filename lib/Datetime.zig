@@ -17,11 +17,11 @@ const RangeError = @import("./errors.zig").RangeError;
 const TzError = @import("./errors.zig").TzError;
 const ZdtError = @import("./errors.zig").ZdtError;
 
-pub const min_year: i16 = -32768;
-pub const max_year: i16 = 32676;
+pub const min_year: i16 = cal.YEAR_MIN;
+pub const max_year: i16 = cal.YEAR_MAX;
 
-pub const unix_s_min: i64 = -1096193865600; // -32768,1,1
-pub const unix_s_max: i64 = 971890963200; // 32767,1,1
+pub const unix_s_min: i64 = -12687794 * @as(i64, s_per_day); // {-32768,1,1,0,0,0,0}
+pub const unix_s_max: i64 = (11248738 * @as(i64, s_per_day)) - 1; // {32767,12,31,23,59,59}
 
 pub const epoch = Datetime{ .year = 1970, .unix_sec = 0, .utc_offset = UTCoffset.UTC };
 pub const century: i16 = 2000;
@@ -169,7 +169,7 @@ pub const ISOCalendar = struct {
         const year_start = try yearStartDate(isocal.isoyear);
         return year_start.add(
             Duration.fromTimespanMultiple(
-                @as(i16, isocal.isoweekday - 1) + @as(u16, isocal.isoweek - 1) * 7,
+                @as(u16, isocal.isoweekday - 1) + @as(u16, isocal.isoweek - 1) * 7,
                 Duration.Timespan.day,
             ),
         );
@@ -195,8 +195,13 @@ pub const ISOCalendar = struct {
         _ = fmt;
         _ = options;
         try writer.print(
-            "{d:0>4}-W{d:0>2}-{d}",
-            .{ calendar.isoyear, calendar.isoweek, calendar.isoweekday },
+            "{s}{d:0>4}-W{d:0>2}-{d}",
+            .{
+                if (calendar.isoyear < 0) "-" else "",
+                @abs(calendar.isoyear),
+                calendar.isoweek,
+                calendar.isoweekday,
+            },
         );
     }
 };
@@ -226,7 +231,6 @@ pub const Fields = struct {
     tz_options: ?tz_options = null,
 
     pub fn validate(fields: Fields) RangeError!void {
-        if (fields.year > max_year or fields.year < min_year) return RangeError.YearOutOfRange;
         if (fields.month > 12 or fields.month < 1) return RangeError.MonthOutOfRange;
         const max_days = cal.daysInMonth(@truncate(fields.month), cal.isLeapYear(fields.year));
         if (fields.day > max_days or fields.day < 1) return RangeError.DayOutOfRange;
@@ -254,9 +258,9 @@ pub const OptFields = struct {
 pub fn fromFields(fields: Fields) ZdtError!Datetime {
     _ = try fields.validate();
 
-    const d = cal.dateToRD(.{ .year = fields.year, .month = fields.month, .day = fields.day });
+    const d: i32 = cal.dateToRD(.{ .year = fields.year, .month = fields.month, .day = fields.day });
     // Note : need to truncate seconds to 59 so that Unix time is 'correct'
-    const s = if (fields.second == 60) 59 else fields.second;
+    const s: u8 = if (fields.second == 60) 59 else fields.second;
     var dt = Datetime{
         .year = fields.year,
         .month = fields.month,
@@ -266,9 +270,9 @@ pub fn fromFields(fields: Fields) ZdtError!Datetime {
         .second = fields.second,
         .nanosecond = fields.nanosecond,
         .unix_sec = ( //
-            @as(i40, d) * s_per_day +
-                @as(u17, fields.hour) * s_per_hour +
-                @as(u12, fields.minute) * s_per_minute + s //
+            @as(i64, d) * s_per_day +
+                @as(u32, fields.hour) * s_per_hour +
+                @as(u16, fields.minute) * s_per_minute + s //
         ),
     };
 
@@ -477,7 +481,7 @@ fn normalizeToUnix(dt: *Datetime) TzError!void {
     const s_after_midnight: i32 = @intCast(@mod(fake_unix, s_per_day));
     const days: i32 = @intCast(@divFloor(fake_unix, s_per_day));
     const ymd: cal.Date = cal.rdToDate(days);
-    dt.year = @intCast(ymd.year);
+    dt.year = @truncate(ymd.year);
     dt.month = @intCast(ymd.month);
     dt.day = @intCast(ymd.day);
     dt.hour = @intCast(@divFloor(s_after_midnight, s_per_hour));
@@ -664,14 +668,13 @@ pub fn addRelative(dt: *const Datetime, rel_delta: Duration.RelativeDelta) ZdtEr
         );
 
     const days_off: i32 = @intCast(nrd.days + nrd.weeks * 7 + new_time[4]);
-    var rd_day: cal.Date = cal.dateToRD(.{ .year = dt.year, .month = dt.month, .day = dt.day });
+    var rd_day: i32 = cal.dateToRD(.{ .year = dt.year, .month = dt.month, .day = dt.day });
     rd_day = if (nrd.negative) rd_day - days_off else rd_day + days_off;
-    const new_date = cal.rdToDate(rd_day);
-
+    const new_date: cal.Date = cal.rdToDate(rd_day);
     var result: Fields = .{
-        .year = @truncate(new_date[0]),
-        .month = @truncate(new_date[1]),
-        .day = @truncate(new_date[2]),
+        .year = @truncate(new_date.year),
+        .month = @truncate(new_date.month),
+        .day = @truncate(new_date.day),
         .hour = @truncate(new_time[0]),
         .minute = @truncate(new_time[1]),
         .second = @truncate(new_time[2]),
@@ -776,12 +779,12 @@ pub fn monthEnum(dt: Datetime) Month {
 
 /// Number of the weekday starting at 0 == Sunday (strftime/strptime: `%w`).
 pub fn weekdayNumber(dt: Datetime) u8 {
-    return cal.weekdayFromUnixdays(cal.dateToRD(.{ dt.year, dt.month, dt.day }));
+    return cal.weekdayFromUnixdays(cal.dateToRD(.{ .year = dt.year, .month = dt.month, .day = dt.day }));
 }
 
 /// ISO-number of the weekday, starting at 1 == Monday (strftime/strptime: `%u`).
 pub fn weekdayIsoNumber(dt: Datetime) u8 {
-    return cal.ISOweekdayFromUnixdays(cal.dateToRD(.{ dt.year, dt.month, dt.day }));
+    return cal.ISOweekdayFromUnixdays(cal.dateToRD(.{ .year = dt.year, .month = dt.month, .day = dt.day }));
 }
 
 /// Roll datetime forward to the specified next weekday. Makes a new datetime.
@@ -912,11 +915,11 @@ pub fn formatOffset(
 
 /// Calculate the date of Easter (Gregorian calendar).
 pub fn EasterDate(year: i16) ZdtError!Datetime {
-    const ymd = cal.gregorianEaster(year);
+    const easterdate = cal.gregorianEaster(year);
     return try Datetime.fromFields(.{
-        .year = ymd[0],
-        .month = @truncate(ymd[1]),
-        .day = @truncate(ymd[2]),
+        .year = @truncate(easterdate.year),
+        .month = @truncate(easterdate.month),
+        .day = @truncate(easterdate.day),
     });
 }
 
@@ -927,9 +930,9 @@ pub fn EasterDate(year: i16) ZdtError!Datetime {
 pub fn EasterDateJulian(year: i16) ZdtError!Datetime {
     const ymd: cal.Date = cal.julianEaster(year);
     return try Datetime.fromFields(.{
-        .year = ymd.year,
-        .month = ymd.month,
-        .day = ymd.day,
+        .year = @truncate(ymd.year),
+        .month = @truncate(ymd.month),
+        .day = @truncate(ymd.day),
     });
 }
 
@@ -959,8 +962,8 @@ pub fn format(
         return try str.tokenizeAndPrint(&dt, fmt, writer);
 
     try writer.print(
-        "{d:0>4}-{d:0>2}-{d:0>2}T{d:0>2}:{d:0>2}:{d:0>2}",
-        .{ dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second },
+        "{s}{d:0>4}-{d:0>2}-{d:0>2}T{d:0>2}:{d:0>2}:{d:0>2}",
+        .{ if (dt.year < 0) "-" else "", @abs(dt.year), dt.month, dt.day, dt.hour, dt.minute, dt.second },
     );
 
     if (options.precision) |p| switch (p) {

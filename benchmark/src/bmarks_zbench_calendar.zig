@@ -7,7 +7,8 @@ const zbench = @import("zbench");
 
 var gpa = std.heap.GeneralPurposeAllocator(.{}){};
 
-/// Based on Howard Hinnant 'date' algorithms, https://howardhinnant.github.io/date_algorithms.html
+// ----- Howard Hinnant's data algorithms:
+//
 pub fn unixdaysFromDate(ymd: [3]u16) i32 {
     const y = if (ymd[1] <= 2) ymd[0] - 1 else ymd[0];
     const era = y / 400;
@@ -19,7 +20,6 @@ pub fn unixdaysFromDate(ymd: [3]u16) i32 {
     return tmp - 719468;
 }
 
-/// Based on Howard Hinnant 'date' algorithms, https://howardhinnant.github.io/date_algorithms.html
 pub fn dateFromUnixdays(unix_days: i32) [3]u16 {
     const z: u32 = @intCast(unix_days + 719468);
     const era = if (z >= 0) z / 146097 else z - 14096;
@@ -34,37 +34,14 @@ pub fn dateFromUnixdays(unix_days: i32) [3]u16 {
     return [_]u16{ y, m, d };
 }
 
-// <https://github.com/travisstaloch/date-zig/>, which in turn is based on
-// Neri & Schneiders paper on the use of Euclidian affine functions to calendar
-
-// algorithms, <https://dx.doi.org/10.1002/spe.3172>.
-/// Adjustment from Unix epoch to make calculations use positive integers
-///
-/// Unit is eras, which is defined to be 400 years, as that is the period of the
-/// proleptic Gregorian calendar. Selected to place Unix epoch roughly in the
-/// center of the value space, can be arbitrary within type limits.
+// ----- Neri-Schneider algorithms, Zig translation by @travisstaloch
+//
 const ERA_OFFSET: i32 = 3670;
-
-/// Every era has 146097 days
 const DAYS_IN_ERA: i32 = 146097;
-
-/// Every era has 400 years
 const YEARS_IN_ERA: i32 = 400;
-
-/// Number of days from 0000-03-01 to Unix epoch 1970-01-01
 const DAYS_TO_UNIX_EPOCH: i32 = 719468;
-
-/// Offset to be added to given day values
 const DAY_OFFSET: i32 = ERA_OFFSET * DAYS_IN_ERA + DAYS_TO_UNIX_EPOCH;
-
-/// Offset to be added to given year values
 const YEAR_OFFSET: i32 = ERA_OFFSET * YEARS_IN_ERA;
-
-/// Seconds in a single 24 hour calendar day
-const SECS_IN_DAY: i64 = 86400;
-
-/// Offset to be added to given second values
-const SECS_OFFSET: i64 = DAY_OFFSET * SECS_IN_DAY;
 
 pub fn rdToDate(rd: i32) [3]u16 {
     const n0: u32 = @intCast(rd +% DAY_OFFSET);
@@ -111,17 +88,16 @@ pub fn dateToRD(ymd: [3]u16) i32 {
 }
 
 // ----- revised versions, based on the Neri/Schneider paper / C++ version
-
+//
 pub const Date = struct {
     year: i32 = 0,
     month: u32 = 0,
     day: u32 = 0,
 };
 
-// Shift and correction constants.
-pub const s: u32 = 82;
-pub const K: u32 = 719468 + 146097 * s;
-pub const L: u32 = 400 * s;
+pub const S: u32 = 82;
+pub const K: u32 = 719468 + 146097 * S;
+pub const L: u32 = 400 * S;
 
 pub fn rdToDateCpp(N_U: i32) Date {
     // Rata die shift
@@ -145,7 +121,7 @@ pub fn rdToDateCpp(N_U: i32) Date {
     const D: u32 = (N_3 % 65536) / 2141;
 
     // Map. (Notice the year correction, including type change.)
-    const J: u32 = if (N_Y >= 306) 1 else 0;
+    const J: u32 = @intFromBool(N_Y >= 306);
     const Y_G: i32 = @intCast(@as(i32, @bitCast(Y -% L)) + @as(i32, @intCast(J)));
     const M_G: u32 = if (J != 0) M - 12 else M;
     const D_G: u32 = D + 1;
@@ -153,12 +129,12 @@ pub fn rdToDateCpp(N_U: i32) Date {
     return .{ .year = Y_G, .month = M_G, .day = D_G };
 }
 
-pub fn dateToRDcpp(Y_G: i32, M_G: u32, D_G: u32) i32 {
+pub fn dateToRDcpp(date: Date) i32 {
     // Map. (Notice the year correction, including type change.)
-    const J: u32 = if (M_G <= 2) 1 else 0;
-    const Y: u32 = @as(u32, @bitCast(Y_G)) +% L - J;
-    const M: u32 = if (J != 0) M_G + 12 else M_G;
-    const D: u32 = D_G - 1;
+    const J: u32 = @intFromBool(date.month <= 2);
+    const Y: u32 = @as(u32, @bitCast(date.year)) +% L - J;
+    const M: u32 = if (J != 0) date.month + 12 else date.month;
+    const D: u32 = date.day - 1;
     const C: u32 = Y / 100;
 
     // Rata die
@@ -171,6 +147,7 @@ pub fn dateToRDcpp(Y_G: i32, M_G: u32, D_G: u32) i32 {
 
     return N_U;
 }
+
 // -----
 
 fn benchHinnantDate2RD(_: std.mem.Allocator) void {
@@ -200,7 +177,7 @@ fn benchNeriSchnDate2RD(_: std.mem.Allocator) void {
 fn benchNeriSchnDate2RDcpp(_: std.mem.Allocator) void {
     var y: i32 = 1;
     while (y < 10000) : (y += 100) {
-        const d = dateToRDcpp(y, 3, 1);
+        const d = dateToRDcpp(.{ .year = y, .month = 3, .day = 1 });
         std.mem.doNotOptimizeAway(d);
     }
 }
