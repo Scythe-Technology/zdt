@@ -17,6 +17,7 @@ Types of changes
 
 - `Datetime.isLeapYear` - returns if a datetime is in a leap year
 - `Datetime.isLeapMonth` - returns if a datetime is in a February of a leap year
+- more tests for the calendaric calculations
 
 ### Changed
 
@@ -24,7 +25,6 @@ Types of changes
   - greatly enhances the range of dates that can be represented
   - is now a rather straight-forward conversion of the C++ code from the [EAF paper](https://onlinelibrary.wiley.com/doi/full/10.1002/spe.3172)
 - revised test location; internal tests are in respective zig files now
-- added some more tests for the calendaric calculations
 
 ## 2025-04-23, v0.6.5
 

@@ -231,9 +231,10 @@ fn parseIntoFields(
         // 'W',
         // 'U',
         // 'V',
-        'T' => {
+        'T' => { // T: full ISO format
             fields.* = try parseISO8601(string, idx_ptr);
         },
+        // 'F' => ISO date only?
         't' => {
             const ical = try Datetime.ISOCalendar.fromString(string[idx_ptr.*..]);
             const tmp_dt = try ical.toDatetime();
@@ -353,7 +354,8 @@ fn printIntoWriter(
         'W' => try writer.print("{d:0>2}", .{dt.weekOfYearMon()}),
         'U' => try writer.print("{d:0>2}", .{dt.weekOfYearSun()}),
         'V' => try writer.print("{d:0>2}", .{dt.toISOCalendar().isoweek}),
-        'T' => try dt.format("", .{}, writer),
+        'T' => try dt.format("", .{}, writer), // ISO format
+        // 'F' => try dt.format("", .{}, writer) // ISO format, date only
         't' => try writer.print("{s}", .{dt.toISOCalendar()}),
         // 'x', // locale-specific, date
         // 'X', // locale-specific, time
@@ -367,10 +369,10 @@ fn printIntoWriter(
 /// Parse exactly nDigits to an integer.
 /// Return error.InvalidFormat if something goes wrong.
 fn parseExactNDigits(comptime T: type, string: []const u8, idx_ptr: *usize, nDigits: usize) FormatError!T {
-    if ((string.len - idx_ptr.*) < nDigits) {
+    if ((string.len - idx_ptr.*) < nDigits)
         return FormatError.InvalidFormat;
-    }
     idx_ptr.* += nDigits;
+
     return std.fmt.parseInt(T, string[idx_ptr.* - nDigits .. idx_ptr.*], 10);
 }
 
@@ -378,25 +380,20 @@ fn parseExactNDigits(comptime T: type, string: []const u8, idx_ptr: *usize, nDig
 /// Return error.InvalidFormat if something goes wrong.
 fn parseDigits(comptime T: type, string: []const u8, idx_ptr: *usize, maxDigits: usize) FormatError!T {
     const start_idx = idx_ptr.*;
-    // must start with a digit... otherwise format is invalid.
-    if (std.ascii.isDigit(string[start_idx])) {
-        idx_ptr.* += 1;
-        while (idx_ptr.* < string.len and // check first if string depleted
-            idx_ptr.* < start_idx + maxDigits and
-            std.ascii.isDigit(string[idx_ptr.*])) : (idx_ptr.* += 1)
-        {}
+    idx_ptr.* += 1;
+    while (idx_ptr.* < string.len and // check first if string depleted
+        idx_ptr.* < start_idx + maxDigits and
+        std.ascii.isDigit(string[idx_ptr.*])) : (idx_ptr.* += 1)
+    {}
 
-        return std.fmt.parseInt(T, string[start_idx..idx_ptr.*], 10);
-    }
-    return FormatError.InvalidFormat;
+    return std.fmt.parseInt(T, string[start_idx..idx_ptr.*], 10);
 }
 
 // AM or PM string, no matter if upper or lower case.
 fn parseAmPm(string: []const u8, idx_ptr: *usize) FormatError!ParserFlags {
     if (idx_ptr.* + 2 > string.len) return FormatError.InvalidFormat;
 
-    var flag = ParserFlags.OK;
-    flag = switch (std.ascii.toLower(string[idx_ptr.*])) {
+    const flag = switch (std.ascii.toLower(string[idx_ptr.*])) {
         'a' => ParserFlags.AM,
         'p' => ParserFlags.PM,
         else => return FormatError.InvalidFormat,
@@ -404,8 +401,8 @@ fn parseAmPm(string: []const u8, idx_ptr: *usize) FormatError!ParserFlags {
 
     idx_ptr.* += 1;
     if (std.ascii.toLower(string[idx_ptr.*]) != 'm') return FormatError.InvalidFormat;
-
     idx_ptr.* += 1;
+
     return flag;
 }
 
@@ -426,7 +423,7 @@ fn parseOffset(comptime T: type, string: []const u8, idx_ptr: *usize, maxDigits:
             idx_ptr.* += 1;
             return 0;
         },
-        else => return FormatError.InvalidCharacter, // must start with sign
+        else => return FormatError.InvalidCharacter, // must start with sign or UTC indicator
     }
 
     idx_ptr.* += 1;
