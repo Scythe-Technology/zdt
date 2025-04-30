@@ -17,24 +17,14 @@ const RangeError = @import("./errors.zig").RangeError;
 const TzError = @import("./errors.zig").TzError;
 const ZdtError = @import("./errors.zig").ZdtError;
 
-// TODO : revise --vv
-pub const min_year: u16 = 1; // r.d.; 0001-01-01
-pub const max_year: u16 = 9999;
-// new:
-// min: -32768
-// max: -32767
-// ----------------^^
+pub const min_year: i16 = -32768;
+pub const max_year: i16 = 32676;
 
-// TODO : revise --vv
-pub const unix_s_min: i64 = -62135596800;
-pub const unix_s_max: i64 = 253402300799;
-// new:
-// min: -1096193865600 s // -32768,1,1
-// max: 971890963200 s // 32767,1,1
-// ----------------^^
+pub const unix_s_min: i64 = -1096193865600; // -32768,1,1
+pub const unix_s_max: i64 = 971890963200; // 32767,1,1
 
 pub const epoch = Datetime{ .year = 1970, .unix_sec = 0, .utc_offset = UTCoffset.UTC };
-pub const century: u16 = 2000;
+pub const century: i16 = 2000;
 
 const s_per_minute: u8 = 60;
 const s_per_hour: u16 = 3600;
@@ -46,7 +36,7 @@ const ns_per_s: u32 = 1_000_000_000;
 const Datetime = @This();
 
 /// Year. Do not modify directly.
-year: u16 = 1, // [1, 9999]
+year: i16 = 1, // [-32768, 32676]
 
 /// Month. Do not modify directly.
 month: u8 = 1, // [1, 12]
@@ -264,7 +254,7 @@ pub const OptFields = struct {
 pub fn fromFields(fields: Fields) ZdtError!Datetime {
     _ = try fields.validate();
 
-    const d = cal.dateToRD(.{ fields.year, fields.month, fields.day });
+    const d = cal.dateToRD(.{ .year = fields.year, .month = fields.month, .day = fields.day });
     // Note : need to truncate seconds to 59 so that Unix time is 'correct'
     const s = if (fields.second == 60) 59 else fields.second;
     var dt = Datetime{
@@ -486,10 +476,10 @@ fn normalizeToUnix(dt: *Datetime) TzError!void {
 
     const s_after_midnight: i32 = @intCast(@mod(fake_unix, s_per_day));
     const days: i32 = @intCast(@divFloor(fake_unix, s_per_day));
-    const ymd: [3]u16 = cal.rdToDate(days);
-    dt.year = @intCast(ymd[0]);
-    dt.month = @intCast(ymd[1]);
-    dt.day = @intCast(ymd[2]);
+    const ymd: cal.Date = cal.rdToDate(days);
+    dt.year = @intCast(ymd.year);
+    dt.month = @intCast(ymd.month);
+    dt.day = @intCast(ymd.day);
     dt.hour = @intCast(@divFloor(s_after_midnight, s_per_hour));
     dt.minute = @intCast(@divFloor(@mod(s_after_midnight, s_per_hour), s_per_minute));
     dt.second = @intCast(@mod(s_after_midnight, s_per_minute));
