@@ -149,12 +149,12 @@ pub const Month = enum(u8) {
 
 /// Implementation of the ISO8601 leap week calendar system.
 pub const ISOCalendar = struct {
-    isoyear: u16, // [1, 9999]
+    isoyear: i16,
     isoweek: u8, // [1, 53]
     isoweekday: u8, // [1, 7]
 
     // Date of the first day of given ISO year
-    fn yearStartDate(iso_year: u16) ZdtError!Datetime {
+    fn yearStartDate(iso_year: i16) ZdtError!Datetime {
         const fourth_jan = try Datetime.fromFields(.{ .year = iso_year, .month = 1, .day = 4 });
         return fourth_jan.sub(
             Duration.fromTimespanMultiple(
@@ -169,7 +169,7 @@ pub const ISOCalendar = struct {
         const year_start = try yearStartDate(isocal.isoyear);
         return year_start.add(
             Duration.fromTimespanMultiple(
-                @as(u16, isocal.isoweekday - 1) + @as(u16, isocal.isoweek - 1) * 7,
+                @as(i16, isocal.isoweekday - 1) + @as(u16, isocal.isoweek - 1) * 7,
                 Duration.Timespan.day,
             ),
         );
@@ -180,7 +180,7 @@ pub const ISOCalendar = struct {
         if (string[4] != '-' or std.ascii.toLower(string[5]) != 'w' or string[8] != '-')
             return FormatError.InvalidFormat;
         return .{
-            .isoyear = try std.fmt.parseInt(u16, string[0..4], 10),
+            .isoyear = try std.fmt.parseInt(i16, string[0..4], 10),
             .isoweek = try std.fmt.parseInt(u8, string[6..8], 10),
             .isoweekday = try std.fmt.parseInt(u8, string[9..10], 10),
         };
@@ -215,7 +215,7 @@ pub const tz_options = union(tzOpts) {
 
 /// The fields of a datetime instance.
 pub const Fields = struct {
-    year: u16 = 1, // [1, 9999]
+    year: i16 = 1, // [1, 9999]
     month: u8 = 1, // [1, 12]
     day: u8 = 1, // [1, 32]
     hour: u8 = 0, // [0, 23]
@@ -240,7 +240,7 @@ pub const Fields = struct {
 /// Datetime fields without timezone and UTC offset. All fields optional and undefined by default.
 /// Helper for `Datetime.replace()`.
 pub const OptFields = struct {
-    year: ?u16 = null,
+    year: ?i16 = null,
     month: ?u8 = null,
     day: ?u8 = null,
     hour: ?u8 = null,
@@ -664,7 +664,7 @@ pub fn addRelative(dt: *const Datetime, rel_delta: Duration.RelativeDelta) ZdtEr
         );
 
     const days_off: i32 = @intCast(nrd.days + nrd.weeks * 7 + new_time[4]);
-    var rd_day = cal.dateToRD(.{ dt.year, @as(u16, dt.month), @as(u16, dt.day) });
+    var rd_day: cal.Date = cal.dateToRD(.{ .year = dt.year, .month = dt.month, .day = dt.day });
     rd_day = if (nrd.negative) rd_day - days_off else rd_day + days_off;
     const new_date = cal.rdToDate(rd_day);
 
@@ -812,7 +812,7 @@ pub fn previousWeekday(dt: Datetime, d: Weekday) Datetime {
 
 /// nth weekday of given month and year, returned as a Datetime.
 /// nth must be in range [1..5]; although 5 might return an error for certain year/month combinations.
-pub fn nthWeekday(year: u16, month: u8, wd: Weekday, nth: u8) ZdtError!Datetime {
+pub fn nthWeekday(year: i16, month: u8, wd: Weekday, nth: u8) ZdtError!Datetime {
     if (nth > 5 or nth == 0) return RangeError.DayOutOfRange;
     var dt = try Datetime.fromFields(.{ .year = year, .month = month });
     if (dt.weekday() != wd) dt = dt.nextWeekday(wd);
@@ -911,7 +911,7 @@ pub fn formatOffset(
 }
 
 /// Calculate the date of Easter (Gregorian calendar).
-pub fn EasterDate(year: u16) ZdtError!Datetime {
+pub fn EasterDate(year: i16) ZdtError!Datetime {
     const ymd = cal.gregorianEaster(year);
     return try Datetime.fromFields(.{
         .year = ymd[0],
@@ -924,12 +924,12 @@ pub fn EasterDate(year: u16) ZdtError!Datetime {
 ///
 /// Note that from year 1900 to 2099, 13 days must be added to the Julian
 /// calendar date to get the equivalent Gregorian calendar date.
-pub fn EasterDateJulian(year: u16) ZdtError!Datetime {
-    const ymd = cal.julianEaster(year);
+pub fn EasterDateJulian(year: i16) ZdtError!Datetime {
+    const ymd: cal.Date = cal.julianEaster(year);
     return try Datetime.fromFields(.{
-        .year = ymd[0],
-        .month = @truncate(ymd[1]),
-        .day = @truncate(ymd[2]),
+        .year = ymd.year,
+        .month = ymd.month,
+        .day = ymd.day,
     });
 }
 
