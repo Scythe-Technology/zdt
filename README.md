@@ -80,7 +80,7 @@
 Special thanks to the creators of the following resources:
 
 - inspiration for early version of string-to-datetime parser, and most of the POSIX TZ code: [leroycep/zig-tzif](https://github.com/leroycep/zig-tzif)
-- date <--> days since Unix epoch conversion, algorithms: [cassioneri/eaf](https://github.com/cassioneri/eaf) ; Zig implementation: [travisstaloch/date-zig](https://github.com/travisstaloch/date-zig)
+- date <--> days since Unix epoch conversion, algorithms: [cassioneri/eaf](https://github.com/cassioneri/eaf)
 - general support from [ziggit.dev](https://ziggit.dev/)
 
 ## Development
