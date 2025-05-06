@@ -11,6 +11,10 @@ const TzError = @import("./errors.zig").TzError;
 /// The default DST transition time is 2 am local time
 const default_transition_time: i32 = 2 * std.time.s_per_hour;
 
+/// Do not accept POSIX TZ strings longer than this.
+/// The value is arbitrary but seems reasonable.
+pub const max_string_len: usize = 64;
+
 /// Time zone rules from POSIX TZ string
 pub const PosixTz = struct {
     std_offset: i32,
@@ -74,10 +78,10 @@ pub const PosixTz = struct {
 
         /// Returned value is the Unix time of the transition in given year,
         /// including the local UTC offset (!)
-        pub fn toUnixTimeLocal(rule: Rule, year: u16) i64 {
+        pub fn toUnixTimeLocal(rule: Rule, year: i16) i64 {
             const is_leap: bool = cal.isLeapYear(year);
-            const start_of_year = cal.dateToRD([3]u16{ year, 1, 1 });
-            var t = @as(i64, start_of_year) * std.time.s_per_day;
+            const start_of_year: i32 = cal.dateToRD(.{ .year = year, .month = 1, .day = 1 });
+            var t: i64 = @as(i64, start_of_year) * std.time.s_per_day;
 
             switch (rule) {
                 .JulianDay => |j| {
@@ -89,7 +93,7 @@ pub const PosixTz = struct {
                     t += std.time.s_per_day * @as(i64, j.day) + j.time;
                 },
                 .MonthNthWeekDay => |mwd| {
-                    const days_since_epoch: i32 = cal.dateToRD([3]u16{ year, mwd.month, 1 });
+                    const days_since_epoch: i32 = cal.dateToRD(.{ .year = year, .month = mwd.month, .day = 1 });
                     const first_weekday_of_month = cal.weekdayFromUnixdays(days_since_epoch);
                     const weekday_offset_for_month = if (first_weekday_of_month <= mwd.day)
                         // the first matching weekday is during the first week of the month
@@ -127,10 +131,8 @@ pub const PosixTz = struct {
         };
         if (tz.dst_range) |range| {
             const ymd = cal.rdToDate(@truncate(@divFloor(unix_seconds, std.time.s_per_day)));
-            const year = ymd[0];
-
-            const start_dst = range.start.toUnixTimeLocal(year) - tz.std_offset;
-            const end_dst = range.end.toUnixTimeLocal(year) - tz.dst_offset.?;
+            const start_dst = range.start.toUnixTimeLocal(@as(i16, @intCast(ymd.year))) - tz.std_offset;
+            const end_dst = range.end.toUnixTimeLocal(@as(i16, @intCast(ymd.year))) - tz.dst_offset.?;
             const is_dst_all_year = range.start.isAtStartOfYear() and range.end.isAtEndOfYear();
 
             if (is_dst_all_year) {
@@ -158,6 +160,9 @@ pub const PosixTz = struct {
 /// Parse a POSIX TZ string like 'PST8PDT,M3.2.0,M11.1.0' to a set of rules and
 /// offsets from UTC.
 pub fn parsePosixTzString(string: []const u8) FormatError!PosixTz {
+    if (string.len == 0) return FormatError.EmptyString;
+    if (string.len > max_string_len) return FormatError.InvalidFormat;
+
     var result = PosixTz{ .std_designation = undefined, .std_offset = undefined };
     var idx: usize = 0;
 
@@ -408,6 +413,14 @@ test "posix TZ invalid string, only one transition rule" {
 
 test "posix TZ invalid string, transition rule but no DST" {
     try std.testing.expectError(error.InvalidFormat, parsePosixTzString("GMT,M3.2.0/2,M11.1.0/3"));
+}
+
+test "posix TZ invalid string, empty" {
+    try std.testing.expectError(error.EmptyString, parsePosixTzString(""));
+}
+
+test "posix TZ invalid string, too long" {
+    try std.testing.expectError(error.InvalidFormat, parsePosixTzString("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"));
 }
 
 test "posix TZ invalid offset hours" {
