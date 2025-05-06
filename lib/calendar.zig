@@ -244,14 +244,14 @@ pub fn dateFromUnixdays(unix_days: i32) [3]u16 {
 
 // ----------------------------------------------------------------------------
 // The following algorithms were translated from the supplemental material of
-//
+// ```
 // Neri C, Schneider L. "Euclidean affine functions and their application to calendar algorithms".
 // Softw Pract Exper. 2022;1-34.
 // DOI: 10.1002/spe.3172.
-//
+// ```
 // The C++ version can be found here:
 // <https://github.com/cassioneri/eaf/blob/main/algorithms/neri_schneider.hpp>
-//
+
 // Shift and correction constants:
 pub const S: u32 = 82;
 pub const K: u32 = 719468 + 146097 * S;
