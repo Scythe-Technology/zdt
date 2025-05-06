@@ -13,6 +13,8 @@ Types of changes
 
 ## [Unreleased]
 
+## 2025-05-06, v0.6.6
+
 ### Added
 
 - `Datetime.isLeapYear` - returns if a datetime is in a leap year
@@ -25,6 +27,11 @@ Types of changes
   - greatly enhances the range of dates that can be represented
   - is now a rather straight-forward conversion of the C++ code from the [EAF paper](https://onlinelibrary.wiley.com/doi/full/10.1002/spe.3172)
 - revised test location; internal tests are in respective zig files now
+- add string length check and maximum length for POSIX TZ strings
+
+### Fixed
+
+- extend name buffer for Timezone so that POSIX TZ strings are displayed correctly
 
 ## 2025-04-23, v0.6.5
 
