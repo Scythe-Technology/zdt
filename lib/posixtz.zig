@@ -11,6 +11,10 @@ const TzError = @import("./errors.zig").TzError;
 /// The default DST transition time is 2 am local time
 const default_transition_time: i32 = 2 * std.time.s_per_hour;
 
+/// Do not accept POSIX TZ strings longer than this.
+/// The value is arbitrary but seems reasonable.
+pub const max_string_len: usize = 64;
+
 /// Time zone rules from POSIX TZ string
 pub const PosixTz = struct {
     std_offset: i32,
@@ -156,6 +160,9 @@ pub const PosixTz = struct {
 /// Parse a POSIX TZ string like 'PST8PDT,M3.2.0,M11.1.0' to a set of rules and
 /// offsets from UTC.
 pub fn parsePosixTzString(string: []const u8) FormatError!PosixTz {
+    if (string.len == 0) return FormatError.EmptyString;
+    if (string.len > max_string_len) return FormatError.InvalidFormat;
+
     var result = PosixTz{ .std_designation = undefined, .std_offset = undefined };
     var idx: usize = 0;
 
@@ -406,6 +413,14 @@ test "posix TZ invalid string, only one transition rule" {
 
 test "posix TZ invalid string, transition rule but no DST" {
     try std.testing.expectError(error.InvalidFormat, parsePosixTzString("GMT,M3.2.0/2,M11.1.0/3"));
+}
+
+test "posix TZ invalid string, empty" {
+    try std.testing.expectError(error.EmptyString, parsePosixTzString(""));
+}
+
+test "posix TZ invalid string, too long" {
+    try std.testing.expectError(error.InvalidFormat, parsePosixTzString("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"));
 }
 
 test "posix TZ invalid offset hours" {
