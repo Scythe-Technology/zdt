@@ -17,11 +17,16 @@ const RangeError = @import("./errors.zig").RangeError;
 const TzError = @import("./errors.zig").TzError;
 const ZdtError = @import("./errors.zig").ZdtError;
 
+/// Minimum year that can be represented. The value must be positive to
+/// avoid ambiguities when parsing datetime strings.
 pub const min_year: i16 = 0;
+
+/// Maximum year that can be represented. The value is limited to 4 digits
+/// to avoid ambiguities when parsing datetime strings.
 pub const max_year: i16 = 9999;
 
-pub const unix_s_min: i64 = -719528 * @as(i64, s_per_day); // {0,1,1,0,0,0,0}
-pub const unix_s_max: i64 = (2932897 * @as(i64, s_per_day)) - 1; // {9999,12,31,23,59,59}
+pub const unix_s_min: i64 = -719528 * @as(i64, s_per_day); // 0000-01-01 00:00:00
+pub const unix_s_max: i64 = (2932897 * @as(i64, s_per_day)) - 1; // 9999-12-31 23:59:59
 
 pub const epoch = Datetime{ .year = 1970, .unix_sec = 0, .utc_offset = UTCoffset.UTC };
 pub const century: i16 = 2000;
@@ -923,7 +928,7 @@ pub fn EasterDate(year: i16) ZdtError!Datetime {
     });
 }
 
-/// Julian calendar easter date.
+/// Julian calendar Easter date.
 ///
 /// Note that from year 1900 to 2099, 13 days must be added to the Julian
 /// calendar date to get the equivalent Gregorian calendar date.
@@ -1037,7 +1042,7 @@ fn getSurroundingTimetypes(local_offset: UTCoffset, _tz: *const Timezone) TzErro
                     });
                 }
             }
-            // implicid 'else':
+            // implicit 'else':
             // if we do not have DST, are not surrounding timetypes
             return surrounding;
         },
@@ -1046,6 +1051,7 @@ fn getSurroundingTimetypes(local_offset: UTCoffset, _tz: *const Timezone) TzErro
 }
 
 // t1, t2: [hour, minute, second, nanosecond]
+// returns:  [hour, minute, second, nanosecond, day_change(0 or 1)]
 fn addTimes(t1: [4]u32, t2: [4]u32) [5]u32 {
     var new_sec: u32 = t1[2] + t2[2];
     var new_ns: u32 = t1[3] + t2[3];
@@ -1068,6 +1074,7 @@ fn addTimes(t1: [4]u32, t2: [4]u32) [5]u32 {
 }
 
 // t1, t2: [hour, minute, second, nanosecond]
+// returns:  [hour, minute, second, nanosecond, day_change(0 or 1)]
 fn subTimes(t1: [4]u32, t2: [4]u32) [5]u32 {
     var _t1 = [4]i32{
         @intCast(t1[0]), @intCast(t1[1]), @intCast(t1[2]), @intCast(t1[3]),
