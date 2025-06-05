@@ -1104,3 +1104,21 @@ fn subTimes(t1: [4]u32, t2: [4]u32) [5]u32 {
 
     return [5]u32{ @intCast(new_h), new_min, new_sec, new_ns, @intFromBool(day_change) };
 }
+
+const pg = struct {
+    const timestamp_oid = 1114;
+    const timestamptz_oid = 1184;
+    const us_from_epoch_to_y2k = 946_684_800_000_000;
+};
+
+pub fn fromPgzRow(data: []const u8, oid: i32) Datetime {
+    assert(oid == pg.timestamp_oid or oid == pg.timestamptz_oid);
+    // PostgreSQL stores times from the millenium instead of the unix timestamp.
+    const micros = std.mem.readInt(i64, data[0..8], .big) + pg.us_from_epoch_to_y2k;
+
+    return fromUnix(
+        @intCast(micros),
+        .microsecond,
+        .{ .utc_offset = UTCoffset.UTC },
+    ) catch @panic("Failed to convert binary to datetime");
+}
