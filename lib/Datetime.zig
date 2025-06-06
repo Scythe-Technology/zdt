@@ -1113,11 +1113,12 @@ const pg = struct {
 
 pub fn fromPgzRow(data: []const u8, oid: i32) Datetime {
     assert(oid == pg.timestamp_oid or oid == pg.timestamptz_oid);
+    const millenium_micros = std.mem.readInt(i64, data[0..8], .big);
     // PostgreSQL stores times from the millenium instead of the unix timestamp.
-    const micros = std.mem.readInt(i64, data[0..8], .big) + pg.us_from_epoch_to_y2k;
+    const micros: i128 = @as(i128, @intCast(millenium_micros)) + pg.us_from_epoch_to_y2k;
 
     return fromUnix(
-        @intCast(micros),
+        micros,
         .microsecond,
         .{ .utc_offset = UTCoffset.UTC },
     ) catch @panic("Failed to convert binary to datetime");
