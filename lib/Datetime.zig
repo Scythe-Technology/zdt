@@ -1111,11 +1111,20 @@ const pg = struct {
     const us_from_epoch_to_y2k = 946_684_800_000_000;
 };
 
+/// Make a datetime from postgres raw data / 8 bytes represinting an i64 (big endian).
 pub fn fromPgzRow(data: []const u8, oid: i32) !Datetime {
+    assert(data.len >= 8);
     assert(oid == pg.timestamp_oid or oid == pg.timestamptz_oid);
-    const millenium_micros = std.mem.readInt(i64, data[0..8], .big);
-    // PostgreSQL stores times from the millenium instead of the unix timestamp.
+    const millenium_micros: i64 = std.mem.readInt(i64, data[0..8], .big);
+    // PostgreSQL stores times from the millenium instead of the Unix epoch.
     const micros: i128 = @as(i128, @intCast(millenium_micros)) + pg.us_from_epoch_to_y2k;
 
-    return fromUnix(micros, .microsecond, .{ .utc_offset = UTCoffset.UTC });
+    return fromUnix(micros, .microsecond, .{ .tz = &Timezone.UTC });
+}
+
+test "datetime from postgres raw data" {
+    const have = try fromPgzRow("\x00\x00\x00\x00\x00\x00\x00\x00", 1184);
+    const want = try fromFields(.{ .year = 2000, .tz_options = .{ .tz = &Timezone.UTC } });
+
+    try std.testing.expectEqual(want, have);
 }
