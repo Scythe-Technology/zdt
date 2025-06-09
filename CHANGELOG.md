@@ -13,6 +13,10 @@ Types of changes
 
 ## [Unreleased]
 
+### Added
+
+- support for postgres / pg.zig timestamp conversion to Datetime by @brainblasted on Codeberg
+
 ## 2025-05-06, v0.6.6
 
 ### Added
