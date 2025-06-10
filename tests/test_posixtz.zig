@@ -31,7 +31,7 @@ test "posix tz has name and abbreviation" {
 }
 
 test "Japan has only std time" {
-    var tzinfo = try Tz.fromPosixTz("JST-9");
+    const tzinfo = try Tz.fromPosixTz("JST-9");
     const dt_early = try Datetime.fromFields(.{ .year = 2025, .month = 2, .tz_options = .{ .tz = &tzinfo } });
     const dt_late = try Datetime.fromFields(.{ .year = 2025, .month = 8, .tz_options = .{ .tz = &tzinfo } });
     try testing.expectEqual(9 * 3600, dt_early.utc_offset.?.seconds_east);

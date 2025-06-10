@@ -311,7 +311,8 @@ pub fn fromFields(fields: Fields) ZdtError!Datetime {
     // Now we're left with a 'real' time zone, which is more complicated.
     // We have already calculated a 'localized' Unix time, as dt.unix_sec.
     // For that, We can obtain a UTC offset, subtract it and see if we get the same datetime.
-    const local_offset = try UTCoffset.atUnixtime(dt.tz.?, dt.unix_sec);
+    const local_offset: UTCoffset = try UTCoffset.atUnixtime(dt.tz.?, dt.unix_sec);
+
     const unix_guess_1 = dt.unix_sec - local_offset.seconds_east;
     var dt_guess_1 = try Datetime.fromUnix(
         unix_guess_1,

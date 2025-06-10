@@ -286,7 +286,6 @@ pub const Tz = struct {
         if (header.counts.charcnt > 256 + 6) return TZifReadError.Malformed; // Not explicitly banned by RFC 9636 but nonsensical
 
         var __footer_data: [footer_buf_sz]u8 = std.mem.zeroes([footer_buf_sz]u8);
-        var footer: ?[]const u8 = undefined;
 
         // var dummy_tt = [1]Timetype{Timetype{ .offset = 0, .flags = 0, .name_data = [6:0]u8{ 0, 0, 0, 0, 0, 0 } }};
         var __timetypes_data: [timetypes_buf_sz]Timetype = undefined; // dummy_tt ** timetypes_buf_sz;
@@ -377,12 +376,11 @@ pub const Tz = struct {
         // Footer / POSIX TZ string
         if ((try reader.readByte()) != '\n') return TZifReadError.Malformed; // An RFC 9636 footer must start with a newline
         _ = try reader.readUntilDelimiter(&__footer_data, '\n');
-        footer = std.mem.sliceTo(__footer_data[0..], '\n');
 
         return Tz{
             .transitions = transitions,
             .timetypes = timetypes,
-            .footer = footer,
+            .footer = std.mem.sliceTo(__footer_data[0..], '\n'),
             .__transitions_data = __transitions_data,
             .__timetypes_data = __timetypes_data,
             .__footer_data = __footer_data,
