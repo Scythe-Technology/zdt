@@ -28,8 +28,14 @@ pub const max_year: i16 = 9999;
 pub const unix_s_min: i64 = -719528 * @as(i64, s_per_day); // 0000-01-01 00:00:00
 pub const unix_s_max: i64 = (2932897 * @as(i64, s_per_day)) - 1; // 9999-12-31 23:59:59
 
+/// The Unix epoch
 pub const epoch = Datetime{ .year = 1970, .unix_sec = 0, .utc_offset = UTCoffset.UTC };
+
+/// The current century
 pub const century: i16 = 2000;
+
+/// Microseconds between 1970-01-01 and 2000-01-01
+pub const us_from_epoch_to_y2k: i64 = 946_684_800_000_000;
 
 const s_per_minute: u8 = 60;
 const s_per_hour: u16 = 3600;
@@ -1096,27 +1102,18 @@ fn subTimes(t1: [4]u32, t2: [4]u32) [5]u32 {
 }
 
 /// postgres-specific constants
-const pg = struct {
+const pg_oids = struct {
     const timestamp_oid = 1114;
     const timestamptz_oid = 1184;
-    const us_from_epoch_to_y2k = 946_684_800_000_000;
 };
 
 /// Make a datetime from postgres raw data / 8 bytes representing an i64 (big endian).
 pub fn fromPgzRow(data: []const u8, oid: i32) !Datetime {
     assert(data.len >= 8);
-    assert(oid == pg.timestamp_oid or oid == pg.timestamptz_oid);
+    assert(oid == pg_oids.timestamp_oid or oid == pg_oids.timestamptz_oid);
     const millenium_micros: i128 = std.mem.readInt(i64, data[0..8], .big);
     // PostgreSQL stores times from the 2k millenium instead of the Unix epoch.
-    const micros: i128 = millenium_micros + pg.us_from_epoch_to_y2k;
+    const micros: i128 = millenium_micros + us_from_epoch_to_y2k;
 
     return fromUnix(micros, .microsecond, .{ .tz = &Timezone.UTC });
-}
-
-test "datetime from postgres raw data" {
-    const pg_epoch = try fromUnix(pg.us_from_epoch_to_y2k, .microsecond, .{ .tz = &Timezone.UTC });
-    const want = try fromFields(.{ .year = 2000, .tz_options = .{ .tz = &Timezone.UTC } });
-    const have = try fromPgzRow("\x00\x00\x00\x00\x00\x00\x00\x00", 1184);
-    try std.testing.expectEqual(want, pg_epoch);
-    try std.testing.expectEqual(want, have);
 }

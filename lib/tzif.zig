@@ -138,6 +138,7 @@ pub const TzAlloc = struct {
         while (i < header.counts.timecnt) : (i += 1) {
             const tt = try reader.readByte();
             if (tt >= timetypes.len) return TZifReadError.Malformed; // RFC 9636: Each type index MUST be in the range [0, "typecnt" - 1]
+            // TODO : the following is unnecessary since we have the index in timetype_idx:
             transitions[i].timetype = &timetypes[tt];
         }
 
@@ -226,7 +227,8 @@ pub const TzAlloc = struct {
         tz.allocator.free(tz.transitions);
         tz.allocator.free(tz.timetypes);
 
-        // set empty slices to prevent a segfault if the tz is used after deinit
+        // Set empty slices to prevent a segfault if the tz is used after deinit.
+        // Note that this gives undefiend behavior if the tz is used anyway!
         tz.transitions = &.{};
         tz.timetypes = &.{Timetype{ .offset = 0, .flags = 0, .name_data = [6:0]u8{ 0, 0, 0, 0, 0, 0 } }};
     }
@@ -374,7 +376,7 @@ pub const Tz = struct {
         if ((try reader.readByte()) != '\n') return TZifReadError.Malformed; // An RFC 9636 footer must start with a newline
         _ = try reader.readUntilDelimiter(&__footer_data, '\n');
 
-        // TODO : the slices (pointers!) in the result struct might point to
+        // TODO : the slices (pointers!) in the result struct *might* point to
         // local memory of this function.
         // It might be better to store the number of transitions / timetypes instead of the pointers.
         return Tz{
