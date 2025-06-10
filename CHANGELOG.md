@@ -13,6 +13,17 @@ Types of changes
 
 ## [Unreleased]
 
+## 2025-06-10, v0.6.7
+
+### Added
+
+- support for postgres / pg.zig timestamp conversion to Datetime by @brainblasted on Codeberg
+
+### Fixed
+
+- pointer-to-temporary-memory bug in `getSurroundingTimetypes`; fixed-size tzif rule. Fixed by using the timetype from the array (`__data...`) instead of trying to access the slice.
+- pointer-to-temporary-memory bug in `getSurroundingTimetypes`; POSIX TZ rule. Fixed by returning a concrete type (3-element array of Timetype) instead of a pointer type (3-element array of pointers to Timetype).
+
 ## 2025-05-06, v0.6.6
 
 ### Added
