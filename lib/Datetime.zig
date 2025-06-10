@@ -25,8 +25,11 @@ pub const min_year: i16 = 0;
 /// to avoid ambiguities when parsing datetime strings.
 pub const max_year: i16 = 9999;
 
-pub const unix_s_min: i64 = -719528 * @as(i64, s_per_day); // 0000-01-01 00:00:00
-pub const unix_s_max: i64 = (2932897 * @as(i64, s_per_day)) - 1; // 9999-12-31 23:59:59
+/// 0000-01-01 00:00:00
+pub const unix_s_min: i64 = -719528 * @as(i64, s_per_day);
+
+/// 9999-12-31 23:59:59
+pub const unix_s_max: i64 = (2932897 * @as(i64, s_per_day)) - 1;
 
 /// The Unix epoch
 pub const epoch = Datetime{ .year = 1970, .unix_sec = 0, .utc_offset = UTCoffset.UTC };
