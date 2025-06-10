@@ -1021,7 +1021,7 @@ fn getSurroundingTimetypes(local_offset: UTCoffset, _tz: *const Timezone) TzErro
                         @as(u64, @intCast(idx - 1))
                     ].timetype_idx
                 ];
-            if (idx > 0 and idx < _tz.rules.tzif_fixedsize.transitions.len - 1)
+            if (idx > 0 and idx < _tz.rules.tzif_fixedsize.n_transitions - 1)
                 surrounding[2] = _tz.rules.tzif_fixedsize.__timetypes_data[
                     _tz.rules.tzif_fixedsize.__transitions_data[
                         @as(u64, @intCast(idx + 1))

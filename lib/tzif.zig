@@ -238,12 +238,11 @@ pub const TzAlloc = struct {
 
 /// TZif data structure that requires no heap memory allocation
 pub const Tz = struct {
-    transitions: []const Transition, // slice just points to __transition_data
-    timetypes: []const Timetype, //
-    footer: ?[]const u8, //
+    n_transitions: usize,
+    n_timetypes: usize,
     __transitions_data: [transitions_buf_sz]Transition,
     __timetypes_data: [timetypes_buf_sz]Timetype,
-    __footer_data: [footer_buf_sz]u8 = std.mem.zeroes([footer_buf_sz]u8),
+    __footer_data: [footer_buf_sz]u8 = std.mem.zeroes([footer_buf_sz]u8), // newline-terminated
     // h: Header,
 
     /// Parse a IANA db TZif file, allocator-free. Only accepts version 2+ files.
@@ -330,11 +329,7 @@ pub const Tz = struct {
 
         // For each transition, set the index of the appropriate timetype
         i = 0;
-        while (i < header.counts.timecnt) : (i += 1) {
-            // TODO : pointer to timetype should not be needed here:
-            __transitions_data[i].timetype = &__timetypes_data[tt_idx[i]];
-            __transitions_data[i].timetype_idx = tt_idx[i];
-        }
+        while (i < header.counts.timecnt) : (i += 1) __transitions_data[i].timetype_idx = tt_idx[i];
 
         // Iterate through the timetypes again, setting the designator names
         i = 0;
@@ -376,14 +371,9 @@ pub const Tz = struct {
         if ((try reader.readByte()) != '\n') return TZifReadError.Malformed; // An RFC 9636 footer must start with a newline
         _ = try reader.readUntilDelimiter(&__footer_data, '\n');
 
-        // TODO : the slices (pointers!) in the result struct *might* point to
-        // local memory of this function.
-        //
-        // It might be better to store the number of transitions / timetypes instead of the pointers.
         return Tz{
-            .transitions = __transitions_data[0..header.counts.timecnt],
-            .timetypes = __timetypes_data[0..header.counts.typecnt],
-            .footer = std.mem.sliceTo(__footer_data[0..], '\n'),
+            .n_transitions = header.counts.timecnt,
+            .n_timetypes = header.counts.typecnt,
             .__transitions_data = __transitions_data,
             .__timetypes_data = __timetypes_data,
             .__footer_data = __footer_data,
@@ -438,10 +428,11 @@ test "load a lot of TZif" {
 
             try in_stream.seekTo(0);
             const tzif_tz_noalloc = try Tz.parse(in_stream.reader());
+            const foot = std.mem.sliceTo(tzif_tz_noalloc.__footer_data[0..], '\n');
 
-            try testing.expectEqual(tzif_tz_noalloc.footer.?.len, tzif_tz.footer.?.len);
-            try testing.expectEqual(tzif_tz_noalloc.transitions.len, tzif_tz.transitions.len);
-            try testing.expectEqual(tzif_tz_noalloc.timetypes.len, tzif_tz.timetypes.len);
+            try testing.expectEqual(foot.len, tzif_tz.footer.?.len);
+            try testing.expectEqual(tzif_tz_noalloc.n_transitions, tzif_tz.transitions.len);
+            try testing.expectEqual(tzif_tz_noalloc.n_timetypes, tzif_tz.timetypes.len);
         }
     }
     try testing.expect(sz_footer <= footer_buf_sz);
