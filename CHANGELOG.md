@@ -13,6 +13,21 @@ Types of changes
 
 ## [Unreleased]
 
+## 2025-06-10, v0.6.8
+
+### Changed
+
+- Re-enable all tests that were still disabled in v0.6.7.
+
+### Fixed
+
+- Python not found error in gen_tzdb script.
+
+### Removed
+
+- Slices from zero-allocation timezone type. This is now exclusively handled by keeping indices around or using sentinals.
+- Pointer to timetype in the normal timezone type that takes an allocator. This allows to use a common type for both zero-allocation timezone transitions and normal timezone transitions.
+
 ## 2025-06-10, v0.6.7
 
 ### Added
