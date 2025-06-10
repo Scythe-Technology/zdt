@@ -984,9 +984,9 @@ pub fn format(
 
 /// Surrounding timetypes at a given transition index. This index might be
 /// negative to indicate out-of-range values.
-fn getSurroundingTimetypes(local_offset: UTCoffset, _tz: *const Timezone) TzError![3]?*tzif.Timetype {
+fn getSurroundingTimetypes(local_offset: UTCoffset, _tz: *const Timezone) TzError![3]?*const tzif.Timetype {
     const idx = local_offset.__transition_index;
-    var surrounding = [3]?*tzif.Timetype{ null, null, null };
+    var surrounding = [3]?*const tzif.Timetype{ null, null, null };
     const dummy: [6:0]u8 = [6:0]u8{ 0, 0, 0, 0, 0, 0 };
     switch (_tz.rules) {
         .tzif => {
@@ -1000,47 +1000,35 @@ fn getSurroundingTimetypes(local_offset: UTCoffset, _tz: *const Timezone) TzErro
         },
         .tzif_fixedsize => {
             if (idx > 0)
-                surrounding[1] = _tz.rules.tzif_fixedsize.transitions[@as(u64, @intCast(idx))].timetype;
+                surrounding[1] = &_tz.rules.tzif_fixedsize.__timetypes_data[
+                    _tz.rules.tzif_fixedsize.__transitions_data[
+                        @as(u64, @intCast(idx))
+                    ].timetype_idx
+                ];
             if (idx >= 1)
-                surrounding[0] = _tz.rules.tzif_fixedsize.transitions[@as(u64, @intCast(idx - 1))].timetype;
+                surrounding[0] = &_tz.rules.tzif_fixedsize.__timetypes_data[
+                    _tz.rules.tzif_fixedsize.__transitions_data[
+                        @as(u64, @intCast(idx - 1))
+                    ].timetype_idx
+                ];
             if (idx > 0 and idx < _tz.rules.tzif_fixedsize.transitions.len - 1)
-                surrounding[2] = _tz.rules.tzif_fixedsize.transitions[@as(u64, @intCast(idx + 1))].timetype;
+                surrounding[2] = &_tz.rules.tzif_fixedsize.__timetypes_data[
+                    _tz.rules.tzif_fixedsize.__transitions_data[
+                        @as(u64, @intCast(idx + 1))
+                    ].timetype_idx
+                ];
             return surrounding;
         },
         .posixtz => {
             if (_tz.rules.posixtz.dst_offset) |dst_offset| { // do we have DST at all ?
                 if (local_offset.is_dst) {
-                    surrounding[0] = @constCast(&tzif.Timetype{
-                        .offset = _tz.rules.posixtz.std_offset,
-                        .flags = 2,
-                        .name_data = dummy,
-                    });
-                    surrounding[1] = @constCast(&tzif.Timetype{
-                        .offset = dst_offset,
-                        .flags = 1,
-                        .name_data = dummy,
-                    });
-                    surrounding[2] = @constCast(&tzif.Timetype{
-                        .offset = _tz.rules.posixtz.std_offset,
-                        .flags = 2,
-                        .name_data = dummy,
-                    });
+                    surrounding[0] = (&tzif.Timetype{ .offset = _tz.rules.posixtz.std_offset, .flags = 2, .name_data = dummy });
+                    surrounding[1] = (&tzif.Timetype{ .offset = dst_offset, .flags = 1, .name_data = dummy });
+                    surrounding[2] = (&tzif.Timetype{ .offset = _tz.rules.posixtz.std_offset, .flags = 2, .name_data = dummy });
                 } else {
-                    surrounding[0] = @constCast(&tzif.Timetype{
-                        .offset = dst_offset,
-                        .flags = 1,
-                        .name_data = dummy,
-                    });
-                    surrounding[1] = @constCast(&tzif.Timetype{
-                        .offset = _tz.rules.posixtz.std_offset,
-                        .flags = 2,
-                        .name_data = dummy,
-                    });
-                    surrounding[2] = @constCast(&tzif.Timetype{
-                        .offset = dst_offset,
-                        .flags = 1,
-                        .name_data = dummy,
-                    });
+                    surrounding[0] = (&tzif.Timetype{ .offset = dst_offset, .flags = 1, .name_data = dummy });
+                    surrounding[1] = (&tzif.Timetype{ .offset = _tz.rules.posixtz.std_offset, .flags = 2, .name_data = dummy });
+                    surrounding[2] = (&tzif.Timetype{ .offset = dst_offset, .flags = 1, .name_data = dummy });
                 }
             }
             // implicit 'else':

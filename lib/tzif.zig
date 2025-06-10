@@ -28,7 +28,9 @@ const transitions_buf_sz: usize = 310;
 /// A transition to a new timetype
 pub const Transition = struct {
     ts: i64,
+    // TODO : get rid of the pointer; this doesn't work well for the fixed-size tz
     timetype: *Timetype,
+    timetype_idx: usize,
 };
 
 /// A specific UTC offset within a timezone. Referenced by a Transition.
@@ -324,10 +326,12 @@ pub const Tz = struct {
         const designators = designators_data[0..header.counts.charcnt];
         if (designators[designators.len - 1] != 0) return TZifReadError.Malformed; // RFC 9636: charcnt [...] includes the trailing NUL (0x00) octet
 
-        // For each transition, set the pointer to the appropriate timetype
+        // For each transition, set the index of the appropriate timetype
         i = 0;
         while (i < header.counts.timecnt) : (i += 1) {
+            // TODO : pointer to timetype should not be needed here:
             __transitions_data[i].timetype = &__timetypes_data[tt_idx[i]];
+            __transitions_data[i].timetype_idx = tt_idx[i];
         }
 
         // Iterate through the timetypes again, setting the designator names
@@ -370,6 +374,9 @@ pub const Tz = struct {
         if ((try reader.readByte()) != '\n') return TZifReadError.Malformed; // An RFC 9636 footer must start with a newline
         _ = try reader.readUntilDelimiter(&__footer_data, '\n');
 
+        // TODO : the slices (pointers!) in the result struct might point to
+        // local memory of this function.
+        // It might be better to store the number of transitions / timetypes instead of the pointers.
         return Tz{
             .transitions = __transitions_data[0..header.counts.timecnt],
             .timetypes = __timetypes_data[0..header.counts.typecnt],
