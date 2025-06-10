@@ -162,9 +162,15 @@ test "embedded tzdata" {
     try testing.expectError(ZdtError.TzUndefined, err);
 }
 
-test "offset at" {
+test "fixed size tz" {
     var tzinfo = try Tz.fromTzdata("Europe/Berlin", null);
     defer tzinfo.deinit();
+
+    var tzinfo_ = try Tz.fromTzdata("Europe/Berlin", testing.allocator);
+    defer tzinfo_.deinit();
+
+    try testing.expectEqual(tzinfo_.rules.tzif.transitions.len, tzinfo.rules.tzif_fixedsize.transitions.len);
+    try testing.expectEqual(tzinfo_.rules.tzif.timetypes.len, tzinfo.rules.tzif_fixedsize.timetypes.len);
 
     var off = try UTCoffset.atUnixtime(&tzinfo, 1735686000); // 2025-01-01
     try testing.expectEqual(3600, off.seconds_east);
