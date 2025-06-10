@@ -378,6 +378,7 @@ pub const Tz = struct {
 
         // TODO : the slices (pointers!) in the result struct *might* point to
         // local memory of this function.
+        //
         // It might be better to store the number of transitions / timetypes instead of the pointers.
         return Tz{
             .transitions = __transitions_data[0..header.counts.timecnt],
