@@ -85,13 +85,13 @@ pub fn atUnixtime(tz: *const Timezone, unixtime: i64) TzError!UTCoffset {
                     // If it has DST, make a UTC offset directly
                     if (psxtz.dst_offset) |_| return psxtz.utcOffsetAt(unixtime);
                     // ...otherwise use existing timetype
-                    break :blk tz.rules.tzif.transitions[tz.rules.tzif.transitions.len - 1].timetype.*;
+                    break :blk tz.rules.tzif.timetypes[tz.rules.tzif.transitions[tz.rules.tzif.transitions.len - 1].timetype_idx];
                 },
 
                 // Unix time precedes defined range of transitions => use first entry in timetypes (likely a LMT)
                 -3 => tz.rules.tzif.timetypes[0],
 
-                else => tz.rules.tzif.transitions[@intCast(idx)].timetype.*,
+                else => tz.rules.tzif.timetypes[tz.rules.tzif.transitions[@intCast(idx)].timetype_idx],
             };
 
             return .{

@@ -27,9 +27,9 @@ const transitions_buf_sz: usize = 310;
 
 /// A transition to a new timetype
 pub const Transition = struct {
+    // Unix timestamp when the transition happens:
     ts: i64,
-    // TODO : get rid of the pointer; this doesn't work well for the fixed-size tz
-    timetype: *Timetype,
+    // Index of the according timetype in the timetype array or slice:
     timetype_idx: usize,
 };
 
@@ -39,7 +39,7 @@ pub const Timetype = struct {
     flags: u8,
     name_data: [6:0]u8,
 
-    pub fn designation(tt: *Timetype) []const u8 {
+    pub fn designation(tt: *const Timetype) []const u8 {
         return std.mem.sliceTo(tt.name_data[0..], 0);
     }
 
@@ -139,7 +139,8 @@ pub const TzAlloc = struct {
             const tt = try reader.readByte();
             if (tt >= timetypes.len) return TZifReadError.Malformed; // RFC 9636: Each type index MUST be in the range [0, "typecnt" - 1]
             // TODO : the following is unnecessary since we have the index in timetype_idx:
-            transitions[i].timetype = &timetypes[tt];
+            // transitions[i].timetype = &timetypes[tt];
+            transitions[i].timetype_idx = tt;
         }
 
         // Parse time types
@@ -243,7 +244,6 @@ pub const Tz = struct {
     __transitions_data: [transitions_buf_sz]Transition,
     __timetypes_data: [timetypes_buf_sz]Timetype,
     __footer_data: [footer_buf_sz]u8 = std.mem.zeroes([footer_buf_sz]u8), // newline-terminated
-    // h: Header,
 
     /// Parse a IANA db TZif file, allocator-free. Only accepts version 2+ files.
     pub fn parse(reader: anytype) TZifReadError!Tz {
@@ -292,21 +292,20 @@ pub const Tz = struct {
         var __timetypes_data: [timetypes_buf_sz]Timetype = undefined;
         var __transitions_data: [transitions_buf_sz]Transition = undefined;
 
-        // Parse transitions
+        // Parse transitions.
         assert(header.counts.timecnt <= transitions_buf_sz);
         var i: usize = 0;
         while (i < header.counts.timecnt) : (i += 1) {
             __transitions_data[i].ts = try reader.readInt(i64, .big);
         }
 
-        // each transition has an index that specifies the according timetype
+        // Each transition has an index that specifies the according timetype.
         i = 0;
-        var tt_idx: [transitions_buf_sz]u8 = undefined;
         while (i < header.counts.timecnt) : (i += 1) {
-            tt_idx[i] = try reader.readByte();
+            __transitions_data[i].timetype_idx = try reader.readByte();
         }
 
-        // Parse time types
+        // Parse time types.
         assert(header.counts.typecnt <= timetypes_buf_sz);
         i = 0;
         while (i < header.counts.typecnt) : (i += 1) {
@@ -327,10 +326,6 @@ pub const Tz = struct {
         const designators = designators_data[0..header.counts.charcnt];
         if (designators[designators.len - 1] != 0) return TZifReadError.Malformed; // RFC 9636: charcnt [...] includes the trailing NUL (0x00) octet
 
-        // For each transition, set the index of the appropriate timetype
-        i = 0;
-        while (i < header.counts.timecnt) : (i += 1) __transitions_data[i].timetype_idx = tt_idx[i];
-
         // Iterate through the timetypes again, setting the designator names
         i = 0;
         while (i < header.counts.typecnt) : (i += 1) {
@@ -343,11 +338,12 @@ pub const Tz = struct {
         }
 
         // Skip leap seconds / correction since those are not time-zone specific;
-        // zdt provides this timezone-independent
-        // - move file pointer by header.counts.leapcount * 12
+        // zdt provides this timezone-independent.
+        //
+        // Move file pointer by header.counts.leapcount * 12.
         try reader.skipBytes(@as(u64, header.counts.leapcnt * 12), .{});
 
-        // Parse standard/wall indicators
+        // Parse standard/wall indicators.
         i = 0;
         while (i < header.counts.isstdcnt) : (i += 1) {
             const stdtime = try reader.readByte();
@@ -356,7 +352,7 @@ pub const Tz = struct {
             }
         }
 
-        // Parse UT/local indicators
+        // Parse UT/local indicators.
         i = 0;
         while (i < header.counts.isutcnt) : (i += 1) {
             const ut = try reader.readByte();
@@ -367,7 +363,7 @@ pub const Tz = struct {
             }
         }
 
-        // Footer / POSIX TZ string
+        // Footer / POSIX TZ string.
         if ((try reader.readByte()) != '\n') return TZifReadError.Malformed; // An RFC 9636 footer must start with a newline
         _ = try reader.readUntilDelimiter(&__footer_data, '\n');
 
@@ -391,7 +387,8 @@ test "slim" {
     defer tz.deinit();
 
     try std.testing.expectEqual(tz.transitions.len, 9);
-    try std.testing.expect(std.mem.eql(u8, tz.transitions[3].timetype.designation(), "JDT"));
+    var tt = tz.timetypes[tz.transitions[3].timetype_idx];
+    try std.testing.expect(std.mem.eql(u8, tt.designation(), "JDT"));
     try std.testing.expectEqual(tz.transitions[5].ts, -620298000); // 1950-05-06 15:00:00 UTC
 }
 
@@ -403,7 +400,8 @@ test "fat" {
     defer tz.deinit();
 
     try std.testing.expectEqual(tz.transitions.len, 8);
-    try std.testing.expect(std.mem.eql(u8, tz.transitions[3].timetype.designation(), "+05"));
+    var tt = tz.timetypes[tz.transitions[3].timetype_idx];
+    try std.testing.expect(std.mem.eql(u8, tt.designation(), "+05"));
     try std.testing.expectEqual(tz.transitions[4].ts, 1268251224); // 2010-03-10 20:00:00 UTC
 }
 

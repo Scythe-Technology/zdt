@@ -156,10 +156,14 @@ test "fixed size tz" {
     var tzinfo_fixed = try Tz.fromTzdata("Europe/Berlin", null);
     defer tzinfo_fixed.deinit();
 
-    try testing.expectEqual(tzinfo_normal.rules.tzif.transitions.len, tzinfo_fixed.rules.tzif_fixedsize.n_transitions);
-    try testing.expectEqual(tzinfo_normal.rules.tzif.timetypes.len, tzinfo_fixed.rules.tzif_fixedsize.n_timetypes);
-    // log.warn("{any}", .{tzinfo_normal.rules.tzif.timetypes[7]});
-    // log.warn("{any}", .{tzinfo_fixed.rules.tzif_fixedsize.timetypes[7]});
+    try testing.expectEqual(
+        tzinfo_normal.rules.tzif.transitions.len,
+        tzinfo_fixed.rules.tzif_fixedsize.n_transitions,
+    );
+    try testing.expectEqual(
+        tzinfo_normal.rules.tzif.timetypes.len,
+        tzinfo_fixed.rules.tzif_fixedsize.n_timetypes,
+    );
 
     var off = try UTCoffset.atUnixtime(&tzinfo_fixed, 1735686000); // 2025-01-01
     try testing.expectEqual(3600, off.seconds_east);
