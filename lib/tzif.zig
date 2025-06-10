@@ -138,8 +138,6 @@ pub const TzAlloc = struct {
         while (i < header.counts.timecnt) : (i += 1) {
             const tt = try reader.readByte();
             if (tt >= timetypes.len) return TZifReadError.Malformed; // RFC 9636: Each type index MUST be in the range [0, "typecnt" - 1]
-            // TODO : the following is unnecessary since we have the index in timetype_idx:
-            // transitions[i].timetype = &timetypes[tt];
             transitions[i].timetype_idx = tt;
         }
 
