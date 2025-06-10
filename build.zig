@@ -1,6 +1,6 @@
 //! build steps:
 //! ---
-//! `tests`              - run unit tests
+//! `test`               - run unit tests
 //! `examples`           - build examples
 //! `docs`               - run autodoc generation
 //! `update-tzdb`        - retreive version of tzdata from local copy and set in zig file
