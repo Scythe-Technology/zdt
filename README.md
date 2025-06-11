@@ -8,9 +8,9 @@
 
 ## Core Features
 
-- datetime - including duration arithmetic
-- timezones - IANA tzdb / TZif, POSIX, fixed offsets
-- parsers/formatters - ISO8601 (datetime and durations), custom datetime parsing/formatting à la `strptime` / `strftime`
+- **datetime** - including **duration** arithmetic
+- **timezones** - IANA tzdb / TZif, POSIX, fixed offsets
+- **parsers/formatters** - ISO8601 (datetime and durations), custom datetime parsing/formatting à la `strptime` / `strftime`
 
 ## Resources
 

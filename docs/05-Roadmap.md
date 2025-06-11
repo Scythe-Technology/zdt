@@ -6,6 +6,8 @@
 
 ## unspecified
 
+- host/run docs and CI on codeberg
+
 - experiment with comptime-generation of timezone database
 
 - iso-caledar parsing / formatting with %G %V %u directives
@@ -22,4 +24,4 @@
 
 ## see also
 
-- [issues](https://github.com/FObersteiner/zdt/issues)
+- [issues](https://codeberg.org/FObersteiner/zdt/issues)
