@@ -13,6 +13,14 @@ Types of changes
 
 ## [Unreleased]
 
+### Added
+
+- `zdt-types` example, size of the timezone database
+
+### Fixed
+
+- `zdt-types` example, size of `UTCOffset`
+
 ## 2025-06-10, v0.6.8
 
 ### Changed

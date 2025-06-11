@@ -4,7 +4,7 @@
 
 const std = @import("std");
 
-pub fn sizeOftzdata() usize {
+pub fn sizeOfTZdata() usize {
     var s: usize = 0;
     for (tzdata.keys()) |zone| {
         if (tzdata.get(zone)) |TZifBytes| s += TZifBytes.len;
