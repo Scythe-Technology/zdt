@@ -10,9 +10,9 @@
 
 - experiment with comptime-generation of timezone database
 
-- iso-caledar parsing / formatting with %G %V %u directives
+- iso-caledar parsing and formatting with %G %V %u directives
 
-- improve parser flagging
+- improve parser flagging?
 
 - Windows: DST disabled tz (#1)
 
