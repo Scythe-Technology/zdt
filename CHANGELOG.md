@@ -13,6 +13,8 @@ Types of changes
 
 ## [Unreleased]
 
+## 2025-06-18, v0.6.9
+
 ### Added
 
 - Datetime formatter / printing: add option to print any number of digits (0-9) for the fractional seconds by using the `{s:.n}` notation, with `n` specifying the number of digits.
