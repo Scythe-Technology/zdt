@@ -58,6 +58,7 @@ Types of changes
 - `Datetime.isLeapYear` - returns if a datetime is in a leap year
 - `Datetime.isLeapMonth` - returns if a datetime is in a February of a leap year
 - more tests for the calendaric calculations
+- string length check and maximum length for POSIX TZ strings
 
 ### Changed
 
@@ -65,7 +66,6 @@ Types of changes
   - greatly enhances the range of dates that can be represented
   - is now a rather straight-forward conversion of the C++ code from the [EAF paper](https://onlinelibrary.wiley.com/doi/full/10.1002/spe.3172)
 - revised test location; internal tests are in respective zig files now
-- add string length check and maximum length for POSIX TZ strings
 
 ### Fixed
 
