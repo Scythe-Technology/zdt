@@ -123,44 +123,199 @@ test "total days" {
     try testing.expectEqual(1.0 + 123456789.0 / 86400000000000.0, precise_td.totalDays());
 }
 
-test "add durations" {
+test "add durations, basic" {
     var a = Duration{ .__sec = 1 };
     var b = Duration{ .__sec = 1 };
-    var c = a.add(b);
+    var c = try a.add(b);
+    var d = a.addClip(b);
     try testing.expectEqual(@as(i64, 2), c.__sec);
     try testing.expectEqual(@as(u32, 0), c.__nsec);
+    try testing.expectEqual(@as(i64, 2), d.__sec);
+    try testing.expectEqual(@as(u32, 0), d.__nsec);
 
     a = Duration{ .__sec = 1 };
     b = Duration{ .__nsec = 1 };
-    c = a.add(b);
+    c = try a.add(b);
+    d = a.addClip(b);
     try testing.expectEqual(@as(i64, 1), c.__sec);
     try testing.expectEqual(@as(u32, 1), c.__nsec);
+    try testing.expectEqual(@as(i64, 1), d.__sec);
+    try testing.expectEqual(@as(u32, 1), d.__nsec);
 
     a = Duration{ .__nsec = 500_000_000 };
     b = Duration{ .__nsec = 500_000_314 };
-    c = a.add(b);
+    c = try a.add(b);
+    d = a.addClip(b);
     try testing.expectEqual(@as(i64, 1), c.__sec);
     try testing.expectEqual(@as(u32, 314), c.__nsec);
+    try testing.expectEqual(@as(i64, 1), d.__sec);
+    try testing.expectEqual(@as(u32, 314), d.__nsec);
 }
 
-test "sub durations" {
+test "add durations, edge cases" {
+    // Test overflow to RangeError for add()
+    var max_dur = Duration{ .__sec = Duration.max_sec, .__nsec = 999_999_999 };
+    const one_ns = Duration{ .__nsec = 1 };
+    try testing.expectError(error.SecondOutOfRange, max_dur.add(one_ns));
+
+    var min_dur = Duration{ .__sec = Duration.min_sec, .__nsec = 0 };
+    const neg_one_ns = Duration{ .__sec = -1, .__nsec = 999_999_999 };
+    try testing.expectError(error.SecondOutOfRange, min_dur.add(neg_one_ns));
+
+    // Test maximum positive + maximum positive overflow
+    var max_sec_dur = Duration{ .__sec = Duration.max_sec };
+    try testing.expectError(error.SecondOutOfRange, max_sec_dur.add(max_sec_dur));
+
+    // Test minimum negative + minimum negative overflow
+    var min_sec_dur = Duration{ .__sec = Duration.min_sec };
+    try testing.expectError(error.SecondOutOfRange, min_sec_dur.add(min_sec_dur));
+
+    // Test nanosecond overflow that causes second increment beyond max
+    var almost_max = Duration{ .__sec = Duration.max_sec, .__nsec = 500_000_000 };
+    const half_sec_ns = Duration{ .__nsec = 500_000_000 };
+    try testing.expectError(error.SecondOutOfRange, almost_max.add(half_sec_ns));
+
+    // Test boundary case: exactly at max must work
+    var at_max = Duration{ .__sec = Duration.max_sec - 1, .__nsec = 999_999_999 };
+    var result = try at_max.add(one_ns);
+    try testing.expectEqual(Duration.max_sec, result.__sec);
+    try testing.expectEqual(@as(u32, 0), result.__nsec);
+
+    // Test boundary case: exactly at min must work
+    var at_min = Duration{ .__sec = Duration.min_sec + 1, .__nsec = 0 };
+    const neg_one_sec = Duration{ .__sec = -1 };
+    result = try at_min.add(neg_one_sec);
+    try testing.expectEqual(Duration.min_sec, result.__sec);
+    try testing.expectEqual(@as(u32, 0), result.__nsec);
+
+    // Test addClip() clamps to max_sec
+    var clipped = max_dur.addClip(one_ns);
+    try testing.expectEqual(Duration.max_sec, clipped.__sec);
+    try testing.expectEqual(@as(u32, 0), clipped.__nsec);
+
+    // Test addClip() clamps to min_sec
+    clipped = min_dur.addClip(neg_one_ns);
+    try testing.expectEqual(Duration.min_sec, clipped.__sec);
+    try testing.expectEqual(@as(u32, 999_999_999), clipped.__nsec);
+
+    // Test addClip() with nanosecond overflow causing clipping
+    clipped = almost_max.addClip(half_sec_ns);
+    try testing.expectEqual(Duration.max_sec, clipped.__sec);
+    try testing.expectEqual(@as(u32, 0), clipped.__nsec);
+
+    // Test zero addition edge cases
+    const zero = Duration{};
+    result = try max_dur.add(zero);
+    try testing.expectEqual(Duration.max_sec, result.__sec);
+    try testing.expectEqual(@as(u32, 999_999_999), result.__nsec);
+
+    result = try min_dur.add(zero);
+    try testing.expectEqual(Duration.min_sec, result.__sec);
+    try testing.expectEqual(@as(u32, 0), result.__nsec);
+}
+
+test "subtract durations, basic" {
     var a = Duration{ .__sec = 1 };
     var b = Duration{ .__sec = 1 };
-    var c = a.sub(b);
+    var c = try a.sub(b);
+    var d = a.subClip(b);
     try testing.expectEqual(@as(i64, 0), c.__sec);
     try testing.expectEqual(@as(u32, 0), c.__nsec);
+    try testing.expectEqual(@as(i64, 0), d.__sec);
+    try testing.expectEqual(@as(u32, 0), d.__nsec);
 
     a = Duration{ .__sec = 1 };
     b = Duration{ .__nsec = 1 };
-    c = a.sub(b);
+    c = try a.sub(b);
+    d = a.subClip(b);
     try testing.expectEqual(@as(i64, 0), c.__sec);
     try testing.expectEqual(@as(u32, 999_999_999), c.__nsec);
+    try testing.expectEqual(@as(i64, 0), d.__sec);
+    try testing.expectEqual(@as(u32, 999_999_999), d.__nsec);
 
     a = Duration{ .__nsec = 500_000_000 };
     b = Duration{ .__nsec = 500_000_314 };
-    c = a.sub(b);
+    c = try a.sub(b);
+    d = a.subClip(b);
     try testing.expectEqual(@as(i64, -1), c.__sec);
     try testing.expectEqual(@as(u32, 999999686), c.__nsec);
+    try testing.expectEqual(@as(i64, -1), d.__sec);
+    try testing.expectEqual(@as(u32, 999999686), d.__nsec);
+}
+
+test "subtract durations, edge cases" {
+    // Test underflow to RangeError for sub()
+    var min_dur = Duration{ .__sec = Duration.min_sec, .__nsec = 0 };
+    const one_ns = Duration{ .__nsec = 1 };
+    try testing.expectError(error.SecondOutOfRange, min_dur.sub(one_ns));
+
+    var max_dur = Duration{ .__sec = Duration.max_sec, .__nsec = 999_999_999 };
+    const neg_one_ns = Duration{ .__sec = -1, .__nsec = 999_999_999 };
+    try testing.expectError(error.SecondOutOfRange, max_dur.sub(neg_one_ns));
+
+    // Test maximum positive - maximum negative overflow
+    var max_sec_dur = Duration{ .__sec = Duration.max_sec };
+    var min_sec_dur = Duration{ .__sec = Duration.min_sec };
+    try testing.expectError(error.SecondOutOfRange, max_sec_dur.sub(min_sec_dur));
+
+    // Test minimum negative - maximum positive underflow
+    try testing.expectError(error.SecondOutOfRange, min_sec_dur.sub(max_sec_dur));
+
+    // Test nanosecond borrowing that causes second decrement beyond min
+    var almost_min = Duration{ .__sec = Duration.min_sec, .__nsec = 0 };
+    try testing.expectError(error.SecondOutOfRange, almost_min.sub(one_ns));
+
+    // Test boundary case: exactly at min must work
+    var at_min_plus_one = Duration{ .__sec = Duration.min_sec + 1, .__nsec = 0 };
+    const one_sec = Duration{ .__sec = 1 };
+    var result = try at_min_plus_one.sub(one_sec);
+    try testing.expectEqual(Duration.min_sec, result.__sec);
+    try testing.expectEqual(@as(u32, 0), result.__nsec);
+
+    // Test boundary case: exactly at max must work
+    var at_max_minus_one = Duration{ .__sec = Duration.max_sec - 1, .__nsec = 999_999_999 };
+    const neg_one_sec = Duration{ .__sec = -1 };
+    result = try at_max_minus_one.sub(neg_one_sec);
+    try testing.expectEqual(Duration.max_sec, result.__sec);
+    try testing.expectEqual(@as(u32, 999_999_999), result.__nsec);
+
+    // Test subClip() clamps to min_sec when underflow occurs
+    var clipped = min_dur.subClip(one_ns);
+    try testing.expectEqual(Duration.min_sec, clipped.__sec);
+    try testing.expectEqual(@as(u32, 999_999_999), clipped.__nsec);
+
+    // Test subClip() clamps to max_sec when overflow occurs
+    clipped = max_dur.subClip(neg_one_ns);
+    try testing.expectEqual(Duration.max_sec, clipped.__sec);
+    try testing.expectEqual(@as(u32, 0), clipped.__nsec);
+
+    // Test nanosecond borrowing edge case
+    var test_dur = Duration{ .__sec = 1, .__nsec = 0 };
+    const ns_999 = Duration{ .__nsec = 999_999_999 };
+    result = try test_dur.sub(ns_999);
+    try testing.expectEqual(@as(i128, 0), result.__sec);
+    try testing.expectEqual(@as(u32, 1), result.__nsec);
+
+    // Test nanosecond borrowing at boundary
+    var boundary_dur = Duration{ .__sec = Duration.min_sec + 1, .__nsec = 0 };
+    result = try boundary_dur.sub(one_ns);
+    try testing.expectEqual(Duration.min_sec, result.__sec);
+    try testing.expectEqual(@as(u32, 999_999_999), result.__nsec);
+
+    // Test zero subtraction edge cases
+    var zero = Duration{};
+    result = try max_dur.sub(zero);
+    try testing.expectEqual(Duration.max_sec, result.__sec);
+    try testing.expectEqual(@as(u32, 999_999_999), result.__nsec);
+
+    result = try min_dur.sub(zero);
+    try testing.expectEqual(Duration.min_sec, result.__sec);
+    try testing.expectEqual(@as(u32, 0), result.__nsec);
+
+    // Test subtracting from zero
+    result = try zero.sub(Duration{ .__sec = 1, .__nsec = 500_000_000 });
+    try testing.expectEqual(@as(i128, -2), result.__sec);
+    try testing.expectEqual(@as(u32, 500_000_000), result.__nsec);
 }
 
 test "add duration to datetime" {
@@ -220,7 +375,8 @@ test "leap second difference" {
     var leaps = a.diffLeap(b);
     try testing.expectEqual(@as(i64, -1), leaps.__sec);
     try testing.expectEqual(@as(u32, 0), leaps.__nsec);
-    var diff = a.diff(b).add(leaps);
+    var diff = a.diff(b);
+    diff = try diff.add(leaps);
     try testing.expectEqual(@as(i64, -86401), diff.__sec);
     try testing.expectEqual(@as(u32, 0), diff.__nsec);
 
@@ -247,7 +403,8 @@ test "leap second difference" {
     leaps = a.diffLeap(b);
     try testing.expectEqual(@as(i64, 0), leaps.__sec);
     try testing.expectEqual(@as(u32, 0), leaps.__nsec);
-    diff = a.diff(b).add(leaps);
+    diff = a.diff(b);
+    diff = try diff.add(leaps);
     try testing.expectEqual(@as(i64, -86400), diff.__sec);
     try testing.expectEqual(@as(u32, 0), diff.__nsec);
 }
