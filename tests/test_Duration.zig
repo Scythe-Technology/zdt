@@ -41,6 +41,28 @@ test "to timespan" {
     try testing.expectEqual(@as(i128, 6), ms);
 }
 
+test "edge cases, min-max" {
+    var td = Duration{ .__sec = Duration.max_sec, .__nsec = 999_999_999 };
+    const want_max: i128 = 170141183460469231731687303714999999999;
+    try testing.expectEqual(Duration.max_sec + 1, td.asSeconds());
+    try testing.expectEqual(want_max, td.asNanoseconds());
+    try testing.expectEqual(want_max, td.toTimespanMultiple(.nanosecond));
+
+    td = Duration{ .__sec = Duration.min_sec, .__nsec = 0 };
+    const want_min = -170141183460469231731687303715000000000;
+    try testing.expectEqual(Duration.min_sec, td.asSeconds());
+    try testing.expectEqual(want_min, td.asNanoseconds());
+    try testing.expectEqual(want_min, td.toTimespanMultiple(.nanosecond));
+
+    const want_max_weeks: i64 = 9223372036854775807;
+    td = Duration.fromTimespanMultiple(want_max_weeks, .week);
+    try testing.expectEqual(want_max_weeks, td.toTimespanMultiple(.week));
+
+    const want_min_weeks = -9223372036854775808;
+    td = Duration.fromTimespanMultiple(want_min_weeks, .week);
+    try testing.expectEqual(want_min_weeks, td.toTimespanMultiple(.week));
+}
+
 test "total seconds" {
     // Regular case
     const td = Duration.fromTimespanMultiple(3141592653, Duration.Timespan.nanosecond);
@@ -158,7 +180,7 @@ test "add duration to datetime" {
     try testing.expectEqual(@as(u32, 0), dt.nanosecond);
 
     dt = try dt.add(Duration.fromTimespanMultiple(1, Duration.Timespan.week));
-    try testing.expectEqual(@as(u6, 8), dt.day);
+    try testing.expectEqual(@as(u8, 8), dt.day);
 }
 
 test "subtract duration from datetime" {
@@ -268,11 +290,30 @@ test "iso duration parser, full valid input" {
         },
         .{
             .string = "-P9Y10M11DT12H13M14.156S",
-            .fields = .{ .years = 9, .months = 10, .days = 11, .hours = 12, .minutes = 13, .seconds = 14, .nanoseconds = 156000000, .negative = true },
+            .fields = .{
+                .years = 9,
+                .months = 10,
+                .days = 11,
+                .hours = 12,
+                .minutes = 13,
+                .seconds = 14,
+                .nanoseconds = 156000000,
+                .negative = true,
+            },
         },
         .{
             .string = "-P9Y10M41W11DT12H13M14.156S",
-            .fields = .{ .years = 9, .months = 10, .weeks = 41, .days = 11, .hours = 12, .minutes = 13, .seconds = 14, .nanoseconds = 156000000, .negative = true },
+            .fields = .{
+                .years = 9,
+                .months = 10,
+                .weeks = 41,
+                .days = 11,
+                .hours = 12,
+                .minutes = 13,
+                .seconds = 14,
+                .nanoseconds = 156000000,
+                .negative = true,
+            },
         },
         .{
             .string = "P1M7WT7M",
