@@ -13,6 +13,15 @@ Types of changes
 
 ## [Unreleased]
 
+### Added
+
+- min and max values for Duration type (public constants). These ensure that the Duration.asNanoseconds() method won't faile due to integer over-/underflow.
+- Duration.addClip and Duration.subClip methods which won't return an error. If the result would be out-of-range, it will be clipped to the min/max value for the Duration type.
+
+### Changed
+
+- API: Duration.add and Duration.sub methods now return an error.SecondsOutOfRange if the resulting Duration would not satisfy the min/max value for the Duration type.
+
 ## 2025-06-18, v0.6.9
 
 ### Added
