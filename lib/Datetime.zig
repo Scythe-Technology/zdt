@@ -725,7 +725,11 @@ pub fn diff(this: Datetime, other: Datetime) Duration {
         s -= 1;
         ns += 1_000_000_000;
     }
-    return .{ .__sec = s, .__nsec = @intCast(ns) };
+    // We use 'addClip' here to avoid the error union from the normal 'add'.
+    // Since we add < 1_000_000_000 ns, the Duration type will never overflow
+    // and the result won't become incorrect from clipping.
+    return (Duration.fromTimespanMultiple(s, .second)
+        .addClip(Duration.fromTimespanMultiple(ns, .nanosecond)));
 }
 
 /// Calculate wall time difference between two aware datetimes.
@@ -744,7 +748,11 @@ pub fn diffWall(this: Datetime, other: Datetime) TzError!Duration {
         s -= 1;
         ns += 1_000_000_000;
     }
-    return .{ .__sec = s, .__nsec = @intCast(ns) };
+    // We use 'addClip' here to avoid the error union from the normal 'add'.
+    // Since we add < 1_000_000_000 ns, the Duration type will never overflow
+    // and the result won't become incorrect from clipping.
+    return (Duration.fromTimespanMultiple(s, .second)
+        .addClip(Duration.fromTimespanMultiple(ns, .nanosecond)));
 }
 
 /// Validate a datetime in terms of leap seconds;
