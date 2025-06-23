@@ -28,7 +28,10 @@ __sec: i128 = 0,
 /// Do not modify directly.
 __nsec: u32 = 0,
 
-/// Create a duration from multiple of specific a timespan
+/// Create a duration from multiple of specific a timespan.
+///
+/// The Duration type can represent any timespan that can fit into  a 64 bit
+/// signed integer, i.e. up to 2^63 weeks. Therefore, no error is returned.
 pub fn fromTimespanMultiple(n: i64, timespan: Timespan) Duration {
     const ns: i128 = @as(i128, @intCast(@intFromEnum(timespan))) * n;
     return .{
