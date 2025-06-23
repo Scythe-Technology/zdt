@@ -17,7 +17,7 @@ Types of changes
 
 ### Added
 
-- min and max values for Duration type (public constants); these ensure that the Duration.asNanoseconds() method won't faile due to integer over-/underflow
+- min and max values for Duration type (public constants); these ensure that the Duration.asNanoseconds() method won't fail due to integer over-/underflow
 - Duration.addClip and Duration.subClip methods which won't return an error. If the result would be out-of-range, it will be clipped to the min/max value for the Duration type.
 
 ### Changed
