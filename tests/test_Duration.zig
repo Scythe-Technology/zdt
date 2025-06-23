@@ -336,6 +336,9 @@ test "add duration to datetime" {
 
     dt = try dt.add(Duration.fromTimespanMultiple(1, Duration.Timespan.week));
     try testing.expectEqual(@as(u8, 8), dt.day);
+
+    const err = dt.add(Duration.fromTimespanMultiple(9223372036854775807, .week));
+    try testing.expectError(error.UnixOutOfRange, err);
 }
 
 test "subtract duration from datetime" {
@@ -349,6 +352,9 @@ test "subtract duration from datetime" {
     dt = try dt.sub(Duration{ .__sec = 1, .__nsec = 1E9 });
     try testing.expectEqual(@as(i64, 42), dt.unix_sec);
     try testing.expectEqual(@as(u32, 0), dt.nanosecond);
+
+    const err = dt.sub(Duration.fromTimespanMultiple(9223372036854775807, .week));
+    try testing.expectError(error.UnixOutOfRange, err);
 }
 
 test "datetime difference" {
@@ -367,6 +373,11 @@ test "datetime difference" {
     diff = b.diff(a);
     try testing.expectEqual(@as(i64, 1), diff.__sec);
     try testing.expectEqual(@as(u32, 0), diff.__nsec);
+
+    a = try Datetime.fromUnix(Datetime.unix_s_min, .second, null);
+    b = try Datetime.fromUnix(Datetime.unix_s_max, .second, null);
+    // just ensure that this works and isn't out-of-range for the duration:
+    diff = a.diff(b);
 }
 
 test "leap second difference" {
