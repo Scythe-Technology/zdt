@@ -13,6 +13,8 @@ Types of changes
 
 ## [Unreleased]
 
+## 2025-06-23, v0.6.10
+
 ### Added
 
 - min and max values for Duration type (public constants); these ensure that the Duration.asNanoseconds() method won't faile due to integer over-/underflow
