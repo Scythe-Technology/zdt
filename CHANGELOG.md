@@ -13,6 +13,22 @@ Types of changes
 
 ## [Unreleased]
 
+## 2025-06-23, v0.6.10
+
+### Added
+
+- min and max values for Duration type (public constants); these ensure that the Duration.asNanoseconds() method won't faile due to integer over-/underflow
+- Duration.addClip and Duration.subClip methods which won't return an error. If the result would be out-of-range, it will be clipped to the min/max value for the Duration type.
+
+### Changed
+
+- API: Duration.add and Duration.sub methods now return an error.SecondsOutOfRange if the resulting Duration would not satisfy the min/max value for the Duration type
+- to ensure there is no over-/underflow of the Duration type, Datetime difference calculation methods use Duration.fromTimespanMultiple to generate the result
+
+### Removed
+
+- `build.zig.zon`: scripts from the `scripts/` directory. Those are only needed for development.
+
 ## 2025-06-18, v0.6.9
 
 ### Added
