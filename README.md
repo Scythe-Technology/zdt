@@ -91,7 +91,7 @@ See [changelog](https://codeberg.org/FObersteiner/zdt/src/branch/main/CHANGELOG.
 
 ## Zig version requirements
 
-- `v0.6.x`: Zig 0.14
+- `v0.6.x`: Zig 0.14 / 0.14.1
 - `v0.5.x`: Zig 0.13 / 0.14
 - `v0.4.x`: Zig 0.13
 
