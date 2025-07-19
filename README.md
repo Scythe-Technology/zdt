@@ -112,4 +112,4 @@ See [changelog](https://codeberg.org/FObersteiner/zdt/src/branch/main/CHANGELOG.
 
 ## License
 
-MPL. See the LICENSE file in the root directory of the repository.
+MIT. See the LICENSE file in the root directory of the repository.
