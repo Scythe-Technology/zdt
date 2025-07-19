@@ -16,7 +16,7 @@ Types of changes
 ### Changed
 
 - build.zig: limit accepted compiler version to 0.14.0 and 0.14.1
-- license: change to MIT
+- license: change to Unlicense / make it public domain
 
 ## 2025-06-23, v0.6.10
 
