@@ -4,7 +4,7 @@
 
 # zdt
 
-**Time<ins>z</ins>oned <ins>D</ins>ate<ins>t</ins>ime in Zig.** ⏰ Opinionated, and mostly for learning purposes.
+**Time<ins>z</ins>oned <ins>D</ins>ate<ins>t</ins>ime in Zig.** ⏰ Opinionated, and mostly for my own entertainment.
 
 ## Core Features
 
@@ -91,6 +91,7 @@ See [changelog](https://codeberg.org/FObersteiner/zdt/src/branch/main/CHANGELOG.
 
 ## Zig version requirements
 
+- `v0.7.x`: Zig 0.14 / 0.14.1
 - `v0.6.x`: Zig 0.14 / 0.14.1
 - `v0.5.x`: Zig 0.13 / 0.14
 - `v0.4.x`: Zig 0.13

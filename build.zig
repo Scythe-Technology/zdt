@@ -3,14 +3,14 @@
 //! `test`               - run unit tests
 //! `examples`           - build examples
 //! `docs`               - run autodoc generation
-//! `update-tzdb`        - retreive version of tzdata from local copy and set in zig file
+//! `update-tzdb`        - retreive tzdata version string from local copy and set in zig file
 //! `update-tzdb-prefix` - update tzdata path
 //! ---
 const std = @import("std");
 const builtin = @import("builtin");
 const log = std.log.scoped(.zdt_build);
 
-const zdt_version = std.SemanticVersion{ .major = 0, .minor = 6, .patch = 11 };
+const zdt_version = std.SemanticVersion{ .major = 0, .minor = 7, .patch = 0 };
 
 const tzdb_tag = "2025b";
 

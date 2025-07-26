@@ -13,6 +13,10 @@ Types of changes
 
 ## [Unreleased]
 
+## 2025-07-26, v0.7.0
+
+Bump minor version due to license change.
+
 ### Changed
 
 - build.zig: limit accepted compiler version to 0.14.0 and 0.14.1
