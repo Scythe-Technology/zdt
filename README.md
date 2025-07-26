@@ -1,10 +1,10 @@
 <!-- -*- coding: utf-8 -*- -->
 
-[![Zig](https://img.shields.io/badge/-Zig-F7A41D?style=flat&logo=zig&logoColor=white)](https://ziglang.org/) ⚡ [![tzdata](https://img.shields.io/badge/tzdata-2025b-blue)](https://www.iana.org/time-zones)  [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://codeberg.org/FObersteiner/zdt/src/branch/main/LICENSE)
+[![Zig](https://img.shields.io/badge/-Zig-F7A41D?style=flat&logo=zig&logoColor=white)](https://ziglang.org/) ⚡ [![tzdata](https://img.shields.io/badge/tzdata-2025b-blue)](https://www.iana.org/time-zones) [![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg)](http://unlicense.org/)
 
 # zdt
 
-**Time<ins>z</ins>oned <ins>D</ins>ate<ins>t</ins>ime in Zig.** Opinionated, and mostly for learning purposes.
+**Time<ins>z</ins>oned <ins>D</ins>ate<ins>t</ins>ime in Zig.** ⏰ Opinionated, and mostly for my own entertainment.
 
 ## Core Features
 
@@ -91,7 +91,8 @@ See [changelog](https://codeberg.org/FObersteiner/zdt/src/branch/main/CHANGELOG.
 
 ## Zig version requirements
 
-- `v0.6.x`: Zig 0.14
+- `v0.7.x`: Zig 0.14 / 0.14.1
+- `v0.6.x`: Zig 0.14 / 0.14.1
 - `v0.5.x`: Zig 0.13 / 0.14
 - `v0.4.x`: Zig 0.13
 
@@ -112,4 +113,4 @@ See [changelog](https://codeberg.org/FObersteiner/zdt/src/branch/main/CHANGELOG.
 
 ## License
 
-MPL. See the LICENSE file in the root directory of the repository.
+Unlicense (public domain). See the LICENSE file in the root directory of the repository.
