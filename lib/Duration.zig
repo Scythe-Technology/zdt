@@ -2,6 +2,7 @@
 
 const std = @import("std");
 const testing = std.testing;
+const Io = std.Io;
 const log = std.log.scoped(.zdt__Duration);
 
 const FormatError = @import("./errors.zig").FormatError;
@@ -184,8 +185,8 @@ pub fn format(
     duration: Duration,
     comptime fmt: []const u8,
     options: std.fmt.FormatOptions,
-    writer: anytype,
-) anyerror!void {
+    writer: *Io.Writer,
+) anyerror!void { // TODO: replace error since writer is not anytype anymore
     _ = options;
     _ = fmt;
 
