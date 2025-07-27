@@ -3,6 +3,7 @@
 const std = @import("std");
 const log = std.log.scoped(.zdt__Datetime);
 const assert = std.debug.assert;
+const Io = std.Io;
 
 const cal = @import("./calendar.zig");
 const str = @import("./string.zig");
@@ -204,7 +205,7 @@ pub const ISOCalendar = struct {
         calendar: ISOCalendar,
         comptime fmt: []const u8,
         options: std.fmt.FormatOptions,
-        writer: anytype,
+        writer: *Io.Writer,
     ) !void {
         _ = fmt;
         _ = options;
@@ -902,7 +903,7 @@ pub fn fromISO8601(string: []const u8) ZdtError!Datetime {
 }
 
 /// Format a datetime into a string.
-pub fn toString(dt: Datetime, directives: []const u8, writer: anytype) anyerror!void {
+pub fn toString(dt: Datetime, directives: []const u8, writer: *Io.Writer) anyerror!void {
     return try str.tokenizeAndPrint(&dt, directives, writer);
 }
 
@@ -928,7 +929,7 @@ pub fn tzAbbreviation(dt: *const Datetime) []const u8 {
 pub fn formatOffset(
     dt: Datetime,
     options: std.fmt.FormatOptions,
-    writer: anytype,
+    writer: *Io.Writer,
 ) anyerror!void {
     return if (dt.isAware()) dt.utc_offset.?.format("", options, writer);
 }
@@ -976,8 +977,8 @@ pub fn format(
     dt: Datetime,
     comptime fmt: []const u8,
     options: std.fmt.FormatOptions,
-    writer: anytype,
-) anyerror!void { // have to use 'anyerror' here due to the 'anytype' writer
+    writer: *Io.Writer,
+) anyerror!void { // TODO: replace error since writer is not anytype anymore
     if (!(std.mem.eql(u8, fmt, "s") or fmt.len == 0))
         return try str.tokenizeAndPrint(&dt, fmt, writer);
 

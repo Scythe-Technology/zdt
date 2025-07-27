@@ -2,6 +2,7 @@
 
 const std = @import("std");
 const assert = std.debug.assert;
+const Io = std.Io;
 const log = std.log.scoped(.zdt__UTCoffset);
 
 const Timezone = @import("./Timezone.zig");
@@ -161,7 +162,7 @@ pub fn format(
     offset: UTCoffset,
     comptime fmt: []const u8,
     options: std.fmt.FormatOptions,
-    writer: anytype,
+    writer: *Io.Writer,
 ) anyerror!void {
     _ = fmt;
     const off = offset.seconds_east;

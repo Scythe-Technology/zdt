@@ -4,6 +4,7 @@ const builtin = @import("builtin");
 const std = @import("std");
 const testing = std.testing;
 const assert = std.debug.assert;
+const Io = std.Io;
 const log = std.log.scoped(.zdt__string);
 
 const Datetime = @import("./Datetime.zig");
@@ -96,8 +97,8 @@ pub fn tokenizeAndParse(data: []const u8, directives: []const u8) ZdtError!Datet
 pub fn tokenizeAndPrint(
     dt: *const Datetime,
     directives: []const u8,
-    writer: anytype,
-) anyerror!void { // have to use 'anyerror' here due to the 'anytype' writer
+    writer: *Io.Writer,
+) anyerror!void { // TODO: replace error since writer is not anytype anymore
     var fmt_idx: usize = 0;
     var modifier_count: u8 = 0;
 
@@ -255,8 +256,8 @@ fn printIntoWriter(
     dt: *const Datetime,
     directive: u8,
     modifier_count: u8,
-    writer: anytype,
-) anyerror!void { // have to use 'anyerror' here due to the 'anytype' writer
+    writer: *Io.Writer,
+) anyerror!void { // TODO: replace error since writer is not anytype anymore
     switch (directive) {
         'd' => try writer.print("{d:0>2}", .{dt.day}),
         'e' => try writer.print("{d: >2}", .{dt.day}),

@@ -2,6 +2,7 @@
 
 const std = @import("std");
 const assert = std.debug.assert;
+const Io = std.Io;
 const builtin = @import("builtin");
 const log = std.log.scoped(.zdt__Timezone);
 
@@ -204,7 +205,7 @@ pub fn format(
     tz: *const Timezone,
     comptime fmt: []const u8,
     options: std.fmt.FormatOptions,
-    writer: anytype,
+    writer: *Io.Writer,
 ) anyerror!void {
     _ = fmt;
     _ = options;

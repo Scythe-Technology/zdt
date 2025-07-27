@@ -647,6 +647,7 @@ test "ISO8601 duration parse and normalize" {
 
     var buf = std.ArrayList(u8).init(testing.allocator);
     defer buf.deinit();
+
     for (cases) |case| {
         const reldelta = try Duration.fromISO8601(case.have);
         try reldelta.format("{s}", .{}, buf.writer());
