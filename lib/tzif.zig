@@ -8,6 +8,7 @@ const builtin = @import("builtin");
 const testing = std.testing;
 const assert = std.debug.assert;
 const log = std.log.scoped(.test_tzif);
+const Reader = std.Io.Reader;
 
 const TZifReadError = @import("./errors.zig").TZifReadError;
 
@@ -80,7 +81,7 @@ pub const TzAlloc = struct {
     footer: ?[]const u8,
 
     /// Parse a IANA db TZif file. Only accepts version 2+ files.
-    pub fn parse(allocator: std.mem.Allocator, reader: anytype) TZifReadError!TzAlloc {
+    pub fn parse(allocator: std.mem.Allocator, reader: *Reader) TZifReadError!TzAlloc {
         var legacy_header = try reader.readStruct(Header);
         if (!std.mem.eql(u8, &legacy_header.magic, "TZif")) return TZifReadError.BadHeader;
 
@@ -111,7 +112,7 @@ pub const TzAlloc = struct {
     }
 
     /// Load TZif data itself and make a Tz
-    fn parseBlock(allocator: std.mem.Allocator, reader: anytype, header: Header) TZifReadError!TzAlloc {
+    fn parseBlock(allocator: std.mem.Allocator, reader: *Reader, header: Header) TZifReadError!TzAlloc {
         // RFC 9636: isstdcnt [...] MUST either be zero or equal to "typecnt":
         if (header.counts.isstdcnt != 0 and header.counts.isstdcnt != header.counts.typecnt)
             return TZifReadError.Malformed;
@@ -244,7 +245,7 @@ pub const Tz = struct {
     __footer_data: [footer_buf_sz]u8 = std.mem.zeroes([footer_buf_sz]u8), // newline-terminated
 
     /// Parse a IANA db TZif file, allocator-free. Only accepts version 2+ files.
-    pub fn parse(reader: anytype) TZifReadError!Tz {
+    pub fn parse(reader: *Reader) TZifReadError!Tz {
         var legacy_header = try reader.readStruct(Header);
         if (!std.mem.eql(u8, &legacy_header.magic, "TZif")) return TZifReadError.BadHeader;
 
@@ -275,7 +276,7 @@ pub const Tz = struct {
     }
 
     /// Load TZif data itself and make a Tz
-    fn parseBlock(reader: anytype, header: Header) TZifReadError!Tz {
+    fn parseBlock(reader: *Reader, header: Header) TZifReadError!Tz {
         // RFC 9636: isstdcnt [...] MUST either be zero or equal to "typecnt":
         if (header.counts.isstdcnt != 0 and header.counts.isstdcnt != header.counts.typecnt)
             return TZifReadError.Malformed;
