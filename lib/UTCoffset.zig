@@ -162,7 +162,7 @@ pub fn format(
     offset: UTCoffset,
     comptime fmt: []const u8,
     options: std.fmt.FormatOptions,
-    writer: *Io.Writer,
+    writer: *std.io.Writer,
 ) anyerror!void {
     _ = fmt;
     const off = offset.seconds_east;

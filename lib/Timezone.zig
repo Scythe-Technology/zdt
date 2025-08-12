@@ -205,7 +205,7 @@ pub fn format(
     tz: *const Timezone,
     comptime fmt: []const u8,
     options: std.fmt.FormatOptions,
-    writer: *Io.Writer,
+    writer: *std.io.Writer,
 ) anyerror!void {
     _ = fmt;
     _ = options;
