@@ -205,7 +205,7 @@ pub const ISOCalendar = struct {
         calendar: ISOCalendar,
         comptime fmt: []const u8,
         options: std.fmt.FormatOptions,
-        writer: *Io.Writer,
+        writer: *std.io.Writer,
     ) !void {
         _ = fmt;
         _ = options;
@@ -903,7 +903,7 @@ pub fn fromISO8601(string: []const u8) ZdtError!Datetime {
 }
 
 /// Format a datetime into a string.
-pub fn toString(dt: Datetime, directives: []const u8, writer: *Io.Writer) anyerror!void {
+pub fn toString(dt: Datetime, directives: []const u8, writer: *std.io.Writer) anyerror!void {
     return try str.tokenizeAndPrint(&dt, directives, writer);
 }
 
@@ -929,7 +929,7 @@ pub fn tzAbbreviation(dt: *const Datetime) []const u8 {
 pub fn formatOffset(
     dt: Datetime,
     options: std.fmt.FormatOptions,
-    writer: *Io.Writer,
+    writer: *std.io.Writer,
 ) anyerror!void {
     return if (dt.isAware()) dt.utc_offset.?.format("", options, writer);
 }
@@ -977,7 +977,7 @@ pub fn format(
     dt: Datetime,
     comptime fmt: []const u8,
     options: std.fmt.FormatOptions,
-    writer: *Io.Writer,
+    writer: *std.io.Writer,
 ) anyerror!void { // TODO: replace error since writer is not anytype anymore
     if (!(std.mem.eql(u8, fmt, "s") or fmt.len == 0))
         return try str.tokenizeAndPrint(&dt, fmt, writer);

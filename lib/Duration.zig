@@ -185,7 +185,7 @@ pub fn format(
     duration: Duration,
     comptime fmt: []const u8,
     options: std.fmt.FormatOptions,
-    writer: *Io.Writer,
+    writer: *std.io.Writer,
 ) anyerror!void { // TODO: replace error since writer is not anytype anymore
     _ = options;
     _ = fmt;
