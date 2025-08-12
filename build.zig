@@ -15,18 +15,18 @@ const zdt_version = std.SemanticVersion{ .major = 0, .minor = 8, .patch = 0 };
 
 const tzdb_tag = "2025b";
 
-const example_files = [_][]const u8{
-    "demo",
-    "ex_datetime",
-    "ex_duration",
+const example_files = [_][]const u8{ // TODO :
+    // "demo",
+    // "ex_datetime",
+    // "ex_duration",
     // "ex_locale",
-    // "ex_offsetTz-posixTz",
+    "ex_offsetTz-posixTz",
     // "ex_strings",
     // "ex_timezones",
-    // "ex_zdt-types",
+    "ex_zdt-types",
 };
 
-const test_files = [_][]const u8{
+const test_files = [_][]const u8{ // TODO :
     // "test_calendar",
     // "test_Datetime",
     // "test_Duration",

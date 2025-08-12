@@ -1,10 +1,10 @@
 //! A set of rules to describe date and time somewhere on earth, relative to universal time (UTC).
 
 const std = @import("std");
-const assert = std.debug.assert;
-const Io = std.Io;
 const builtin = @import("builtin");
+const assert = std.debug.assert;
 const log = std.log.scoped(.zdt__Timezone);
+const Writer = std.Io.Writer;
 
 const Datetime = @import("./Datetime.zig");
 const UTCoffset = @import("./UTCoffset.zig");
@@ -203,12 +203,8 @@ pub fn tzLocal(allocator: ?std.mem.Allocator) ZdtError!Timezone {
 
 pub fn format(
     tz: *const Timezone,
-    comptime fmt: []const u8,
-    options: std.fmt.FormatOptions,
-    writer: *std.io.Writer,
+    writer: *Writer,
 ) anyerror!void {
-    _ = fmt;
-    _ = options;
     try writer.print("Time zone, name: {s}. ", .{tz.name()});
     switch (tz.rules) {
         .tzif => try writer.print("Source: TZif. Memory: dynamic.", .{}),

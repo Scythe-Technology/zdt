@@ -35,7 +35,7 @@ pub fn main() !void {
 
     // '{s}' directive gives ISO8601 format by default;
     std.debug.print(
-        "Time, LA : {s} ({s})\n... that's {s} in Paris ({s})\n\n",
+        "Time, LA : {f} ({f})\n... that's {f} in Paris ({f})\n\n",
         .{ this_time_LA, buf.items, this_time_Paris, this_time_Paris.tzAbbreviation() },
     );
     // Time, LA : 2022-03-07T00:00:00-08:00 (12 am, PST)
@@ -44,7 +44,7 @@ pub fn main() !void {
     const wall_diff = try this_time_Paris.diffWall(this_time_LA);
     const abs_diff = this_time_Paris.diff(this_time_LA);
 
-    std.debug.print("Wall clock time difference: {s}\nAbsolute time difference: {s}\n\n", .{ wall_diff, abs_diff });
+    std.debug.print("Wall clock time difference: {f}\nAbsolute time difference: {f}\n\n", .{ wall_diff, abs_diff });
     // Wall clock time difference: PT9H
     // Absolute time difference: PT0S
 
