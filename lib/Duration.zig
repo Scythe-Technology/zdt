@@ -2,8 +2,8 @@
 
 const std = @import("std");
 const testing = std.testing;
-const Io = std.Io;
 const log = std.log.scoped(.zdt__Duration);
+const Writer = std.Io.Writer;
 
 const FormatError = @import("./errors.zig").FormatError;
 const RangeError = @import("./errors.zig").RangeError;
@@ -183,13 +183,8 @@ pub fn asNanoseconds(duration: Duration) i128 {
 /// Formatted printing for Duration type. Defaults to 'ISO8601-duration'-like format.
 pub fn format(
     duration: Duration,
-    comptime fmt: []const u8,
-    options: std.fmt.FormatOptions,
-    writer: *std.io.Writer,
-) anyerror!void { // TODO: replace error since writer is not anytype anymore
-    _ = options;
-    _ = fmt;
-
+    writer: *Writer,
+) Writer.Error!void {
     if (duration.__sec == 0 and duration.__nsec == 0) return try writer.print("PT0S", .{});
 
     const rd = RelativeDelta.fromDuration(&duration);

@@ -15,6 +15,17 @@ Types of changes
 
 - see also <https://github.com/ziglang/zig/commit/0e37ff0d591dd75ceec9208196bec29efaec607a>
 
+"writergate" fixes
+
+### Changed
+
+- struct format methods have no fmt and options anymore
+
+### Fixed
+
+- offset TZ / POSIX TZ example
+- zdt types example
+
 ## 2025-07-26, v0.7.0
 
 Bump minor version due to license change.
