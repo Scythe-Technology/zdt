@@ -27,16 +27,16 @@ pub fn main() !void {
     const this_time_LA = try a_datetime.tzLocalize(.{ .tz = &tz_LA });
 
     // string output also requires allocation...
-    var buf = std.ArrayList(u8).init(allocator);
-    defer buf.deinit();
-    try this_time_LA.toString("%I %p, %Z", buf.writer());
+    var buf: [128]u8 = std.mem.zeroes([128]u8);
+    var w = std.Io.Writer.fixed(&buf);
+    try this_time_LA.toString("%I %p, %Z", &w);
 
     const this_time_Paris = try this_time_LA.tzConvert(.{ .tz = &tz_Paris });
 
     // '{s}' directive gives ISO8601 format by default;
     std.debug.print(
-        "Time, LA : {f} ({f})\n... that's {f} in Paris ({f})\n\n",
-        .{ this_time_LA, buf.items, this_time_Paris, this_time_Paris.tzAbbreviation() },
+        "Time, LA : {f} ({s})\n... that's {f} in Paris ({s})\n\n",
+        .{ this_time_LA, buf, this_time_Paris, this_time_Paris.tzAbbreviation() },
     );
     // Time, LA : 2022-03-07T00:00:00-08:00 (12 am, PST)
     // ... that's 2022-03-07T09:00:00+01:00 in Paris
@@ -50,7 +50,8 @@ pub fn main() !void {
 
     // Easteregg:
     std.debug.print(
-        "Easter this year is on {%B %d, %Y}\n",
+        // TODO :  "Easter this year is on {%B %d, %Y}\n",
+        "Easter this year is on {f}\n",
         .{try zdt.Datetime.EasterDate(zdt.Datetime.nowUTC().year)},
     );
     // Easter this year is on April 20, 2025

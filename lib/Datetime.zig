@@ -203,12 +203,8 @@ pub const ISOCalendar = struct {
 
     pub fn format(
         calendar: ISOCalendar,
-        comptime fmt: []const u8,
-        options: std.fmt.FormatOptions,
         writer: *Writer,
     ) !void {
-        _ = fmt;
-        _ = options;
         try writer.print(
             "{s}{d:0>4}-W{d:0>2}-{d}",
             .{
@@ -928,10 +924,9 @@ pub fn tzAbbreviation(dt: *const Datetime) []const u8 {
 /// Formatted printing for UTC offset.
 pub fn formatOffset(
     dt: Datetime,
-    options: std.fmt.FormatOptions,
     writer: *Writer,
 ) anyerror!void {
-    return if (dt.isAware()) dt.utc_offset.?.format("", options, writer);
+    return if (dt.isAware()) dt.utc_offset.?.format(writer);
 }
 
 /// Calculate the date of Easter (Gregorian calendar).
