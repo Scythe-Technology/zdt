@@ -13,6 +13,7 @@ pub const FormatError = error{
     ParseIntError,
     Underflow,
     UnsupportedOS,
+    WriteFailed,
 };
 
 pub const RangeError = error{

@@ -4,8 +4,8 @@ const builtin = @import("builtin");
 const std = @import("std");
 const testing = std.testing;
 const assert = std.debug.assert;
-const Io = std.Io;
 const log = std.log.scoped(.zdt__string);
+const Writer = std.Io.Writer;
 
 const Datetime = @import("./Datetime.zig");
 const cal = @import("./calendar.zig");
@@ -97,7 +97,7 @@ pub fn tokenizeAndParse(data: []const u8, directives: []const u8) ZdtError!Datet
 pub fn tokenizeAndPrint(
     dt: *const Datetime,
     directives: []const u8,
-    writer: *std.io.Writer,
+    writer: *Writer,
 ) anyerror!void { // TODO: replace error since writer is not anytype anymore
     var fmt_idx: usize = 0;
     var modifier_count: u8 = 0;
@@ -256,7 +256,7 @@ fn printIntoWriter(
     dt: *const Datetime,
     directive: u8,
     modifier_count: u8,
-    writer: *std.io.Writer,
+    writer: *Writer,
 ) anyerror!void { // TODO: replace error since writer is not anytype anymore
     switch (directive) {
         'd' => try writer.print("{d:0>2}", .{dt.day}),
@@ -324,10 +324,12 @@ fn printIntoWriter(
         'z' => blk: {
             if (dt.isNaive()) break :blk;
             switch (modifier_count) {
-                0 => try dt.formatOffset(.{ .fill = 0, .precision = 1 }, writer), // 'z' +0100
-                1 => try dt.formatOffset(.{ .fill = ':', .precision = 1 }, writer), // 'z:' +01:00
-                2 => try dt.formatOffset(.{ .fill = ':', .precision = 2 }, writer), // 'z::' +01:00:00
-                3 => try dt.formatOffset(.{ .fill = ':', .precision = 0 }, writer), // 'z:::' +01
+                0 => try dt.formatOffset(writer), // 'z' +0100
+                // TODO :
+                // 0 => try dt.formatOffset(.{ .fill = 0, .precision = 1 }, writer), // 'z' +0100
+                // 1 => try dt.formatOffset(.{ .fill = ':', .precision = 1 }, writer), // 'z:' +01:00
+                // 2 => try dt.formatOffset(.{ .fill = ':', .precision = 2 }, writer), // 'z::' +01:00:00
+                // 3 => try dt.formatOffset(.{ .fill = ':', .precision = 0 }, writer), // 'z:::' +01
                 else => return FormatError.InvalidFormat,
             }
         },
@@ -355,9 +357,11 @@ fn printIntoWriter(
         'W' => try writer.print("{d:0>2}", .{dt.weekOfYearMon()}),
         'U' => try writer.print("{d:0>2}", .{dt.weekOfYearSun()}),
         'V' => try writer.print("{d:0>2}", .{dt.toISOCalendar().isoweek}),
-        'T' => try dt.format("", .{}, writer), // ISO format
+        // TODO:
+        //'T' => try dt.format("", .{}, writer), // ISO format
+        'T' => try dt.format(writer), // ISO format
         // 'F' => try dt.format("", .{}, writer) // ISO format, date only
-        't' => try writer.print("{s}", .{dt.toISOCalendar()}),
+        't' => try writer.print("{f}", .{dt.toISOCalendar()}),
         // 'x', // locale-specific, date
         // 'X', // locale-specific, time
         // 'c', // locale-specific, datetime
