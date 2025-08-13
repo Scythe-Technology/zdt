@@ -27,12 +27,12 @@ pub fn main() !void {
     // POSIX sep 'should' work on Windows while backslash fails in any case.
     std.mem.replaceScalar(u8, prefix, '\\', '/');
 
-    log.warn("tzdb prefix: {s}", .{prefix});
+    // log.debug("tzdb prefix: {s}", .{prefix});
 
     // filename arg passed in from build.zig
     const filename = args.next().?;
 
-    log.warn("tzdb prefix info file: {s}", .{filename});
+    // log.debug("tzdb prefix info file: {s}", .{filename});
 
     var file = try std.fs.cwd().createFile(filename, .{ .read = false });
     defer file.close();
