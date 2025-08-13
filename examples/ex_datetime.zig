@@ -29,7 +29,7 @@ pub fn main() !void {
     println("(nanos removed) : {f}", .{now_s});
 
     const now_date = try now.floorTo(Duration.Timespan.day);
-    println("           (date) : {f}", .{now_date});
+    println("         (date) : {f}", .{now_date});
     // println("(date, formatted) : {%Y-%m-%d}", .{now_date}); TODO :
 }
 
