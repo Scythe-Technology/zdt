@@ -80,6 +80,7 @@ pub const TZifReadError = error{
     PipeBusy,
     ProcessFdQuotaExceeded,
     ProcessNotFound,
+    ReadFailed,
     SharingViolation,
     SocketNotConnected,
     StreamTooLong,

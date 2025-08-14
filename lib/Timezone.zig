@@ -94,14 +94,14 @@ pub fn fromTzdata(identifier: []const u8, allocator: ?std.mem.Allocator) ZdtErro
     if (std.mem.eql(u8, identifier, "localtime")) return tzLocal(allocator);
 
     if (tzdata.get(identifier)) |TZifBytes| {
-        var in_stream = std.io.fixedBufferStream(TZifBytes);
+        var reader = std.Io.Reader.fixed(TZifBytes);
         var tz = Timezone{ .rules = .{ .utc = .{} } };
 
         if (allocator) |alcr| {
-            const tzif_tz = try tzif.TzAlloc.parse(alcr, in_stream.reader());
+            const tzif_tz = try tzif.TzAlloc.parse(alcr, &reader);
             tz = Timezone{ .rules = .{ .tzif = tzif_tz } };
         } else {
-            const tzif_tz = try tzif.Tz.parse(in_stream.reader());
+            const tzif_tz = try tzif.Tz.parse(&reader);
             tz = Timezone{ .rules = .{ .tzif_fixedsize = tzif_tz } };
         }
 
@@ -130,16 +130,19 @@ pub fn fromSystemTzdata(identifier: []const u8, db_path: []const u8, allocator: 
     var fba = std.heap.FixedBufferAllocator.init(&path_buffer);
     const fb_alloc = fba.allocator();
     const p = try std.fs.path.join(fb_alloc, &[_][]const u8{ db_path, identifier });
-    const file = try std.fs.openFileAbsolute(p, .{});
+
+    var file = try std.fs.openFileAbsolute(p, .{ .mode = .read_only, .lock = .exclusive });
     defer file.close();
+    var read_buf: [tzif.buf_sz]u8 = undefined;
+    var reader = file.reader(&read_buf).interface;
 
     var tz = Timezone{ .rules = .{ .utc = .{} } };
 
     if (allocator) |alcr| {
-        const tzif_tz = try tzif.TzAlloc.parse(alcr, file.reader());
+        const tzif_tz = try tzif.TzAlloc.parse(alcr, &reader);
         tz = Timezone{ .rules = .{ .tzif = tzif_tz } };
     } else {
-        const tzif_tz = try tzif.Tz.parse(file.reader());
+        const tzif_tz = try tzif.Tz.parse(&reader);
         tz = Timezone{ .rules = .{ .tzif_fixedsize = tzif_tz } };
     }
 
@@ -245,8 +248,8 @@ pub fn identifierValid(id: []const u8) bool {
 test "embed TZif from lib dir" {
     const tzfile = "./tzdata/zoneinfo/Europe/Berlin";
     const data = @embedFile(tzfile);
-    var in_stream = std.io.fixedBufferStream(data);
-    var tz = try std.Tz.parse(std.testing.allocator, in_stream.reader());
+    var reader = std.Io.Reader.fixed(data);
+    var tz = try std.Tz.parse(std.testing.allocator, &reader);
     defer tz.deinit();
     try std.testing.expectEqualStrings("CET", tz.transitions[0].timetype.name());
     try std.testing.expectEqualStrings("LMT", tz.timetypes[0].name());
