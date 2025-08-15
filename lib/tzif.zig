@@ -12,6 +12,9 @@ const Reader = std.Io.Reader;
 
 const TZifReadError = @import("./errors.zig").TZifReadError;
 
+// RFC 9636 have big-endian encoded numbers.
+const endianess: std.builtin.Endian = .big;
+
 // File header must start with this.
 const magic_cookie = "TZif";
 
@@ -25,9 +28,6 @@ const desgnation_buf_sz: usize = 64;
 // The sizes need to be verified for each new version of the tzdb.
 const timetypes_buf_sz: usize = 18;
 const transitions_buf_sz: usize = 310;
-
-/// buffer size to read any TZif file from the IANA tzdb
-pub const buf_sz: usize = footer_buf_sz + desgnation_buf_sz + timetypes_buf_sz + transitions_buf_sz;
 
 /// A transition to a new timetype
 pub const Transition = struct {
@@ -85,15 +85,11 @@ pub const TzAlloc = struct {
 
     /// Parse a IANA db TZif file. Only accepts version 2+ files.
     pub fn parse(allocator: std.mem.Allocator, reader: *Reader) TZifReadError!TzAlloc {
-        // TODO : verify endianness
-        var legacy_header = try reader.takeStruct(Header, .big);
+        var legacy_header = try reader.takeStruct(Header, endianess);
         if (!std.mem.eql(u8, &legacy_header.magic, "TZif")) return TZifReadError.BadHeader;
 
         if (legacy_header.version != '2' and legacy_header.version != '3')
             return TZifReadError.BadVersion;
-
-        // if (builtin.target.cpu.arch.endian() != std.builtin.Endian.big)
-        //     std.mem.byteSwapAllFields(@TypeOf(legacy_header.counts), &legacy_header.counts);
 
         // If the format is modern, just skip over the legacy data
         const skipv = (legacy_header.counts.timecnt * 5 +
@@ -103,16 +99,11 @@ pub const TzAlloc = struct {
             legacy_header.counts.isstdcnt +
             legacy_header.counts.isutcnt //
         );
-        //try reader.skipBytes(skipv, .{});
         reader.toss(skipv);
 
-        // TODO : verify endianness
-        var header = try reader.takeStruct(Header, .big);
+        var header = try reader.takeStruct(Header, endianess);
         if (!std.mem.eql(u8, &header.magic, magic_cookie)) return TZifReadError.BadHeader;
         if (header.version != '2' and header.version != '3') return TZifReadError.BadVersion;
-
-        // if (builtin.target.cpu.arch.endian() != std.builtin.Endian.big)
-        //     std.mem.byteSwapAllFields(@TypeOf(header.counts), &header.counts);
 
         return parseBlock(allocator, reader, header);
     }
@@ -138,7 +129,7 @@ pub const TzAlloc = struct {
         assert(header.counts.timecnt <= transitions_buf_sz);
         var i: usize = 0;
         while (i < header.counts.timecnt) : (i += 1) {
-            transitions[i].ts = try reader.takeInt(i64, .big);
+            transitions[i].ts = try reader.takeInt(i64, endianess);
         }
 
         i = 0;
@@ -152,7 +143,7 @@ pub const TzAlloc = struct {
         assert(header.counts.typecnt <= timetypes_buf_sz);
         i = 0;
         while (i < header.counts.typecnt) : (i += 1) {
-            const offset = try reader.takeInt(i32, .big);
+            const offset = try reader.takeInt(i32, endianess);
             if (offset < -2147483648) return TZifReadError.Malformed; // RFC 9636: utoff [...] MUST NOT be -2**31
             const dst = try reader.takeByte();
             if (dst != 0 and dst != 1) return TZifReadError.Malformed; // RFC 9636: (is)dst [...] The value MUST be 0 or 1.
@@ -166,7 +157,6 @@ pub const TzAlloc = struct {
 
         assert(header.counts.charcnt <= desgnation_buf_sz);
         var designators_data: [desgnation_buf_sz]u8 = undefined;
-        //try reader.readNoEof(designators_data[0..header.counts.charcnt]);
         try reader.readSliceAll(designators_data[0..header.counts.charcnt]);
 
         const designators = designators_data[0..header.counts.charcnt];
@@ -196,7 +186,7 @@ pub const TzAlloc = struct {
             }
         }
 
-        // Parse UT/local indicators
+        // Parse UT / local indicators
         i = 0;
         while (i < header.counts.isutcnt) : (i += 1) {
             const ut = try reader.takeByte();
@@ -224,7 +214,6 @@ pub const TzAlloc = struct {
             .transitions = transitions,
             .timetypes = timetypes,
             .footer = footer,
-            // .h = header,
         };
     }
 
@@ -255,15 +244,10 @@ pub const Tz = struct {
 
     /// Parse a IANA db TZif file, allocator-free. Only accepts version 2+ files.
     pub fn parse(reader: *Reader) TZifReadError!Tz {
-        // TODO : verify endianness
-        var legacy_header = try reader.takeStruct(Header, .big);
+        var legacy_header = try reader.takeStruct(Header, endianess);
         if (!std.mem.eql(u8, &legacy_header.magic, "TZif")) return TZifReadError.BadHeader;
 
         if (legacy_header.version != '2' and legacy_header.version != '3') return TZifReadError.BadVersion;
-
-        // if (builtin.target.cpu.arch.endian() != std.builtin.Endian.big) {
-        //     std.mem.byteSwapAllFields(@TypeOf(legacy_header.counts), &legacy_header.counts);
-        // }
 
         // If the format is modern, just skip over the legacy data
         const skipv = (legacy_header.counts.timecnt * 5 +
@@ -273,16 +257,11 @@ pub const Tz = struct {
             legacy_header.counts.isstdcnt +
             legacy_header.counts.isutcnt //
         );
-        //try reader.skipBytes(skipv, .{});
         reader.toss(skipv);
 
-        // TODO : verify endianness
-        var header = try reader.takeStruct(Header, .big);
+        var header = try reader.takeStruct(Header, endianess);
         if (!std.mem.eql(u8, &header.magic, magic_cookie)) return TZifReadError.BadHeader;
         if (header.version != '2' and header.version != '3') return TZifReadError.BadVersion;
-
-        // if (builtin.target.cpu.arch.endian() != std.builtin.Endian.big)
-        //     std.mem.byteSwapAllFields(@TypeOf(header.counts), &header.counts);
 
         return parseBlock(reader, header);
     }
@@ -299,9 +278,7 @@ pub const Tz = struct {
         if (header.counts.charcnt == 0) return TZifReadError.Malformed; // RFC 9636: charcnt [...] MUST NOT be zero
         if (header.counts.charcnt > 256 + 6) return TZifReadError.Malformed; // Not explicitly banned by RFC 9636 but nonsensical
 
-        // TODO :
-        // var __footer_data: [footer_buf_sz]u8 = std.mem.zeroes([footer_buf_sz]u8);
-        const __footer_data: [footer_buf_sz]u8 = std.mem.zeroes([footer_buf_sz]u8);
+        var __footer_data: [footer_buf_sz]u8 = std.mem.zeroes([footer_buf_sz]u8);
         var __timetypes_data: [timetypes_buf_sz]Timetype = undefined;
         var __transitions_data: [transitions_buf_sz]Transition = undefined;
 
@@ -309,7 +286,7 @@ pub const Tz = struct {
         assert(header.counts.timecnt <= transitions_buf_sz);
         var i: usize = 0;
         while (i < header.counts.timecnt) : (i += 1) {
-            __transitions_data[i].ts = try reader.takeInt(i64, .big);
+            __transitions_data[i].ts = try reader.takeInt(i64, endianess);
         }
 
         // Each transition has an index that specifies the according timetype.
@@ -322,7 +299,7 @@ pub const Tz = struct {
         assert(header.counts.typecnt <= timetypes_buf_sz);
         i = 0;
         while (i < header.counts.typecnt) : (i += 1) {
-            const offset = try reader.takeInt(i32, .big);
+            const offset = try reader.takeInt(i32, endianess);
             if (offset < -2147483648) return TZifReadError.Malformed; // RFC 9636: utoff [...] MUST NOT be -2**31
             const dst = try reader.takeByte();
             if (dst != 0 and dst != 1) return TZifReadError.Malformed; // RFC 9636: (is)dst [...] The value MUST be 0 or 1.
@@ -379,8 +356,8 @@ pub const Tz = struct {
 
         // Footer / POSIX TZ string.
         if ((try reader.takeByte()) != '\n') return TZifReadError.Malformed; // An RFC 9636 footer must start with a newline
-        // _ = try reader.readUntilDelimiter(&__footer_data, '\n');
-        _ = try reader.takeDelimiterExclusive('\n');
+        const footer_mem: []u8 = try reader.takeDelimiterInclusive('\n');
+        std.mem.copyForwards(u8, &__footer_data, footer_mem);
 
         return Tz{
             .n_transitions = header.counts.timecnt,
@@ -437,10 +414,10 @@ test "load a lot of TZif" {
 
             if (tzif_tz.footer.?.len > sz_footer) sz_footer = tzif_tz.footer.?.len;
 
-            try reader.seek(0);
+            reader = std.Io.Reader.fixed(TZifBytes);
             const tzif_tz_noalloc = try Tz.parse(&reader);
             const foot = std.mem.sliceTo(tzif_tz_noalloc.__footer_data[0..], '\n');
-
+            // log.warn("no-alloc: {s} :: {s}", .{ foot, tzif_tz.footer.? });
             try testing.expectEqual(foot.len, tzif_tz.footer.?.len);
             try testing.expectEqual(tzif_tz_noalloc.n_transitions, tzif_tz.transitions.len);
             try testing.expectEqual(tzif_tz_noalloc.n_timetypes, tzif_tz.timetypes.len);
