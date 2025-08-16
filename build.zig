@@ -18,8 +18,8 @@ const tzdb_tag = "2025b";
 const example_files = [_][]const u8{ // TODO :
     "demo",
     "ex_datetime",
-    // "ex_duration",
-    // "ex_locale",
+    "ex_duration",
+    "ex_locale",
     "ex_offsetTz-posixTz",
     "ex_strings",
     "ex_timezones",
@@ -27,7 +27,7 @@ const example_files = [_][]const u8{ // TODO :
 };
 
 const test_files = [_][]const u8{ // TODO :
-    // "test_calendar",
+    "test_calendar",
     // "test_Datetime",
     // "test_Duration",
     // "test_Formats",
