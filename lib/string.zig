@@ -324,12 +324,10 @@ fn printIntoWriter(
         'z' => blk: {
             if (dt.isNaive()) break :blk;
             switch (modifier_count) {
-                0 => try dt.formatOffset(writer), // 'z' +0100
-                // TODO :
-                // 0 => try dt.formatOffset(.{ .fill = 0, .precision = 1 }, writer), // 'z' +0100
-                // 1 => try dt.formatOffset(.{ .fill = ':', .precision = 1 }, writer), // 'z:' +01:00
-                // 2 => try dt.formatOffset(.{ .fill = ':', .precision = 2 }, writer), // 'z::' +01:00:00
-                // 3 => try dt.formatOffset(.{ .fill = ':', .precision = 0 }, writer), // 'z:::' +01
+                0 => try dt.formatOffset(.{ .fill = 0, .precision = 1 }, writer), // 'z' +0100
+                1 => try dt.formatOffset(.{ .fill = ':', .precision = 1 }, writer), // 'z:' +01:00
+                2 => try dt.formatOffset(.{ .fill = ':', .precision = 2 }, writer), // 'z::' +01:00:00
+                3 => try dt.formatOffset(.{ .fill = ':', .precision = 0 }, writer), // 'z:::' +01
                 else => return FormatError.InvalidFormat,
             }
         },
@@ -357,9 +355,8 @@ fn printIntoWriter(
         'W' => try writer.print("{d:0>2}", .{dt.weekOfYearMon()}),
         'U' => try writer.print("{d:0>2}", .{dt.weekOfYearSun()}),
         'V' => try writer.print("{d:0>2}", .{dt.toISOCalendar().isoweek}),
-        // TODO:
-        //'T' => try dt.format("", .{}, writer), // ISO format
         'T' => try dt.format(writer), // ISO format
+        // TODO:
         // 'F' => try dt.format("", .{}, writer) // ISO format, date only
         't' => try writer.print("{f}", .{dt.toISOCalendar()}),
         // 'x', // locale-specific, date
