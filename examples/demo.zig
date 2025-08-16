@@ -26,8 +26,8 @@ pub fn main() !void {
     const a_datetime = try zdt.Datetime.fromISO8601("2022-03-07");
     const this_time_LA = try a_datetime.tzLocalize(.{ .tz = &tz_LA });
 
-    // string output also requires allocation...
-    var buf: [128]u8 = std.mem.zeroes([128]u8);
+    // string output requires buffer memory...
+    var buf: [16]u8 = std.mem.zeroes([16]u8);
     var w = std.Io.Writer.fixed(&buf);
     try this_time_LA.toString("%I %p, %Z", &w);
 
@@ -50,7 +50,6 @@ pub fn main() !void {
 
     // Easteregg:
     std.debug.print(
-        // TODO :  "Easter this year is on {%B %d, %Y}\n",
         "Easter this year is on {f}\n",
         .{try zdt.Datetime.EasterDate(zdt.Datetime.nowUTC().year)},
     );
