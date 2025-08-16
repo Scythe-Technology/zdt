@@ -19,18 +19,19 @@ pub fn main() !void {
     println("'Unix epoch', tz name : {s}", .{unix_epoch_correct.tzName()});
 
     println("", .{});
-    println("---> Now: datetime from system time", .{});
+    println("---> Now: datetime from system's time", .{});
 
+    // we can directly write to stdout with the 'toString' method:
     const now = Datetime.nowUTC();
-    println("'now', UTC      : {f}", .{now});
-    // println("'now', UTC      : {f:.3} (only ms shown)", .{now}); TODO :
+    var stdout: std.Io.Writer = std.fs.File.stdout().writerStreaming(&.{}).interface;
+    try now.toString("'now', UTC      : %T\n", &stdout);
+    try now.toString("'now', UTC      : %Y-%m-%dT%H:%M:%S.%:f%z (only ms shown)\n", &stdout);
 
     const now_s = try now.floorTo(Duration.Timespan.second);
     println("(nanos removed) : {f}", .{now_s});
 
     const now_date = try now.floorTo(Duration.Timespan.day);
-    println("         (date) : {f}", .{now_date});
-    // println("(date, formatted) : {%Y-%m-%d}", .{now_date}); TODO :
+    try now_date.toString("(date only)     : %Y-%m-%d %Z\n", &stdout);
 }
 
 fn println(comptime fmt: []const u8, args: anytype) void {
