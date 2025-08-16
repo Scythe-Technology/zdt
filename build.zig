@@ -15,7 +15,7 @@ const zdt_version = std.SemanticVersion{ .major = 0, .minor = 8, .patch = 0 };
 
 const tzdb_tag = "2025b";
 
-const example_files = [_][]const u8{ // TODO :
+const example_files = [_][]const u8{
     "demo",
     "ex_datetime",
     "ex_duration",
@@ -30,8 +30,8 @@ const test_files = [_][]const u8{ // TODO :
     "test_calendar",
     // "test_Datetime",
     // "test_Duration",
-    // "test_Formats",
-    // "test_posixtz",
+    "test_Formats",
+    "test_posixtz",
     // "test_string",
     //    "test_Timezone",
 };

@@ -931,7 +931,7 @@ pub fn formatOffset(
     dt: Datetime,
     options: ?std.fmt.Options,
     writer: *Writer,
-) anyerror!void {
+) Writer.Error!void {
     if (dt.isNaive())
         return;
     if (options) |opts|
