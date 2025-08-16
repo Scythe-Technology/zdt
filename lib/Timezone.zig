@@ -207,7 +207,7 @@ pub fn tzLocal(allocator: ?std.mem.Allocator) ZdtError!Timezone {
 pub fn format(
     tz: *const Timezone,
     writer: *Writer,
-) anyerror!void {
+) Writer.Error!void {
     try writer.print("Time zone, name: {s}. ", .{tz.name()});
     switch (tz.rules) {
         .tzif => try writer.print("Source: TZif. Memory: dynamic.", .{}),

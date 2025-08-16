@@ -22,7 +22,7 @@ const example_files = [_][]const u8{ // TODO :
     // "ex_locale",
     "ex_offsetTz-posixTz",
     // "ex_strings",
-    // "ex_timezones",
+    "ex_timezones",
     "ex_zdt-types",
 };
 
