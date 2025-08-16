@@ -23,8 +23,7 @@ Types of changes
 
 ### Fixed
 
-- offset TZ / POSIX TZ example
-- zdt types example
+- Datetime, floorTo(): consider UTC offset as well, if there is no timezone
 
 ## 2025-07-26, v0.7.0
 

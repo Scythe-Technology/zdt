@@ -257,7 +257,7 @@ fn printIntoWriter(
     directive: u8,
     modifier_count: u8,
     writer: *Writer,
-) anyerror!void { // TODO: replace error since writer is not anytype anymore
+) FormatError!void { // TODO: replace error since writer is not anytype anymore
     switch (directive) {
         'd' => try writer.print("{d:0>2}", .{dt.day}),
         'e' => try writer.print("{d: >2}", .{dt.day}),

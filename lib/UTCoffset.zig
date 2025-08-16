@@ -184,10 +184,6 @@ pub fn formatB(
     options: std.fmt.Options,
     writer: *Writer,
 ) Writer.Error!void {
-    if (std.meta.eql(offset, UTC)) {
-        try writer.print("Z", .{});
-        return;
-    }
     const off = offset.seconds_east;
     const absoff: u32 = if (off < 0) @intCast(off * -1) else @intCast(off);
     const sign = if (off < 0) "-" else "+";
