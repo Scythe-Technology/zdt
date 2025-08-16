@@ -178,6 +178,37 @@ pub fn format(
     if (seconds != 0) try writer.print(":{d:0>2}", .{seconds});
 }
 
+/// Custom formatter used by the %z directive.
+pub fn formatB(
+    offset: UTCoffset,
+    options: std.fmt.Options,
+    writer: *Writer,
+) Writer.Error!void {
+    if (std.meta.eql(offset, UTC)) {
+        try writer.print("Z", .{});
+        return;
+    }
+    const off = offset.seconds_east;
+    const absoff: u32 = if (off < 0) @intCast(off * -1) else @intCast(off);
+    const sign = if (off < 0) "-" else "+";
+    const hours = absoff / 3600;
+    const minutes = (absoff % 3600) / 60;
+    const seconds = (absoff % 3600) % 60;
+
+    // precision: 0 - hours, 1 - hours:minutes, 2 - hours:minutes:seconds
+    const precision = if (options.precision) |p| p else 1;
+
+    if (options.fill != 0) {
+        try writer.print("{s}{d:0>2}", .{ sign, hours });
+        if (precision > 0)
+            try writer.print("{u}{d:0>2}", .{ options.fill, minutes });
+        if (precision > 1)
+            try writer.print("{u}{d:0>2}", .{ options.fill, seconds });
+    } else {
+        try writer.print("{s}{d:0>2}{d:0>2}", .{ sign, hours, minutes });
+    }
+}
+
 /// Get the index of the UTC offset transition equal to or less than the given target.
 ///
 /// Invalid value indicators:

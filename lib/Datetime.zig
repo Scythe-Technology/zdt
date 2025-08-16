@@ -929,9 +929,14 @@ pub fn tzAbbreviation(dt: *const Datetime) []const u8 {
 /// Formatted printing for UTC offset.
 pub fn formatOffset(
     dt: Datetime,
+    options: ?std.fmt.Options,
     writer: *Writer,
 ) anyerror!void {
-    return if (dt.isAware()) dt.utc_offset.?.format(writer);
+    if (dt.isNaive())
+        return;
+    if (options) |opts|
+        return dt.utc_offset.?.formatB(opts, writer);
+    return dt.utc_offset.?.format(writer);
 }
 
 /// Calculate the date of Easter (Gregorian calendar).
