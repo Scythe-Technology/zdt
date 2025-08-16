@@ -17,7 +17,7 @@ const tzdb_tag = "2025b";
 
 const example_files = [_][]const u8{ // TODO :
     "demo",
-    // "ex_datetime",
+    "ex_datetime",
     // "ex_duration",
     // "ex_locale",
     "ex_offsetTz-posixTz",
