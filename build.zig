@@ -26,10 +26,10 @@ const example_files = [_][]const u8{
     "ex_zdt-types",
 };
 
-const test_files = [_][]const u8{ // TODO :
+const test_files = [_][]const u8{
     "test_calendar",
     "test_Datetime",
-    // "test_Duration",
+    "test_Duration",
     "test_Formats",
     "test_posixtz",
     // "test_string",
