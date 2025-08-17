@@ -32,7 +32,7 @@ const test_files = [_][]const u8{
     "test_Duration",
     "test_Formats",
     "test_posixtz",
-    // "test_string",
+    "test_string",
     // "test_Timezone",
 };
 
