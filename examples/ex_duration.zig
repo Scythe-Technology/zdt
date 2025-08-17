@@ -34,7 +34,7 @@ pub fn main() !void {
     println("in a week and an hour : {f}\n", .{in_a_week});
 
     // wall-time arithmetic across DST transition using Duration.RelativeDelta:
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    var gpa = std.heap.DebugAllocator(.{}){};
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
     var tz_berlin: Timezone = try Timezone.fromTzdata("Europe/Berlin", allocator);
