@@ -8,7 +8,7 @@ const Timezone = zdt.Timezone;
 pub fn main() !void {
     println("---> time zones example", .{});
 
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    var gpa = std.heap.DebugAllocator(.{}){};
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 

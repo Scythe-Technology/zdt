@@ -28,12 +28,12 @@ const example_files = [_][]const u8{
 
 const test_files = [_][]const u8{ // TODO :
     "test_calendar",
-    // "test_Datetime",
+    "test_Datetime",
     // "test_Duration",
     "test_Formats",
     "test_posixtz",
     // "test_string",
-    //    "test_Timezone",
+    // "test_Timezone",
 };
 
 const tzdb_prefix_default = "/usr/share/zoneinfo/";

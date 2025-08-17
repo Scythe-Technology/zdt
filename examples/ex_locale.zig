@@ -24,7 +24,7 @@ pub fn main() !void {
     const dt = try Datetime.fromISO8601("2024-10-12");
 
     var buf: [32]u8 = std.mem.zeroes([32]u8);
-    var w = std.Io.Writer.fixed(&buf);
+    var w: std.Io.Writer = .fixed(&buf);
 
     // datetime to string
     //
@@ -32,11 +32,8 @@ pub fn main() !void {
     println("", .{});
     println("formatted {f}\n  to '{s}'", .{ dt, buf });
 
-    _ = w.consumeAll();
-    buf = std.mem.zeroes([32]u8);
-
-    //try dt.toString("%A, %B %d %Y, %H:%Mh", &w);
-    try dt.toString("%A, %B", &w);
+    w = std.Io.Writer.fixed(&buf);
+    try dt.toString("%A, %B %d %Y, %H:%Mh", &w);
     println("", .{});
     println("formatted {f}\n  to '{s}'", .{ dt, buf });
 

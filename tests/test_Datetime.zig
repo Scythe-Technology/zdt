@@ -205,17 +205,17 @@ test "leap year and month" {
 }
 
 test "default format ISO8601, naive" {
-    var str = std.ArrayList(u8).init(testing.allocator);
-    defer str.deinit();
+    var buf: [64]u8 = undefined;
+    var w: std.Io.Writer = .fixed(&buf);
 
     var dt = try Datetime.fromFields(.{ .year = 2023, .month = 12, .day = 31 });
-    try dt.format("", .{}, str.writer());
-    try testing.expectEqualStrings("2023-12-31T00:00:00", str.items);
+    try dt.format(&w);
+    try testing.expectEqualStrings("2023-12-31T00:00:00", w.buffered());
 
-    str.clearRetainingCapacity();
+    w = .fixed(&buf);
     dt = try Datetime.fromFields(.{ .year = 2023, .month = 12, .day = 31, .nanosecond = 1 });
-    try dt.format("", .{}, str.writer());
-    try testing.expectEqualStrings("2023-12-31T00:00:00.000000001", str.items);
+    try dt.format(&w);
+    try testing.expectEqualStrings("2023-12-31T00:00:00.000000001", w.buffered());
 }
 
 test "format offset" {
