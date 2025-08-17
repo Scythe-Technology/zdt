@@ -43,13 +43,13 @@ const max_zig = std.SemanticVersion.parse("0.14.1") catch unreachable;
 comptime {
     if (builtin.zig_version.order(min_zig) == .lt) {
         @compileError(std.fmt.comptimePrint(
-            "Your Zig version v{f} does not meet the minimum build requirement of v{f}",
+            "Your Zig version v{} does not meet the minimum build requirement of v{}",
             .{ builtin.zig_version, min_zig },
         ));
     }
     if (builtin.zig_version.order(max_zig) == .gt) {
         @compileError(std.fmt.comptimePrint(
-            "Your Zig version v{f} does not meet the maximum build requirement of v{f}",
+            "Your Zig version v{} does not meet the maximum build requirement of v{}",
             .{ builtin.zig_version, max_zig },
         ));
     }
