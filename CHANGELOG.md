@@ -13,17 +13,20 @@ Types of changes
 
 ## [Unreleased]
 
-- see also <https://github.com/ziglang/zig/commit/0e37ff0d591dd75ceec9208196bec29efaec607a>
-
-"writergate" fixes
+## 2025-08-21, v0.8.0
 
 ### Changed
 
+- "writergate" adaptations; see also <https://github.com/ziglang/zig/commit/0e37ff0d591dd75ceec9208196bec29efaec607a>
+
+### Removed
+
 - struct format methods have no fmt and options anymore
+  - therefore, formatting directives cannot be passed to those anymore (use `Datetime.toString(...)` instead)
 
 ### Fixed
 
-- Datetime, floorTo(): consider UTC offset as well, if there is no timezone
+- `Datetime.floorTo()`: consider UTC offset as well, if there is no timezone
 
 ## 2025-07-26, v0.7.0
 
