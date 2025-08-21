@@ -39,11 +39,12 @@ const test_files = [_][]const u8{
 const tzdb_prefix_default = "/usr/share/zoneinfo/";
 const tzdb_submodule_dir = "tz";
 
-const min_zig = std.SemanticVersion.parse("0.15.0-dev") catch unreachable;
+const min_zig = std.SemanticVersion.parse("0.15.1") catch unreachable;
+
 comptime {
     if (builtin.zig_version.order(min_zig) == .lt) {
         @compileError(std.fmt.comptimePrint(
-            "Your Zig version v{} does not meet the minimum build requirement of v{}",
+            "Your Zig version v{f} does not meet the minimum build requirement of v{f}",
             .{ builtin.zig_version, min_zig },
         ));
     }

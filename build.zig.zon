@@ -8,7 +8,7 @@
             .hash = "zbench-0.9.3-YTdc79DoAABUp44km7nmp_E7XxPzBMl3FesDOU6J8S-n",
         },
     },
-    .minimum_zig_version = "0.15.0-dev",
+    .minimum_zig_version = "0.15.1",
     .paths = .{
         // benchmark directory not included
         "lib", // anything from lib directory
