@@ -1,5 +1,3 @@
-<!-- -*- coding: utf-8 -*- -->
-
 [![Zig](https://img.shields.io/badge/-Zig-F7A41D?style=flat&logo=zig&logoColor=white)](https://ziglang.org/) ⚡ [![tzdata](https://img.shields.io/badge/tzdata-2025b-blue)](https://www.iana.org/time-zones) [![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg)](http://unlicense.org/)
 
 # zdt
