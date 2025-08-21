@@ -15,6 +15,10 @@ Types of changes
 
 ## 2025-08-21, v0.8.0
 
+### Added
+
+- `%F` formatting directive to give ISO date (YYYY-MM-DD)
+
 ### Changed
 
 - "writergate" adaptations; see also <https://github.com/ziglang/zig/commit/0e37ff0d591dd75ceec9208196bec29efaec607a>

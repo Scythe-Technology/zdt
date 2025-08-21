@@ -98,7 +98,7 @@ pub fn tokenizeAndPrint(
     dt: *const Datetime,
     directives: []const u8,
     writer: *Writer,
-) anyerror!void { // TODO: replace error since writer is not anytype anymore
+) FormatError!void {
     var fmt_idx: usize = 0;
     var modifier_count: u8 = 0;
 
@@ -257,7 +257,7 @@ fn printIntoWriter(
     directive: u8,
     modifier_count: u8,
     writer: *Writer,
-) FormatError!void { // TODO: replace error since writer is not anytype anymore
+) FormatError!void {
     switch (directive) {
         'd' => try writer.print("{d:0>2}", .{dt.day}),
         'e' => try writer.print("{d: >2}", .{dt.day}),
@@ -356,8 +356,14 @@ fn printIntoWriter(
         'U' => try writer.print("{d:0>2}", .{dt.weekOfYearSun()}),
         'V' => try writer.print("{d:0>2}", .{dt.toISOCalendar().isoweek}),
         'T' => try dt.format(writer), // ISO format
-        // TODO:
-        // 'F' => try dt.format("", .{}, writer) // ISO format, date only
+        'F' => { // ISO format, date only
+            try writer.print("{s}{d:0>2}-{d:0>2}-{d:0>2}", .{
+                if (dt.year < 0) "-" else "",
+                @abs(dt.year),
+                dt.month,
+                dt.day,
+            });
+        },
         't' => try writer.print("{f}", .{dt.toISOCalendar()}),
         // 'x', // locale-specific, date
         // 'X', // locale-specific, time

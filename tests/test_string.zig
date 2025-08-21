@@ -526,6 +526,29 @@ test "format isocalendar, %t" {
     }
 }
 
+test "format ISO date, %F" {
+    const cases = [_]TestCase{
+        .{
+            .dt = try Datetime.fromFields(.{ .year = 1970, .month = 1, .day = 1 }),
+            .string = "1970-01-01",
+            .directive = "%F",
+        },
+        .{
+            .dt = try Datetime.fromFields(.{ .year = 2024, .month = 9, .day = 21 }),
+            .string = "2024-09-21",
+            .directive = "%F",
+        },
+    };
+
+    var buf: [64]u8 = undefined;
+    var w: std.Io.Writer = .fixed(&buf);
+    for (cases) |case| {
+        try case.dt.toString(case.directive, &w);
+        try testing.expectEqualStrings(case.string, w.buffered());
+        w = .fixed(&buf);
+    }
+}
+
 // ---- String to Datetime ----
 
 test "parse empty" {
@@ -547,6 +570,7 @@ test "comptime parse with comptime format string #1" {
             .string = "1970-01-01 00:00:00",
             .dt = try Datetime.fromFields(.{ .year = 1970 }),
         },
+        // TODO : (future...) handle negative years
         // .{
         //     .string = "-1970-01-01 00:00:00",
         //     .dt = try Datetime.fromFields(.{ .year = -1970 }),

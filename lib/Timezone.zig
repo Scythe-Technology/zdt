@@ -132,7 +132,8 @@ pub fn fromSystemTzdata(identifier: []const u8, db_path: []const u8, allocator: 
     const p = try std.fs.path.join(fb_alloc, &[_][]const u8{ db_path, identifier });
     var file = try std.fs.openFileAbsolute(p, .{ .mode = .read_only });
     defer file.close();
-    // TODO : This buffer size seems arbitrary:
+
+    // TODO : This buffer size is a bit arbitrary...
     var read_buf: [4096]u8 = undefined;
     var file_reader: std.fs.File.Reader = .init(file, &read_buf);
 
