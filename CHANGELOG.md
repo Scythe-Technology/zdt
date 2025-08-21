@@ -13,6 +13,10 @@ Types of changes
 
 ## [Unreleased]
 
+### Fixed
+
+- Windows version; std.builtin.CallingConvention changed content naming
+
 ## 2025-08-21, v0.8.0
 
 ### Added
