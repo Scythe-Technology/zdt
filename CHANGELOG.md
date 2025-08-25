@@ -15,7 +15,7 @@ Types of changes
 
 ### Fixed
 
-- Windows version; std.builtin.CallingConvention changed content naming
+- Windows version; `std.builtin.CallingConvention` changed content naming
 - build.zig.zon of library: remove incorrectly specified dependency
 
 ## 2025-08-21, v0.8.0
