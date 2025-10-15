@@ -13,6 +13,10 @@ Types of changes
 
 ## [Unreleased]
 
+### Fixed
+
+- Datetime, getSurroundingTimetypes function: fix type casting of transitions index to usize
+
 ## 2025-08-26, v0.8.1
 
 ### Fixed

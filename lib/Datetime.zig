@@ -993,19 +993,19 @@ fn getSurroundingTimetypes(local_offset: UTCoffset, _tz: *const Timezone) TzErro
             if (idx > 0)
                 surrounding[1] = _tz.rules.tzif.timetypes[
                     _tz.rules.tzif.transitions[
-                        @as(u64, @intCast(idx))
+                        @as(usize, @abs(idx))
                     ].timetype_idx
                 ];
             if (idx >= 1)
                 surrounding[0] = _tz.rules.tzif.timetypes[
                     _tz.rules.tzif.transitions[
-                        @as(u64, @intCast(idx - 1))
+                        @as(usize, @abs(idx - 1))
                     ].timetype_idx
                 ];
             if (idx > 0 and idx < _tz.rules.tzif.transitions.len - 1)
                 surrounding[2] = _tz.rules.tzif.timetypes[
                     _tz.rules.tzif.transitions[
-                        @as(u64, @intCast(idx + 1))
+                        @as(usize, @abs(idx + 1))
                     ].timetype_idx
                 ];
             return surrounding;
@@ -1014,19 +1014,19 @@ fn getSurroundingTimetypes(local_offset: UTCoffset, _tz: *const Timezone) TzErro
             if (idx > 0)
                 surrounding[1] = _tz.rules.tzif_fixedsize.__timetypes_data[
                     _tz.rules.tzif_fixedsize.__transitions_data[
-                        @as(u64, @intCast(idx))
+                        @as(usize, @abs(idx))
                     ].timetype_idx
                 ];
             if (idx >= 1)
                 surrounding[0] = _tz.rules.tzif_fixedsize.__timetypes_data[
                     _tz.rules.tzif_fixedsize.__transitions_data[
-                        @as(u64, @intCast(idx - 1))
+                        @as(usize, @abs(idx - 1))
                     ].timetype_idx
                 ];
             if (idx > 0 and idx < _tz.rules.tzif_fixedsize.n_transitions - 1)
                 surrounding[2] = _tz.rules.tzif_fixedsize.__timetypes_data[
                     _tz.rules.tzif_fixedsize.__transitions_data[
-                        @as(u64, @intCast(idx + 1))
+                        @as(usize, @abs(idx + 1))
                     ].timetype_idx
                 ];
             return surrounding;
