@@ -105,7 +105,8 @@ pub fn main() !void {
         log.info("tzdb compile step, stdout: {s}", .{proc_compile.stdout});
     }
     if (proc_compile.stderr.len > 0) {
-        log.info("tzdb compile step, stderr: {s}", .{proc_compile.stderr});
+        log.warn("tzdb compile step, stderr: {s}", .{proc_compile.stderr});
+        log.info("note: localtime error can be ignored\n", .{});
     }
     allocator.free(proc_compile.stdout);
     allocator.free(proc_compile.stderr);
@@ -160,7 +161,7 @@ pub fn main() !void {
         log.info("tzdb make win tz mappeing step, stdout: {s}", .{proc_wintzmapping.stdout});
     }
     if (proc_wintzmapping.stderr.len > 0) {
-        log.info("tzdb make win tz mappeing step, stderr: {s}", .{proc_wintzmapping.stderr});
+        log.warn("tzdb make win tz mappeing step, stderr: {s}", .{proc_wintzmapping.stderr});
     }
     allocator.free(proc_wintzmapping.stdout);
     allocator.free(proc_wintzmapping.stderr);
@@ -178,7 +179,7 @@ pub fn main() !void {
         log.info("tzdb embedding mappeing step, stdout: {s}", .{proc_tzembed.stdout});
     }
     if (proc_tzembed.stderr.len > 0) {
-        log.info("tzdb embedding step, stderr: {s}", .{proc_tzembed.stderr});
+        log.warn("tzdb embedding step, stderr: {s}", .{proc_tzembed.stderr});
     }
     allocator.free(proc_tzembed.stdout);
     allocator.free(proc_tzembed.stderr);

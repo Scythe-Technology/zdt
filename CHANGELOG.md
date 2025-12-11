@@ -13,6 +13,10 @@ Types of changes
 
 ## [Unreleased]
 
+### Changed
+
+- bump IANA timezone database to 2025c release
+
 ### Fixed
 
 - Datetime, getSurroundingTimetypes function: fix type casting of transitions index to usize

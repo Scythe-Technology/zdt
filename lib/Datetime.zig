@@ -7,6 +7,7 @@ const Writer = std.Io.Writer;
 
 const cal = @import("./calendar.zig");
 const str = @import("./string.zig");
+const time = @import("./time.zig");
 const tzif = @import("./tzif.zig");
 
 const Duration = @import("./Duration.zig");
@@ -600,7 +601,7 @@ pub fn floorTo(dt: *const Datetime, timespan: Duration.Timespan) ZdtError!Dateti
 /// If 'null' is supplied as tz_options, naive datetime resembling UTC is returned.
 pub fn now(opts: ?tz_options) ZdtError!Datetime {
     return try Datetime.fromUnix(
-        std.time.nanoTimestamp(),
+        time.nanoTimestamp(),
         Duration.Resolution.nanosecond,
         opts,
     );
@@ -608,7 +609,7 @@ pub fn now(opts: ?tz_options) ZdtError!Datetime {
 
 /// Current UTC time is fail-safe since it contains a pre-defined time zone.
 pub fn nowUTC() Datetime {
-    const t = std.time.nanoTimestamp();
+    const t = time.nanoTimestamp();
     return Datetime.fromUnix(
         @intCast(t),
         Duration.Resolution.nanosecond,
@@ -993,19 +994,19 @@ fn getSurroundingTimetypes(local_offset: UTCoffset, _tz: *const Timezone) TzErro
             if (idx > 0)
                 surrounding[1] = _tz.rules.tzif.timetypes[
                     _tz.rules.tzif.transitions[
-                        @as(usize, @abs(idx))
+                        @as(usize, @intCast(idx))
                     ].timetype_idx
                 ];
             if (idx >= 1)
                 surrounding[0] = _tz.rules.tzif.timetypes[
                     _tz.rules.tzif.transitions[
-                        @as(usize, @abs(idx - 1))
+                        @as(usize, @intCast(idx - 1))
                     ].timetype_idx
                 ];
             if (idx > 0 and idx < _tz.rules.tzif.transitions.len - 1)
                 surrounding[2] = _tz.rules.tzif.timetypes[
                     _tz.rules.tzif.transitions[
-                        @as(usize, @abs(idx + 1))
+                        @as(usize, @intCast(idx + 1))
                     ].timetype_idx
                 ];
             return surrounding;
@@ -1014,19 +1015,19 @@ fn getSurroundingTimetypes(local_offset: UTCoffset, _tz: *const Timezone) TzErro
             if (idx > 0)
                 surrounding[1] = _tz.rules.tzif_fixedsize.__timetypes_data[
                     _tz.rules.tzif_fixedsize.__transitions_data[
-                        @as(usize, @abs(idx))
+                        @as(usize, @intCast(idx))
                     ].timetype_idx
                 ];
             if (idx >= 1)
                 surrounding[0] = _tz.rules.tzif_fixedsize.__timetypes_data[
                     _tz.rules.tzif_fixedsize.__transitions_data[
-                        @as(usize, @abs(idx - 1))
+                        @as(usize, @intCast(idx - 1))
                     ].timetype_idx
                 ];
             if (idx > 0 and idx < _tz.rules.tzif_fixedsize.n_transitions - 1)
                 surrounding[2] = _tz.rules.tzif_fixedsize.__timetypes_data[
                     _tz.rules.tzif_fixedsize.__transitions_data[
-                        @as(usize, @abs(idx + 1))
+                        @as(usize, @intCast(idx + 1))
                     ].timetype_idx
                 ];
             return surrounding;

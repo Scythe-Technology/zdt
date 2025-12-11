@@ -13,7 +13,7 @@ const log = std.log.scoped(.zdt_build);
 
 const zdt_version = std.SemanticVersion{ .major = 0, .minor = 8, .patch = 1 };
 
-const tzdb_tag = "2025b";
+const tzdb_release = "2025c";
 
 const example_files = [_][]const u8{
     "demo",
@@ -127,14 +127,15 @@ pub fn build(b: *std.Build) !void {
             .name = "gen_tzdb",
             .root_module = b.createModule(.{
                 .root_source_file = b.path("scripts/gen_tzdb.zig"),
-                .target = b.graph.host, // tzdb is required on the host system, even if host != target
+                // tzdb is required on the host system, even if host != target:
+                .target = b.graph.host,
             }),
         });
 
         const run_tzdata_update = b.addRunArtifact(gen_tzdb);
         run_tzdata_update.step.dependOn(&gen_tzdb.step);
         // tag to checkout:
-        run_tzdata_update.addArg(tzdb_tag);
+        run_tzdata_update.addArg(tzdb_release);
         // where to run makefile of tzdata:
         run_tzdata_update.addArg(tzdb_submodule_dir);
         // target directory of the compilation:

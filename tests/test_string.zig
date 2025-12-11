@@ -27,7 +27,9 @@ const masks_to_try = switch (builtin.os.tag) {
     },
 };
 
-// locale-specific tests only for English
+// locale-specific tests require an English locale or the C locale to be available on
+// the system. If that is the case but LC_TIME is a different locale, run tests like this:
+// `LC_TIME="en_US.UTF-8" zig build test`.
 fn locale_ok() bool {
     var loc: [*c]u8 = undefined;
     for (masks_to_try) |mask| {
@@ -39,19 +41,21 @@ fn locale_ok() bool {
         return false;
     }
 
+    const ok_locales = [_][]const u8{
+        "C",
+        "C.UTF-8",
+        "en_GB.UTF-8",
+        "en_US.UTF-8",
+        "English_United States.1252",
+        "English_United States.utf8",
+    };
     const env_locale: [:0]const u8 = std.mem.span(loc);
-    // log.warn("got locale: {s}\n", .{env_locale});
-    if (!(std.mem.eql(u8, env_locale, "en_US.UTF-8") or
-        std.mem.eql(u8, env_locale, "English_United States.utf8") or
-        std.mem.eql(u8, env_locale, "en_GB.UTF-8") or
-        std.mem.eql(u8, env_locale, "C.UTF-8") or
-        std.mem.eql(u8, env_locale, "English_United States.1252") or
-        std.mem.eql(u8, env_locale, "C")))
-    {
-        log.warn("can run locale-specific tests only with English locale; got {s}", .{env_locale});
-        return false;
+    for (ok_locales) |ok| {
+        if (std.mem.eql(u8, env_locale, ok)) return true;
     }
-    return true;
+
+    log.warn("can run locale-specific tests only with English locale; got {s}", .{env_locale});
+    return false;
 }
 
 // ----
@@ -632,7 +636,7 @@ test "parse with abbreviated month and day name, locale-specific" {
 
     const cases = [_]TestCase{
         .{
-            .string = "Thu 01 Jan 1970, 12 am",
+            .string = "Thu 01 Jan 1970, 12 am", // midnight
             .dt = try Datetime.fromFields(.{ .year = 1970 }),
             .directive = "%a %d %b %Y, %I %p",
         },
@@ -725,12 +729,7 @@ test "parse with month name and day, user-defined locale" {
         },
     };
 
-    // var buf: [64]u8 = undefined;
-    // var w: std.Io.Writer = .fixed(&buf);
     for (cases) |case| {
-        // try case.dt.toString(case.directive, &w);
-        // log.warn("str: {s}", .{w.buffered()});
-        // w = .fixed(&buf);
         const dt = try Datetime.fromString(case.string, case.directive);
         try testing.expectEqual(case.dt, dt);
     }

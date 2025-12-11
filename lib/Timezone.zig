@@ -124,18 +124,24 @@ pub fn fromTzdata(identifier: []const u8, allocator: ?std.mem.Allocator) ZdtErro
 /// If an allocator is used, the caller must make sure to de-allocate memory used for
 /// storing the TZif file's content by calling the deinit method of the returned
 /// `Timezone` instance.
+///
+/// Uses `std.Io.Threaded`, i.e. normal, blocking io for reading the file.
 pub fn fromSystemTzdata(identifier: []const u8, db_path: []const u8, allocator: ?std.mem.Allocator) ZdtError!Timezone {
     if (!identifierValid(identifier)) return TzError.InvalidIdentifier;
+
+    var io_instance: std.Io.Threaded = undefined;
+    const io = io_instance.io();
+
     var path_buffer: [std.fs.max_path_bytes]u8 = undefined;
     var fba = std.heap.FixedBufferAllocator.init(&path_buffer);
     const fb_alloc = fba.allocator();
     const p = try std.fs.path.join(fb_alloc, &[_][]const u8{ db_path, identifier });
-    var file = try std.fs.openFileAbsolute(p, .{ .mode = .read_only });
-    defer file.close();
 
-    // TODO : This buffer size is a bit arbitrary...
+    var file = try std.Io.File.openAbsolute(io, p, .{ .mode = .read_only });
+    defer file.close(io);
+
     var read_buf: [4096]u8 = undefined;
-    var file_reader: std.fs.File.Reader = .init(file, &read_buf);
+    var file_reader: std.Io.File.Reader = .init(file, io, &read_buf);
 
     var tz = Timezone{ .rules = .{ .utc = .{} } };
 
