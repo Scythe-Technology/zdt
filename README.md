@@ -89,7 +89,8 @@ See [changelog](https://codeberg.org/FObersteiner/zdt/src/branch/main/CHANGELOG.
 
 ## Zig version requirements
 
-- `v0.8.x`: Zig 0.15.1 (0.16-dev *may* work)
+- `v0.9.x`: Zig 0.16.0-dev *may* work
+- `v0.8.x`: Zig 0.15.1 / -2
 - `v0.7.x`: Zig 0.14 / 0.14.1
 - `v0.6.x`: Zig 0.14 / 0.14.1
 - `v0.5.x`: Zig 0.13 / 0.14
@@ -99,7 +100,8 @@ See [changelog](https://codeberg.org/FObersteiner/zdt/src/branch/main/CHANGELOG.
 
 ## IANA timezone database version
 
-- `v0.6.2+`: `2025b` (current)
+- `v0.8.2+`: `2025c` (current)
+- `v0.6.2+`: `2025b`
 - `v0.4.5+`: `2025a`
 - `v0.2.2+`: `2024b`
 - `<= v0.2.1`: `2024a`
