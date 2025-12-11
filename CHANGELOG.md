@@ -13,6 +13,10 @@ Types of changes
 
 ## [Unreleased]
 
+## 2025-12-11, v0.9.0-zig_master
+
+This release targets the latest Zig master.
+
 ### Changed
 
 - bump IANA timezone database to 2025c release
