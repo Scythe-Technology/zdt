@@ -792,12 +792,12 @@ pub fn weeksInYear(dt: Datetime) u8 {
 }
 
 /// Day of the week as an enum value; Sun as first day of the week.
-pub fn weekday(dt: Datetime) Weekday {
-    return std.meta.intToEnum(Weekday, dt.weekdayNumber()) catch unreachable;
+pub fn weekday(dt: Datetime) Weekday { 
+    return @as(Weekday, @enumFromInt(dt.weekdayNumber()));
 }
 
 pub fn monthEnum(dt: Datetime) Month {
-    return std.meta.intToEnum(Month, dt.month) catch unreachable;
+    return @as(Month, @enumFromInt(dt.month));
 }
 
 /// Number of the weekday starting at 0 == Sunday (strftime/strptime: `%w`).

@@ -72,12 +72,12 @@ pub fn build(b: *std.Build) !void {
             .root_source_file = b.path("lib/root.zig"),
             .target = target,
             .optimize = optimize,
+            .link_libc = true
         }),
         .linkage = .static,
         .version = zdt_version,
     });
 
-    zdt.linkLibC();
     b.installArtifact(zdt);
     // --------------------------------------------------------------------------------
 
@@ -155,10 +155,10 @@ pub fn build(b: *std.Build) !void {
                 .root_source_file = b.path("lib/root.zig"),
                 .target = target,
                 .optimize = optimize,
+                .link_libc = true
                 // .test_runner = "./test_runner.zig",
             }),
         });
-        root_test.linkLibC(); // stringIO has libc dependency
         const run_test_root = b.addRunArtifact(root_test);
         root_test.root_module.addImport("zdt", zdt_module);
         run_tests.dependOn(&run_test_root.step);
@@ -170,10 +170,10 @@ pub fn build(b: *std.Build) !void {
                     .root_source_file = b.path(b.fmt("tests/{s}.zig", .{test_name})),
                     .target = target,
                     .optimize = optimize,
+                    .link_libc = true
                     // .test_runner = "./test_runner.zig",
                 }),
             });
-            _test.linkLibC(); // stringIO has libc dependency
             const run_test = b.addRunArtifact(_test);
             _test.root_module.addImport("zdt", zdt_module);
             run_tests.dependOn(&run_test.step);
@@ -195,9 +195,9 @@ pub fn build(b: *std.Build) !void {
                     .root_source_file = b.path(b.fmt("examples/{s}.zig", .{example_name})),
                     .target = target,
                     .optimize = optimize,
+                    .link_libc = true
                 }),
             });
-            example.linkLibC();
             example.root_module.addImport("zdt", zdt_module);
             const install_example = b.addInstallArtifact(example, .{});
             build_examples.dependOn(&example.step);

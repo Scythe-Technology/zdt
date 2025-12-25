@@ -129,7 +129,7 @@ pub fn fromTzdata(identifier: []const u8, allocator: ?std.mem.Allocator) ZdtErro
 pub fn fromSystemTzdata(identifier: []const u8, db_path: []const u8, allocator: ?std.mem.Allocator) ZdtError!Timezone {
     if (!identifierValid(identifier)) return TzError.InvalidIdentifier;
 
-    var io_instance: std.Io.Threaded = undefined;
+    var io_instance: std.Io.Threaded = .init_single_threaded;
     const io = io_instance.io();
 
     var path_buffer: [std.fs.max_path_bytes]u8 = undefined;
