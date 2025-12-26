@@ -8,17 +8,19 @@ pub fn main() !void {
     var dba = std.heap.DebugAllocator(.{}){};
     defer _ = dba.deinit();
     const allocator = dba.allocator();
+    var threaded: std.Io.Threaded = .init_single_threaded;
+    const io = threaded.io();
 
     // zdt embeds the IANA tz database (about 700k of raw data).
     // If you pass null instead of the allocator, a fixed-size structure will be used - faster, but more mem required.
-    var tz_LA = try zdt.Timezone.fromTzdata("America/Los_Angeles", allocator);
+    var tz_LA = try zdt.Timezone.fromTzdata(io, "America/Los_Angeles", allocator);
     defer tz_LA.deinit();
 
     // You can also use your system's tz data at runtime;
     // this will very likely not work on Windows, so we use the embedded version here as well.
     var tz_Paris = switch (builtin.os.tag) {
-        .windows => try zdt.Timezone.fromTzdata("Europe/Paris", allocator),
-        else => try zdt.Timezone.fromSystemTzdata("Europe/Paris", zdt.Timezone.tzdb_prefix, allocator),
+        .windows => try zdt.Timezone.fromTzdata(io, "Europe/Paris", allocator),
+        else => try zdt.Timezone.fromSystemTzdata(io, "Europe/Paris", zdt.Timezone.tzdb_prefix, allocator),
     };
     defer tz_Paris.deinit();
 

@@ -88,10 +88,10 @@ pub fn fromPosixTz(posixString: []const u8) FormatError!Timezone {
 /// If an allocator is used, the caller must make sure to de-allocate memory used for
 /// storing the TZif file's content by calling the deinit method of the returned
 /// `Timezone` instance.
-pub fn fromTzdata(identifier: []const u8, allocator: ?std.mem.Allocator) ZdtError!Timezone {
+pub fn fromTzdata(io: std.Io, identifier: []const u8, allocator: ?std.mem.Allocator) ZdtError!Timezone {
     if (!identifierValid(identifier)) return TzError.InvalidIdentifier;
 
-    if (std.mem.eql(u8, identifier, "localtime")) return tzLocal(allocator);
+    if (std.mem.eql(u8, identifier, "localtime")) return tzLocal(io, allocator);
 
     if (tzdata.get(identifier)) |TZifBytes| {
         var reader = std.Io.Reader.fixed(TZifBytes);
@@ -126,11 +126,11 @@ pub fn fromTzdata(identifier: []const u8, allocator: ?std.mem.Allocator) ZdtErro
 /// `Timezone` instance.
 ///
 /// Uses `std.Io.Threaded`, i.e. normal, blocking io for reading the file.
-pub fn fromSystemTzdata(identifier: []const u8, db_path: []const u8, allocator: ?std.mem.Allocator) ZdtError!Timezone {
+pub fn fromSystemTzdata(io: std.Io, identifier: []const u8, db_path: []const u8, allocator: ?std.mem.Allocator) ZdtError!Timezone {
     if (!identifierValid(identifier)) return TzError.InvalidIdentifier;
 
-    var io_instance: std.Io.Threaded = .init_single_threaded;
-    const io = io_instance.io();
+    //var io_instance: std.Io.Threaded = .init_single_threaded;
+    //const io = io_instance.io();
 
     var path_buffer: [std.fs.max_path_bytes]u8 = undefined;
     var fba = std.heap.FixedBufferAllocator.init(&path_buffer);
@@ -195,17 +195,17 @@ pub fn deinit(tz: *Timezone) void {
 /// Note: Windows does not use the IANA time zone database;
 /// a mapping from Windows db to IANA db exists but is prone to errors.
 /// Use with caution.
-pub fn tzLocal(allocator: ?std.mem.Allocator) ZdtError!Timezone {
+pub fn tzLocal(io: std.Io, allocator: ?std.mem.Allocator) ZdtError!Timezone {
     switch (builtin.os.tag) {
         .linux, .macos => {
             const default_path = "/etc/localtime";
             var path_buffer: [std.fs.max_path_bytes]u8 = undefined;
             const path = try std.fs.realpath(default_path, &path_buffer);
-            return try Timezone.fromSystemTzdata(path, "", allocator);
+            return try Timezone.fromSystemTzdata(io, path, "", allocator);
         },
         .windows => {
             const win_name = try tzwin.getTzName();
-            return try Timezone.fromTzdata(win_name, allocator);
+            return try Timezone.fromTzdata(io, win_name, allocator);
         },
         else => return TzError.NotImplemented,
     }

@@ -726,7 +726,8 @@ test "add relative delta to naive datetime" {
 }
 
 test "add relative delta to aware datetime" {
-    var tz = try Timezone.fromTzdata("Europe/Berlin", testing.allocator);
+    var threaded: std.Io.Threaded = .init_single_threaded;
+    var tz = try Timezone.fromTzdata(threaded.io(), "Europe/Berlin", testing.allocator);
     defer tz.deinit();
 
     var have: Datetime = try Datetime.fromFields(.{ .year = 1970, .tz_options = .{ .tz = &tz } });

@@ -235,7 +235,7 @@ test "format with Z" {
     try Datetime.toString(dt, "%Y-%m-%dT%H:%M:%S%:z%:Z", &w);
     try testing.expectEqualStrings("2023-12-09T01:02:03+00:00Z", w.buffered());
 
-    var tz_pacific = try Tz.fromTzdata("America/Los_Angeles", testing.allocator);
+    var tz_pacific = try Tz.fromTzdata(testing.io, "America/Los_Angeles", testing.allocator);
     defer tz_pacific.deinit();
     const dt_std = try dt.tzConvert(.{ .tz = &tz_pacific });
 
