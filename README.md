@@ -104,14 +104,14 @@ std.debug.print(
 
 - No dependencies on other Zig libraries
 - Time zone database: `zdt` comes with [eggert/tz](https://github.com/eggert/tz). The database is compiled and shipped with `zdt`.
-- `libc`: linked via build.zig
 - if you wish to use your own version of the [IANA time zone db](https://www.iana.org/time-zones), you can set a path to it using the `-Dprefix-tzdb="path/to/your/tzdb"` option. See also `zig build --help`.
+- `libc`: linked via build.zig
 
 ## Development
 
-See [changelog](https://codeberg.org/FObersteiner/zdt/src/branch/main/CHANGELOG.md)
+See [changelog](https://codeberg.org/FObersteiner/zdt/src/branch/main/CHANGELOG.md).
 
-- To update the time zone database and the version info, run the following build step: `zig build update-tzdb`. Some of the code generation is done with Python scripts, which require Python >= 3.9 but no third party packages, i.e. a system installation will do.
+To update the time zone database and the version info, run the following build step: `zig build update-tzdb`. Some of the code generation is done with Python scripts, which require Python >= 3.9 but no third party packages, i.e. a system installation will do.
 
 ## Credits
 
