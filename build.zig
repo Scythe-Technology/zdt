@@ -68,12 +68,7 @@ pub fn build(b: *std.Build) !void {
 
     const zdt = b.addLibrary(.{
         .name = "zdt",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("lib/root.zig"),
-            .target = target,
-            .optimize = optimize,
-            .link_libc = true
-        }),
+        .root_module = b.createModule(.{ .root_source_file = b.path("lib/root.zig"), .target = target, .optimize = optimize, .link_libc = true }),
         .linkage = .static,
         .version = zdt_version,
     });
@@ -155,7 +150,7 @@ pub fn build(b: *std.Build) !void {
                 .root_source_file = b.path("lib/root.zig"),
                 .target = target,
                 .optimize = optimize,
-                .link_libc = true
+                .link_libc = true,
                 // .test_runner = "./test_runner.zig",
             }),
         });
@@ -170,7 +165,7 @@ pub fn build(b: *std.Build) !void {
                     .root_source_file = b.path(b.fmt("tests/{s}.zig", .{test_name})),
                     .target = target,
                     .optimize = optimize,
-                    .link_libc = true
+                    .link_libc = true,
                     // .test_runner = "./test_runner.zig",
                 }),
             });
@@ -195,7 +190,7 @@ pub fn build(b: *std.Build) !void {
                     .root_source_file = b.path(b.fmt("examples/{s}.zig", .{example_name})),
                     .target = target,
                     .optimize = optimize,
-                    .link_libc = true
+                    .link_libc = true,
                 }),
             });
             example.root_module.addImport("zdt", zdt_module);

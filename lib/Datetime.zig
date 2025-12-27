@@ -792,7 +792,7 @@ pub fn weeksInYear(dt: Datetime) u8 {
 }
 
 /// Day of the week as an enum value; Sun as first day of the week.
-pub fn weekday(dt: Datetime) Weekday { 
+pub fn weekday(dt: Datetime) Weekday {
     return @as(Weekday, @enumFromInt(dt.weekdayNumber()));
 }
 
