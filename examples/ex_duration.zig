@@ -9,6 +9,8 @@ const Timezone = zdt.Timezone;
 pub fn main() !void {
     println("---> duration example", .{});
 
+    var threads: std.Io.Threaded = .init_single_threaded;
+    const io = threads.io();
     const now_utc = Datetime.nowUTC();
     println("now, UTC : {f}", .{now_utc});
     const past_midnight = try now_utc.floorTo(.day);
@@ -37,7 +39,7 @@ pub fn main() !void {
     var gpa = std.heap.DebugAllocator(.{}){};
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
-    var tz_berlin: Timezone = try Timezone.fromTzdata("Europe/Berlin", allocator);
+    var tz_berlin: Timezone = try Timezone.fromTzdata(io, "Europe/Berlin", allocator);
     defer tz_berlin.deinit();
 
     const delta = try Duration.RelativeDelta.fromISO8601("P1D");

@@ -9,6 +9,8 @@ pub fn main() !void {
     println("---> time zones example", .{});
 
     var gpa = std.heap.DebugAllocator(.{}){};
+    var threads: std.Io.Threaded = .init_single_threaded;
+    const io = threads.io();
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
@@ -16,7 +18,7 @@ pub fn main() !void {
     println("path to local tz database: {s}\n", .{Timezone.tzdb_prefix});
 
     println("load timezone, dynamically allocated memory:", .{});
-    var tz_berlin: Timezone = try Timezone.fromTzdata("Europe/Berlin", allocator);
+    var tz_berlin: Timezone = try Timezone.fromTzdata(io, "Europe/Berlin", allocator);
     defer tz_berlin.deinit();
     println("Info: {f}", .{tz_berlin});
     var now_berlin: Datetime = try Datetime.now(.{ .tz = &tz_berlin });
@@ -26,12 +28,12 @@ pub fn main() !void {
     println("Datetimes have UTC offset / time zone? : {}, {}\n", .{ now_utc.isAware(), now_berlin.isAware() });
 
     println("load timezone, static memory:", .{});
-    const tz_berlin_: Timezone = try Timezone.fromTzdata("Europe/Berlin", null);
+    const tz_berlin_: Timezone = try Timezone.fromTzdata(io, "Europe/Berlin", null);
     println("Info: {f}", .{tz_berlin_});
     const now_berlin_: Datetime = try Datetime.now(.{ .tz = &tz_berlin_ });
     println("Now, Berlin time : {f} ({s})\n", .{ now_berlin_, now_berlin_.tzAbbreviation() });
 
-    var my_tz: Timezone = try Timezone.tzLocal(allocator);
+    var my_tz: Timezone = try Timezone.tzLocal(io, allocator);
     defer my_tz.deinit();
     var now_local = try now_berlin.tzConvert(.{ .tz = &my_tz });
     println("My time zone : {s}", .{my_tz.name()});
@@ -39,7 +41,7 @@ pub fn main() !void {
     println("Now, my time zone : {f} ({s})", .{ now_local, now_local.tzAbbreviation() });
     println("", .{});
 
-    var tz_ny = try Timezone.fromTzdata("America/New_York", allocator);
+    var tz_ny = try Timezone.fromTzdata(io, "America/New_York", allocator);
     defer tz_ny.deinit();
     var now_ny: Datetime = try now_local.tzConvert(.{ .tz = &tz_ny });
     println("Now in New York : {f} ({s})", .{ now_ny, now_ny.tzAbbreviation() });
