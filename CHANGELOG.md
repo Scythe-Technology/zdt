@@ -13,6 +13,10 @@ Types of changes
 
 ## [Unreleased]
 
+### Changed
+
+- introduce io interface for `Timezone.fromTzdata` and `Timezone.fromSystemTzdata` by @pollend
+
 ## 2025-12-11, v0.9.0-zig_master
 
 This release targets the latest Zig master.
