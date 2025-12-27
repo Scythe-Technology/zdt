@@ -26,16 +26,20 @@ var dba = std.heap.DebugAllocator(.{}){};
 defer _ = dba.deinit();
 const allocator = dba.allocator();
 
+var threaded: std.Io.Threaded = .init_single_threaded;
+const io = threaded.io();
+
 // zdt embeds the IANA tz database (about 700k of raw data).
-// If you pass null instead of the allocator, a fixed-size structure will be used - faster, but more mem required.
-var tz_LA = try zdt.Timezone.fromTzdata("America/Los_Angeles", allocator);
+// If you pass 'null' instead of the allocator, a fixed-size structure will be used,
+// see ex_timezones.zig - this is faster, but requires more memory.
+var tz_LA = try zdt.Timezone.fromTzdata(io, "America/Los_Angeles", allocator);
 defer tz_LA.deinit();
 
 // You can also use your system's tz data at runtime;
 // this will very likely not work on Windows, so we use the embedded version here as well.
 var tz_Paris = switch (builtin.os.tag) {
-    .windows => try zdt.Timezone.fromTzdata("Europe/Paris", allocator),
-    else => try zdt.Timezone.fromSystemTzdata("Europe/Paris", zdt.Timezone.tzdb_prefix, allocator),
+    .windows => try zdt.Timezone.fromTzdata(io, "Europe/Paris", allocator),
+    else => try zdt.Timezone.fromSystemTzdata(io, "Europe/Paris", zdt.Timezone.tzdb_prefix, allocator),
 };
 defer tz_Paris.deinit();
 
@@ -73,20 +77,6 @@ std.debug.print(
 // Easter this year is on 2025-04-20T00:00:00
 ```
 
-## Credits
-
-Special thanks to the creators of the following resources:
-
-- inspiration for early version of string-to-datetime parser, and most of the POSIX TZ code: [leroycep/zig-tzif](https://github.com/leroycep/zig-tzif)
-- date <--> days since Unix epoch conversion, algorithms: [cassioneri/eaf](https://github.com/cassioneri/eaf)
-- general support from [ziggit.dev](https://ziggit.dev/)
-
-## Development
-
-See [changelog](https://codeberg.org/FObersteiner/zdt/src/branch/main/CHANGELOG.md)
-
-- To update the time zone database and the version info, run the following build step: `zig build update-tzdb`. Some of the code generation is done with Python scripts, which require Python >= 3.9 but no third party packages, i.e. a system installation will do.
-
 ## Zig version requirements
 
 - `v0.9.x`: Zig 0.16.0-dev *may* work
@@ -96,7 +86,11 @@ See [changelog](https://codeberg.org/FObersteiner/zdt/src/branch/main/CHANGELOG.
 - `v0.5.x`: Zig 0.13 / 0.14
 - `v0.4.x`: Zig 0.13
 
-`zdt` is developed with Zig 'master' - this might sometimes introduce version incompatibilities. If you just want to use the library, use a tagged version that suites your Zig version.
+`zdt` 'main' branch targets Zig 'master', but might not be up-to-date with the latest developments. If you just want to use the library, use a tagged version that suites your Zig version.
+
+## Operating Systems
+
+`zdt` primarily targets Linux (debian, arch) since I abandoned Windows completely. If something doesn't work for you on Mac, Windows or other OS: contributions welcome!
 
 ## IANA timezone database version
 
@@ -110,7 +104,22 @@ See [changelog](https://codeberg.org/FObersteiner/zdt/src/branch/main/CHANGELOG.
 
 - No dependencies on other Zig libraries
 - Time zone database: `zdt` comes with [eggert/tz](https://github.com/eggert/tz). The database is compiled and shipped with `zdt`.
+- `libc`: linked via build.zig
 - if you wish to use your own version of the [IANA time zone db](https://www.iana.org/time-zones), you can set a path to it using the `-Dprefix-tzdb="path/to/your/tzdb"` option. See also `zig build --help`.
+
+## Development
+
+See [changelog](https://codeberg.org/FObersteiner/zdt/src/branch/main/CHANGELOG.md)
+
+- To update the time zone database and the version info, run the following build step: `zig build update-tzdb`. Some of the code generation is done with Python scripts, which require Python >= 3.9 but no third party packages, i.e. a system installation will do.
+
+## Credits
+
+Special thanks to the creators of the following resources:
+
+- inspiration for early version of string-to-datetime parser, and most of the POSIX TZ code: [leroycep/zig-tzif](https://github.com/leroycep/zig-tzif)
+- date <--> days since Unix epoch conversion, algorithms: [cassioneri/eaf](https://github.com/cassioneri/eaf)
+- general support from [ziggit.dev](https://ziggit.dev/)
 
 ## License
 
