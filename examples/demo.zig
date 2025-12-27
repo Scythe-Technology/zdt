@@ -12,7 +12,8 @@ pub fn main() !void {
     const io = threaded.io();
 
     // zdt embeds the IANA tz database (about 700k of raw data).
-    // If you pass null instead of the allocator, a fixed-size structure will be used - faster, but more mem required.
+    // If you pass 'null' instead of the allocator, a fixed-size structure will be used,
+    // see ex_timezones.zig - this is faster, but requires more memory.
     var tz_LA = try zdt.Timezone.fromTzdata(io, "America/Los_Angeles", allocator);
     defer tz_LA.deinit();
 
