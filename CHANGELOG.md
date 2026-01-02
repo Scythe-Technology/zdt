@@ -13,9 +13,14 @@ Types of changes
 
 ## [Unreleased]
 
+### Added
+
+- CI script, zig-0.15 branch ([#28](https://codeberg.org/FObersteiner/zdt/pulls/28))
+- CI script, main branch (by @pollend, [#31](https://codeberg.org/FObersteiner/zdt/pulls/31))
+
 ### Changed
 
-- introduce io interface for `Timezone.fromTzdata` and `Timezone.fromSystemTzdata` by @pollend
+- introduce io interface for `Timezone.fromTzdata` and `Timezone.fromSystemTzdata` (by @pollend, [#23](https://codeberg.org/FObersteiner/zdt/pulls/23), [#25](https://codeberg.org/FObersteiner/zdt/pulls/25))
 
 ## 2025-12-11, v0.9.0-zig_master
 

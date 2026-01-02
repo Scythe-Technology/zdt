@@ -1,0 +1,27 @@
+name: Build and Test
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: codeberg-small
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          submodules: true
+
+      - name: Install Zig
+        uses: https://github.com/mlugg/setup-zig@v2
+        with:
+          version: master
+          cache-size-limit: 10240 # 10 GiB
+
+      - name: Lint
+        run: zig fmt --check build.zig lib/**/*.zig tests/*.zig
+
+      - name: Test
+        run: zig build test
