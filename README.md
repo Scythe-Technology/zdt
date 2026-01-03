@@ -18,7 +18,7 @@
 - [String parsing / formatting directives](https://codeberg.org/FObersteiner/zdt/src/branch/main/docs/03-String-parsing-and-formatting-directives.md)
 - [Roadmap](https://codeberg.org/FObersteiner/zdt/src/branch/main/docs/05-Roadmap.md)
 
-### [Demo](https://github.com/FObersteiner/zdt/blob/master/examples/demo.zig)
+### [Demo](https://codeberg.org/FObersteiner/zdt/src/branch/main/examples/demo.zig)
 
 ```zig
 // Can use an allocator for the time zones as the size of the rule-files varies.
@@ -72,7 +72,7 @@ std.debug.print("Wall clock time difference: {f}\nAbsolute time difference: {f}\
 // Easteregg:
 std.debug.print(
     "Easter this year is on {f}\n",
-    .{try zdt.Datetime.EasterDate(zdt.Datetime.nowUTC().year)},
+    .{try zdt.Datetime.EasterDate(zdt.Datetime.nowUTC(io).year)},
 );
 // Easter this year is on 2025-04-20T00:00:00
 ```

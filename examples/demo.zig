@@ -8,6 +8,7 @@ pub fn main() !void {
     var dba = std.heap.DebugAllocator(.{}){};
     defer _ = dba.deinit();
     const allocator = dba.allocator();
+
     var threaded: std.Io.Threaded = .init_single_threaded;
     const io = threaded.io();
 
@@ -54,7 +55,7 @@ pub fn main() !void {
     // Easteregg:
     std.debug.print(
         "Easter this year is on {f}\n",
-        .{try zdt.Datetime.EasterDate(zdt.Datetime.nowUTC().year)},
+        .{try zdt.Datetime.EasterDate(zdt.Datetime.nowUTC(io).year)},
     );
     // Easter this year is on 2025-04-20T00:00:00
 }

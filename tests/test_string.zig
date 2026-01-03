@@ -686,7 +686,7 @@ test "parse with month name and day, user-defined locale" {
     }
 
     if (new_loc == null) {
-        log.warn("skip test (locale is null)", .{});
+        log.warn("skip test: locale is null", .{});
         return error.SkipZigTest;
     }
 

@@ -7,6 +7,9 @@ const Duration = zdt.Duration;
 const Tz = zdt.Timezone;
 
 pub fn main() !void {
+    var threaded: std.Io.Threaded = .init_single_threaded;
+    const io = threaded.io();
+
     println("---> datetime example", .{});
 
     println("---> Unix epoch: datetime from timestamp", .{});
@@ -22,20 +25,22 @@ pub fn main() !void {
     println("---> Now: datetime from system's time", .{});
 
     // we can directly write to stdout with the 'toString' method:
-    const now = Datetime.nowUTC();
-    var stdout: std.Io.Writer = std.fs.File.stdout().writerStreaming(&.{}).interface;
-    try now.toString("'now', UTC      : %T\n", &stdout);
-    try now.toString("'now', UTC      : %Y-%m-%dT%H:%M:%S.%:f%z (only ms shown)\n", &stdout);
+    const now = Datetime.nowUTC(io);
+    var writer: std.Io.File.Writer = std.Io.File.stdout().writerStreaming(io, &.{});
+    try now.toString("'now', UTC      : %T\n", &writer.interface);
+    try now.toString("'now', UTC      : %Y-%m-%dT%H:%M:%S.%:f%z (only ms shown)\n", &writer.interface);
 
     const now_s = try now.floorTo(Duration.Timespan.second);
     println("(nanos removed) : {f}", .{now_s});
 
     const now_date = try now.floorTo(Duration.Timespan.day);
-    try now_date.toString("(date only)     : %Y-%m-%d %Z\n", &stdout);
+    try now_date.toString("(date only)     : %Y-%m-%d %Z\n", &writer.interface);
 }
 
 fn println(comptime fmt: []const u8, args: anytype) void {
-    var stdout = std.fs.File.stdout().writerStreaming(&.{});
+    var threaded: std.Io.Threaded = .init_single_threaded;
+    const io = threaded.io();
+    var stdout = std.Io.File.stdout().writerStreaming(io, &.{});
     var writer = &stdout.interface;
     writer.print(fmt ++ "\n", args) catch return;
 }

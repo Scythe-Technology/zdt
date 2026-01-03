@@ -7,7 +7,6 @@ const Writer = std.Io.Writer;
 
 const cal = @import("./calendar.zig");
 const str = @import("./string.zig");
-const time = @import("./time.zig");
 const tzif = @import("./tzif.zig");
 
 const Duration = @import("./Duration.zig");
@@ -599,19 +598,26 @@ pub fn floorTo(dt: *const Datetime, timespan: Duration.Timespan) ZdtError!Dateti
 
 /// The current time with nanosecond resolution.
 /// If 'null' is supplied as tz_options, naive datetime resembling UTC is returned.
-pub fn now(opts: ?tz_options) ZdtError!Datetime {
+///
+/// This function will crash by running into 'unreachable' if no clock is
+/// available on the system, which means something is seriously wrong.
+pub fn now(io: std.Io, opts: ?tz_options) ZdtError!Datetime {
+    const _now = std.Io.Clock.real.now(io) catch unreachable;
     return try Datetime.fromUnix(
-        time.nanoTimestamp(),
+        _now.nanoseconds,
         Duration.Resolution.nanosecond,
         opts,
     );
 }
 
 /// Current UTC time is fail-safe since it contains a pre-defined time zone.
-pub fn nowUTC() Datetime {
-    const t = time.nanoTimestamp();
+///
+/// This function will crash by running into 'unreachable' if no clock is
+/// available on the system, which means something is seriously wrong.
+pub fn nowUTC(io: std.Io) Datetime {
+    const _now = std.Io.Clock.real.now(io) catch unreachable;
     return Datetime.fromUnix(
-        @intCast(t),
+        _now.nanoseconds,
         Duration.Resolution.nanosecond,
         .{ .tz = &Timezone.UTC },
     ) catch unreachable;

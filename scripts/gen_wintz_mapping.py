@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #!/usr/bin/env python3
 #
 # ADAPTED FROM https://raw.githubusercontent.com/regebro/tzlocal/master/update_windows_mappings.py
@@ -10,22 +9,17 @@
 
 import logging
 
-# import ftplib
 from datetime import datetime, timezone
 
-# import tarfile
-# from io import BytesIO
 from pathlib import Path
 
-# from pprint import pprint
-# from urllib.parse import urlparse
 from urllib.request import urlopen
 from xml.dom import minidom
 
 WIN_ZONES_URL = "https://raw.githubusercontent.com/unicode-org/cldr/master/common/supplemental/windowsZones.xml"
 ZONEINFO_URL = "ftp://ftp.iana.org/tz/tzdata-latest.tar.gz"
 
-dst = Path("../lib/windows/windows_tznames.zig")
+dst = Path("lib/windows/windows_tznames.zig")
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("tznames")

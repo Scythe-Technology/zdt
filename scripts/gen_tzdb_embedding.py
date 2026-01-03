@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 from datetime import datetime, UTC
 
-assert len(sys.argv) == 2, f"need exactly 1 arg, got {len(sys.argv)-1}"
+assert len(sys.argv) == 2, f"need exactly 1 arg, got {len(sys.argv) - 1}"
 tag = sys.argv[1]
 
 wd = Path(__file__).parent / ".." / "lib"

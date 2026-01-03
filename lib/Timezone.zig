@@ -129,12 +129,12 @@ pub fn fromTzdata(io: std.Io, identifier: []const u8, allocator: ?std.mem.Alloca
 pub fn fromSystemTzdata(io: std.Io, identifier: []const u8, db_path: []const u8, allocator: ?std.mem.Allocator) ZdtError!Timezone {
     if (!identifierValid(identifier)) return TzError.InvalidIdentifier;
 
-    var path_buffer: [std.fs.max_path_bytes]u8 = undefined;
+    var path_buffer: [std.Io.Dir.max_path_bytes]u8 = undefined;
     var fba = std.heap.FixedBufferAllocator.init(&path_buffer);
     const fb_alloc = fba.allocator();
     const p = try std.fs.path.join(fb_alloc, &[_][]const u8{ db_path, identifier });
 
-    var file = try std.Io.File.openAbsolute(io, p, .{ .mode = .read_only });
+    var file = try std.Io.Dir.openFileAbsolute(io, p, .{ .mode = .read_only });
     defer file.close(io);
 
     var read_buf: [4096]u8 = undefined;
@@ -195,10 +195,9 @@ pub fn deinit(tz: *Timezone) void {
 pub fn tzLocal(io: std.Io, allocator: ?std.mem.Allocator) ZdtError!Timezone {
     switch (builtin.os.tag) {
         .linux, .macos => {
+            // NOTE : this might not work on all Unix systems:
             const default_path = "/etc/localtime";
-            var path_buffer: [std.fs.max_path_bytes]u8 = undefined;
-            const path = try std.fs.realpath(default_path, &path_buffer);
-            return try Timezone.fromSystemTzdata(io, path, "", allocator);
+            return try Timezone.fromSystemTzdata(io, default_path, "", allocator);
         },
         .windows => {
             const win_name = try tzwin.getTzName();

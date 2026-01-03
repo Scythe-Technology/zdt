@@ -11,8 +11,10 @@ pub fn main() !void {
 
     var threads: std.Io.Threaded = .init_single_threaded;
     const io = threads.io();
-    const now_utc = Datetime.nowUTC();
+
+    const now_utc = Datetime.nowUTC(io);
     println("now, UTC : {f}", .{now_utc});
+
     const past_midnight = try now_utc.floorTo(.day);
 
     // difference between two datetimes expressed as Duration:
@@ -50,7 +52,9 @@ pub fn main() !void {
 }
 
 fn println(comptime fmt: []const u8, args: anytype) void {
-    var stdout = std.fs.File.stdout().writerStreaming(&.{});
+    var threaded: std.Io.Threaded = .init_single_threaded;
+    const io = threaded.io();
+    var stdout = std.Io.File.stdout().writerStreaming(io, &.{});
     var writer = &stdout.interface;
     writer.print(fmt ++ "\n", args) catch return;
 }

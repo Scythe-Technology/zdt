@@ -6,17 +6,22 @@ const std = @import("std");
 const log = std.log.scoped(.zdt__gen_tzdb);
 
 pub fn main() !void {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    var gpa = std.heap.DebugAllocator(.{}){};
     const allocator = gpa.allocator();
     defer _ = gpa.deinit();
+
+    var threaded: std.Io.Threaded = .init_single_threaded;
+    const io = threaded.io();
 
     var args = try std.process.argsWithAllocator(allocator);
     defer args.deinit();
     _ = args.next(); // skip running binary name
+
     // tag to check out
     const tzdbtag = args.next();
 
-    // update submodule
+    // 1) update git submodule, eggert/tz
+    //
     const argv_update = [_][]const u8{
         "git",
         "submodule",
@@ -26,8 +31,7 @@ pub fn main() !void {
         "--remote",
         "./tz",
     };
-    const proc_update = try std.process.Child.run(.{
-        .allocator = allocator,
+    const proc_update = try std.process.Child.run(allocator, io, .{
         .argv = &argv_update,
     });
 
@@ -46,6 +50,8 @@ pub fn main() !void {
     allocator.free(proc_update.stdout);
     allocator.free(proc_update.stderr);
 
+    // 2) checkout specific tag of tzdata
+    //
     log.info("tz database tag: {s}", .{tzdbtag.?});
     const argv_tagcheckout = [_][]const u8{
         "git",
@@ -54,8 +60,7 @@ pub fn main() !void {
         "checkout",
         tzdbtag.?,
     };
-    const proc_tag = try std.process.Child.run(.{
-        .allocator = allocator,
+    const proc_tag = try std.process.Child.run(allocator, io, .{
         .argv = &argv_tagcheckout,
     });
 
@@ -67,38 +72,22 @@ pub fn main() !void {
     }
     allocator.free(proc_tag.stdout);
     allocator.free(proc_tag.stderr);
-    // in tz dir, run makefile
 
     // where to run makefile
-    const tzdir = args.next();
+    const tz_dir = args.next();
 
-    // destination file path; need to expand this to a full path
+    // where to put tzdata
     const target_dir = args.next();
 
-    const cwd_path = try std.fs.cwd().realpathAlloc(allocator, ".");
-    defer allocator.free(cwd_path);
+    // 3) compile tzdata
+    //
+    var path_buffer: [std.Io.Dir.max_path_bytes + 8]u8 = undefined;
+    const target_dir_cmd = try std.fmt.bufPrint(&path_buffer, "DESTDIR={s}", .{target_dir.?});
 
-    const source_dir_abs = try std.fs.path.resolve(allocator, &.{ cwd_path, tzdir.? });
-    defer allocator.free(source_dir_abs);
-
-    const tmp_dir = try std.fs.path.resolve(allocator, &.{ cwd_path, target_dir.?, "../tmp" });
-    defer allocator.free(tmp_dir);
-
-    const target_dir_abs = try std.fs.path.resolve(allocator, &.{ cwd_path, target_dir.? });
-    defer allocator.free(target_dir_abs);
-
-    log.info("tz dir, source: {s}", .{source_dir_abs});
-    log.info("target, tmp: {s}", .{tmp_dir});
-    log.info("target, final: {s}", .{target_dir_abs});
-
-    var path_buffer: [std.fs.max_path_bytes + 8]u8 = undefined;
-    const target_dir_cmd = try std.fmt.bufPrint(&path_buffer, "DESTDIR={s}", .{tmp_dir});
-
-    // compile tzdata
     const argv_compile = [_][]const u8{ "make", target_dir_cmd, "ZFLAGS=-b fat", "POSIXRULES=", "install" };
-    const proc_compile = try std.process.Child.run(.{
-        .cwd = source_dir_abs,
-        .allocator = allocator,
+
+    const proc_compile = try std.process.Child.run(allocator, io, .{
+        .cwd = tz_dir.?,
         .argv = &argv_compile,
     });
     if (proc_compile.stdout.len > 0) {
@@ -106,55 +95,63 @@ pub fn main() !void {
     }
     if (proc_compile.stderr.len > 0) {
         log.warn("tzdb compile step, stderr: {s}", .{proc_compile.stderr});
-        log.info("note: localtime error can be ignored\n", .{});
+        log.info("note: localtime error can be ignored.", .{});
     }
     allocator.free(proc_compile.stdout);
     allocator.free(proc_compile.stderr);
 
-    // copy [tmp_dir]/usr/share/zoneinfo target_dir_abs
-    const target_dir_copy = try std.fmt.bufPrint(&path_buffer, "{s}/usr/share/zoneinfo", .{tmp_dir});
+    const tzdata_src_str = try std.fmt.bufPrint(&path_buffer, "{s}/{s}/usr/share/zoneinfo", .{ tz_dir.?, target_dir.? });
+    var tzdata_src_Dir = try std.Io.Dir.cwd().openDir(io, tzdata_src_str, .{ .iterate = true });
 
-    var src_dir = try std.fs.cwd().openDir(target_dir_copy, .{ .iterate = true });
-    var dest_dir = try std.fs.cwd().makeOpenPath(target_dir_abs, .{});
+    // 4) copy only the usr/share/zoneinfo directory into ./lib
+    //
+    _ = try std.Io.Dir.cwd().createDirPath(io, target_dir.?);
+    var target_Dir = try std.Io.Dir.cwd().openDir(io, target_dir.?, .{});
 
-    log.info("copy stuff from {s} to {s}", .{ target_dir_copy, target_dir_abs });
+    // 4.1) clean target directory so that there are no residuals from older versions
+    //
+    _ = target_Dir.deleteTree(io, "") catch |err| {
+        log.warn("clean target dir error : {}", .{err});
+    };
 
-    var walker = try src_dir.walk(allocator);
-    defer walker.deinit();
+    var walker = try tzdata_src_Dir.walk(allocator);
+    errdefer walker.deinit();
 
-    while (try walker.next()) |entry| {
+    while (try walker.next(io)) |entry| {
         switch (entry.kind) {
             .file => {
-                entry.dir.copyFile(entry.basename, dest_dir, entry.path, .{}) catch |err| {
-                    log.info("copy file: {}", .{err});
+                entry.dir.copyFile(entry.basename, target_Dir, entry.path, io, .{}) catch |err| {
+                    log.warn("copy file: {}", .{err});
                 };
             },
             .directory => {
-                dest_dir.makeDir(entry.path) catch |err| {
-                    log.info("make dir: {}, path: {s}", .{ err, entry.path });
+                target_Dir.createDir(io, entry.path, .default_dir) catch |err| {
+                    log.warn("make dir: {}, path: {s}", .{ err, entry.path });
                 };
             },
-            else => return error.UnexpectedEntryKind,
+            else => {
+                log.warn("unexpected entry kind {any} for {s}", .{ entry.kind, entry.basename });
+            },
         }
     }
 
-    src_dir.close(); // error-deferred call to .close() before
-    dest_dir.close();
+    target_Dir.close(io);
+    walker.deinit();
 
-    log.info("delete {s}", .{tmp_dir});
-
-    var del_dir = try std.fs.cwd().openDir(tmp_dir, .{ .iterate = true });
-    defer del_dir.close();
-    _ = del_dir.deleteTree(tmp_dir) catch |err| {
-        log.info("del tmp : {}, path: {s}", .{ err, tmp_dir });
+    // 5) delete tzdata source directory
+    //
+    _ = tzdata_src_Dir.deleteTree(io, "") catch |err| {
+        log.warn("delete src dir error : {}", .{err});
     };
+    tzdata_src_Dir.close(io);
 
-    const proc_wintzmapping = try std.process.Child.run(.{
-        .cwd = source_dir_abs,
-        .allocator = allocator,
+    // 6) make Windows tz mapping
+    //
+    const proc_wintzmapping = try std.process.Child.run(allocator, io, .{
+        .cwd = ".",
         .argv = &[_][]const u8{
             "python3",
-            "../scripts/gen_wintz_mapping.py",
+            "scripts/gen_wintz_mapping.py",
         },
     });
     if (proc_wintzmapping.stdout.len > 0) {
@@ -166,12 +163,13 @@ pub fn main() !void {
     allocator.free(proc_wintzmapping.stdout);
     allocator.free(proc_wintzmapping.stderr);
 
-    const proc_tzembed = try std.process.Child.run(.{
-        .cwd = source_dir_abs,
-        .allocator = allocator,
+    // 6) make tzdata embedding
+    //
+    const proc_tzembed = try std.process.Child.run(allocator, io, .{
+        .cwd = ".",
         .argv = &[_][]const u8{
             "python3",
-            "../scripts/gen_tzdb_embedding.py",
+            "scripts/gen_tzdb_embedding.py",
             tzdbtag.?,
         },
     });
@@ -184,5 +182,5 @@ pub fn main() !void {
     allocator.free(proc_tzembed.stdout);
     allocator.free(proc_tzembed.stderr);
 
-    return std.process.cleanExit();
+    return std.process.cleanExit(io);
 }

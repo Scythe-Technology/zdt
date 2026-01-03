@@ -21,8 +21,8 @@ pub fn main() !void {
     var tz_berlin: Timezone = try Timezone.fromTzdata(io, "Europe/Berlin", allocator);
     defer tz_berlin.deinit();
     println("Info: {f}", .{tz_berlin});
-    var now_berlin: Datetime = try Datetime.now(.{ .tz = &tz_berlin });
-    const now_utc: Datetime = Datetime.nowUTC();
+    var now_berlin: Datetime = try Datetime.now(io, .{ .tz = &tz_berlin });
+    const now_utc: Datetime = Datetime.nowUTC(io);
     println("Now, UTC time    : {f}", .{now_utc});
     println("Now, Berlin time : {f} ({s})", .{ now_berlin, now_berlin.tzAbbreviation() });
     println("Datetimes have UTC offset / time zone? : {}, {}\n", .{ now_utc.isAware(), now_berlin.isAware() });
@@ -30,7 +30,7 @@ pub fn main() !void {
     println("load timezone, static memory:", .{});
     const tz_berlin_: Timezone = try Timezone.fromTzdata(io, "Europe/Berlin", null);
     println("Info: {f}", .{tz_berlin_});
-    const now_berlin_: Datetime = try Datetime.now(.{ .tz = &tz_berlin_ });
+    const now_berlin_: Datetime = try Datetime.now(io, .{ .tz = &tz_berlin_ });
     println("Now, Berlin time : {f} ({s})\n", .{ now_berlin_, now_berlin_.tzAbbreviation() });
 
     var my_tz: Timezone = try Timezone.tzLocal(io, allocator);
@@ -104,7 +104,9 @@ pub fn main() !void {
 }
 
 fn println(comptime fmt: []const u8, args: anytype) void {
-    var stdout = std.fs.File.stdout().writerStreaming(&.{});
+    var threaded: std.Io.Threaded = .init_single_threaded;
+    const io = threaded.io();
+    var stdout = std.Io.File.stdout().writerStreaming(io, &.{});
     var writer = &stdout.interface;
     writer.print(fmt ++ "\n", args) catch return;
 }
