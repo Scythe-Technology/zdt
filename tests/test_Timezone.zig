@@ -1149,8 +1149,8 @@ test "load a lot of zones" {
 
         if (builtin.os.tag != .windows) {
             var tz_b = Tz.fromSystemTzdata(testing.io, zone, Tz.tzdb_prefix, testing.allocator) catch {
-                log.warn("skip test: tz file not available on system", .{});
-                return error.SkipZigTest;
+                log.warn("skip: tz file '{s}' not available on system", .{zone});
+                continue;
             };
             const dt_b = try Datetime.fromUnix(0, Duration.Resolution.second, .{ .tz = &tz_b });
             try testing.expect(dt_b.utc_offset != null);
