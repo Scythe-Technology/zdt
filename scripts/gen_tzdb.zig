@@ -12,17 +12,6 @@ pub fn main(init: std.process.Init) !void {
     var args_iter = try init.minimal.args.iterateAllocator(allocator);
     defer args_iter.deinit();
     if (!args_iter.skip()) @panic("expected self arg");
-    // pub fn main() !void {
-    //     var gpa = std.heap.DebugAllocator(.{}){};
-    //     const allocator = gpa.allocator();
-    //     defer _ = gpa.deinit();
-    //
-    //     var threaded: std.Io.Threaded = .init_single_threaded;
-    //     const io = threaded.io();
-    //
-    //     var args_iter = try std.process.argsWithAllocator(allocator);
-    //     defer args_iter.deinit();
-    //     _ = args_iter.next(); // skip running binary name
 
     // tag to check out
     const tzdbtag = args_iter.next();
