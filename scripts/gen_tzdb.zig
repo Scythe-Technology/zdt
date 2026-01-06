@@ -5,20 +5,27 @@
 const std = @import("std");
 const log = std.log.scoped(.zdt__gen_tzdb);
 
-pub fn main() !void {
-    var gpa = std.heap.DebugAllocator(.{}){};
-    const allocator = gpa.allocator();
-    defer _ = gpa.deinit();
+pub fn main(init: std.process.Init) !void {
+    const allocator = init.arena.allocator();
+    const io = init.io;
 
-    var threaded: std.Io.Threaded = .init_single_threaded;
-    const io = threaded.io();
-
-    var args = try std.process.argsWithAllocator(allocator);
-    defer args.deinit();
-    _ = args.next(); // skip running binary name
+    var args_iter = try init.minimal.args.iterateAllocator(allocator);
+    defer args_iter.deinit();
+    if (!args_iter.skip()) @panic("expected self arg");
+    // pub fn main() !void {
+    //     var gpa = std.heap.DebugAllocator(.{}){};
+    //     const allocator = gpa.allocator();
+    //     defer _ = gpa.deinit();
+    //
+    //     var threaded: std.Io.Threaded = .init_single_threaded;
+    //     const io = threaded.io();
+    //
+    //     var args_iter = try std.process.argsWithAllocator(allocator);
+    //     defer args_iter.deinit();
+    //     _ = args_iter.next(); // skip running binary name
 
     // tag to check out
-    const tzdbtag = args.next();
+    const tzdbtag = args_iter.next();
 
     // 1) update git submodule, eggert/tz
     //
@@ -31,7 +38,7 @@ pub fn main() !void {
         "--remote",
         "./tz",
     };
-    const proc_update = try std.process.Child.run(allocator, io, .{
+    const proc_update = try std.process.run(allocator, io, .{
         .argv = &argv_update,
     });
 
@@ -60,7 +67,7 @@ pub fn main() !void {
         "checkout",
         tzdbtag.?,
     };
-    const proc_tag = try std.process.Child.run(allocator, io, .{
+    const proc_tag = try std.process.run(allocator, io, .{
         .argv = &argv_tagcheckout,
     });
 
@@ -74,10 +81,10 @@ pub fn main() !void {
     allocator.free(proc_tag.stderr);
 
     // where to run makefile
-    const tz_dir = args.next();
+    const tz_dir = args_iter.next();
 
     // where to put tzdata
-    const target_dir = args.next();
+    const target_dir = args_iter.next();
 
     // 3) compile tzdata
     //
@@ -86,7 +93,7 @@ pub fn main() !void {
 
     const argv_compile = [_][]const u8{ "make", target_dir_cmd, "ZFLAGS=-b fat", "POSIXRULES=", "install" };
 
-    const proc_compile = try std.process.Child.run(allocator, io, .{
+    const proc_compile = try std.process.run(allocator, io, .{
         .cwd = tz_dir.?,
         .argv = &argv_compile,
     });
@@ -147,7 +154,7 @@ pub fn main() !void {
 
     // 6) make Windows tz mapping
     //
-    const proc_wintzmapping = try std.process.Child.run(allocator, io, .{
+    const proc_wintzmapping = try std.process.run(allocator, io, .{
         .cwd = ".",
         .argv = &[_][]const u8{
             "python3",
@@ -165,7 +172,7 @@ pub fn main() !void {
 
     // 6) make tzdata embedding
     //
-    const proc_tzembed = try std.process.Child.run(allocator, io, .{
+    const proc_tzembed = try std.process.run(allocator, io, .{
         .cwd = ".",
         .argv = &[_][]const u8{
             "python3",

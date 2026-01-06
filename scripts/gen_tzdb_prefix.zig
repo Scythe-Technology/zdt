@@ -3,21 +3,16 @@
 const std = @import("std");
 const log = std.log.scoped(.zdt__gen_tzdb_prefix);
 
-pub fn main() !void {
-    var gpa = std.heap.DebugAllocator(.{}){};
-    const allocator = gpa.allocator();
-    defer _ = gpa.deinit();
+pub fn main(init: std.process.Init) !void {
+    const allocator = init.arena.allocator();
+    const io = init.io;
 
-    var threaded: std.Io.Threaded = .init_single_threaded;
-    const io = threaded.io();
+    var args_iter = try init.minimal.args.iterateAllocator(allocator);
+    defer args_iter.deinit();
+    if (!args_iter.skip()) @panic("expected self arg");
 
-    var args = try std.process.argsWithAllocator(allocator);
-    defer args.deinit();
-
-    _ = args.next(); // skip running binary name
-
-    const default = args.next().?;
-    const user_specified = args.next().?;
+    const default = args_iter.next().?;
+    const user_specified = args_iter.next().?;
 
     const tmp = if (std.mem.eql(u8, default, user_specified))
         default
@@ -33,7 +28,7 @@ pub fn main() !void {
     // log.debug("tzdb prefix: {s}", .{prefix});
 
     // filename arg passed in from build.zig
-    const filename = args.next().?;
+    const filename = args_iter.next().?;
 
     // log.debug("tzdb prefix info file: {s}", .{filename});
 
