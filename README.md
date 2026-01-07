@@ -16,7 +16,7 @@
 - [Autodocs](https://fobersteiner.codeberg.page/#zdt)
 - [Examples](https://codeberg.org/FObersteiner/zdt/src/branch/main/examples)
 - [String parsing / formatting directives](https://codeberg.org/FObersteiner/zdt/src/branch/main/docs/03-String-parsing-and-formatting-directives.md)
-- [Roadmap](https://codeberg.org/FObersteiner/zdt/src/branch/main/docs/05-Roadmap.md)
+- [Ideas / Roadmap](https://codeberg.org/FObersteiner/zdt/src/branch/main/docs/05-Roadmap.md)
 
 ### [Demo](https://codeberg.org/FObersteiner/zdt/src/branch/main/examples/demo.zig)
 
