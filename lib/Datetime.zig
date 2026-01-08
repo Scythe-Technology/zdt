@@ -596,10 +596,10 @@ pub fn floorTo(dt: *const Datetime, timespan: Duration.Timespan) ZdtError!Dateti
     return try Datetime.fromFields(fields);
 }
 
-/// The current time with nanosecond resolution.
+/// The current time with nanosecond resolution, based on `std.Io.Clock.real`.
 /// If 'null' is supplied as tz_options, naive datetime resembling UTC is returned.
 ///
-/// This function will crash by running into 'unreachable' if no clock is
+/// This function will crash by running into `unreachable` if no clock is
 /// available on the system, which means something is seriously wrong.
 pub fn now(io: std.Io, opts: ?tz_options) ZdtError!Datetime {
     const _now = std.Io.Clock.real.now(io) catch unreachable;
@@ -610,9 +610,10 @@ pub fn now(io: std.Io, opts: ?tz_options) ZdtError!Datetime {
     );
 }
 
-/// Current UTC time is fail-safe since it contains a pre-defined time zone.
+/// Get current UTC time, based on `std.Io.Clock.real`.
+/// Fail-safe since it sets UTC as a pre-defined time zone.
 ///
-/// This function will crash by running into 'unreachable' if no clock is
+/// This function will crash by running into `unreachable` if no clock is
 /// available on the system, which means something is seriously wrong.
 pub fn nowUTC(io: std.Io) Datetime {
     const _now = std.Io.Clock.real.now(io) catch unreachable;
