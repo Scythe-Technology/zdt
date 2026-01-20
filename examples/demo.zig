@@ -1,16 +1,11 @@
 const std = @import("std");
 const builtin = @import("builtin");
-
 const zdt = @import("zdt");
 
-pub fn main() !void {
+pub fn main(init: std.process.Init) !void {
     // Can use an allocator for the time zones as the size of the rule-files varies.
-    var dba = std.heap.DebugAllocator(.{}){};
-    defer _ = dba.deinit();
-    const allocator = dba.allocator();
-
-    var threaded: std.Io.Threaded = .init_single_threaded;
-    const io = threaded.io();
+    const allocator = init.arena.allocator();
+    const io = init.io;
 
     // zdt embeds the IANA tz database (about 700k of raw data).
     // If you pass 'null' instead of the allocator, a fixed-size structure will be used,
@@ -31,22 +26,23 @@ pub fn main() !void {
     const this_time_LA = try a_datetime.tzLocalize(.{ .tz = &tz_LA });
 
     // string output requires buffer memory...
-    var buf: [16]u8 = std.mem.zeroes([16]u8);
-    var w = std.Io.Writer.fixed(&buf);
+    var buf = std.mem.zeroes([16]u8);
+    var w: std.Io.Writer = .fixed(&buf);
     try this_time_LA.toString("%I %p, %Z", &w);
 
-    const this_time_Paris = try this_time_LA.tzConvert(.{ .tz = &tz_Paris });
+    const this_time_Paris: zdt.Datetime = try this_time_LA.tzConvert(.{ .tz = &tz_Paris });
 
     // '{f}' directive gives ISO8601 format by default;
     std.debug.print(
         "Time, LA : {f} ({s})\n... that's {f} in Paris ({s})\n\n",
+        // we can also print the buffer from above:
         .{ this_time_LA, buf, this_time_Paris, this_time_Paris.tzAbbreviation() },
     );
     // Time, LA : 2022-03-07T00:00:00-08:00 (12 am, PST)
     // ... that's 2022-03-07T09:00:00+01:00 in Paris
 
-    const wall_diff = try this_time_Paris.diffWall(this_time_LA);
-    const abs_diff = this_time_Paris.diff(this_time_LA);
+    const wall_diff: zdt.Duration = try this_time_Paris.diffWall(this_time_LA);
+    const abs_diff: zdt.Duration = this_time_Paris.diff(this_time_LA);
 
     std.debug.print("Wall clock time difference: {f}\nAbsolute time difference: {f}\n\n", .{ wall_diff, abs_diff });
     // Wall clock time difference: PT9H
@@ -57,5 +53,5 @@ pub fn main() !void {
         "Easter this year is on {f}\n",
         .{try zdt.Datetime.EasterDate(zdt.Datetime.nowUTC(io).year)},
     );
-    // Easter this year is on 2025-04-20T00:00:00
+    // Easter this year is on 2026-04-05T00:00:00
 }
