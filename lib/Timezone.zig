@@ -132,9 +132,10 @@ pub fn fromSystemTzdata(io: std.Io, identifier: []const u8, db_path: []const u8,
     var path_buffer: [std.Io.Dir.max_path_bytes]u8 = undefined;
     var fba = std.heap.FixedBufferAllocator.init(&path_buffer);
     const fb_alloc = fba.allocator();
-    const p = try std.fs.path.join(fb_alloc, &[_][]const u8{ db_path, identifier });
+    var p = try std.fs.path.join(fb_alloc, &[_][]const u8{ db_path, identifier });
 
     var file = try std.Io.Dir.openFileAbsolute(io, p, .{ .mode = .read_only });
+
     defer file.close(io);
 
     var read_buf: [4096]u8 = undefined;
@@ -150,13 +151,24 @@ pub fn fromSystemTzdata(io: std.Io, identifier: []const u8, db_path: []const u8,
         tz = Timezone{ .rules = .{ .tzif_fixedsize = tzif_tz } };
     }
 
-    // default: use identifier as name
-    tz.__name_data_len = if (identifier.len <= cap_name_data) identifier.len else cap_name_data;
-    @memcpy(tz.__name_data[0..tz.__name_data_len], identifier[0..tz.__name_data_len]);
-
     // if db_path is empty: assume `identifier` is a path,
     // and look for 'zoneinfo' substring in identifier, remove if found
     if (std.mem.eql(u8, db_path, "")) {
+        // if `identifier` is a symlink, resolve it to get a proper name,
+        // exit this block on error
+        blk: {
+            const d = std.Io.Dir.openDirAbsolute(io, "/", .{}) catch break :blk;
+            defer d.close(io);
+            const st = d.statFile(io, identifier, .{ .follow_symlinks = false }) catch break :blk;
+            switch (st.kind) {
+                .sym_link => {
+                    var path_buffer2: [std.Io.Dir.max_path_bytes]u8 = std.mem.zeroes([std.Io.Dir.max_path_bytes]u8);
+                    _ = std.Io.File.realPath(file, io, &path_buffer2) catch break :blk;
+                    p = std.mem.sliceTo(&path_buffer2, 0);
+                },
+                else => {},
+            }
+        }
         var pathname_iterator = std.mem.splitSequence(u8, p, "zoneinfo" ++ std.fs.path.sep_str);
         const part = pathname_iterator.next() orelse identifier;
         if (!std.mem.eql(u8, identifier, part)) {
@@ -169,6 +181,10 @@ pub fn fromSystemTzdata(io: std.Io, identifier: []const u8, db_path: []const u8,
             tz.__name_data_len = len;
             tz.__name_data = name_data;
         }
+    } else {
+        // default: use identifier as name
+        tz.__name_data_len = if (identifier.len <= cap_name_data) identifier.len else cap_name_data;
+        @memcpy(tz.__name_data[0..tz.__name_data_len], identifier[0..tz.__name_data_len]);
     }
 
     return tz;
@@ -196,8 +212,8 @@ pub fn tzLocal(io: std.Io, allocator: ?std.mem.Allocator) ZdtError!Timezone {
     switch (builtin.os.tag) {
         .linux, .macos => {
             // NOTE : this might not work on all Unix systems:
-            const default_path = "/etc/localtime";
-            return try Timezone.fromSystemTzdata(io, default_path, "", allocator);
+            const default_id = "/etc/localtime";
+            return try Timezone.fromSystemTzdata(io, default_id, "", allocator);
         },
         .windows => {
             const win_name = try tzwin.getTzName();

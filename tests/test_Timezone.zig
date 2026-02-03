@@ -119,7 +119,6 @@ test "local tz db, from specified or default prefix" {
     if (builtin.os.tag != .linux) return error.SkipZigTest;
 
     const db = Tz.tzdb_prefix;
-    // log.warn("system tzdb prefix: {s}", .{db});
     var tzinfo = try Tz.fromSystemTzdata(testing.io, "Europe/Berlin", db, testing.allocator);
     defer tzinfo.deinit();
 
@@ -187,7 +186,6 @@ test "fixed size tz" {
 
 test "invalid tzfile name" {
     const db = Tz.tzdb_prefix;
-    // log.warn("tz db: {s}", .{db});
     var err = Tz.fromSystemTzdata(testing.io, "this is not a tzname", db, testing.allocator);
     try testing.expectError(ZdtError.InvalidIdentifier, err);
     err = Tz.fromSystemTzdata(testing.io, "../test", db, testing.allocator);
