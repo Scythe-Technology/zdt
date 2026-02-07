@@ -602,7 +602,7 @@ pub fn floorTo(dt: *const Datetime, timespan: Duration.Timespan) ZdtError!Dateti
 /// This function will crash by running into `unreachable` if no clock is
 /// available on the system, which means something is seriously wrong.
 pub fn now(io: std.Io, opts: ?tz_options) ZdtError!Datetime {
-    const _now = std.Io.Clock.real.now(io) catch unreachable;
+    const _now = std.Io.Clock.real.now(io);
     return try Datetime.fromUnix(
         _now.nanoseconds,
         Duration.Resolution.nanosecond,
@@ -616,7 +616,7 @@ pub fn now(io: std.Io, opts: ?tz_options) ZdtError!Datetime {
 /// This function will crash by running into `unreachable` if no clock is
 /// available on the system, which means something is seriously wrong.
 pub fn nowUTC(io: std.Io) Datetime {
-    const _now = std.Io.Clock.real.now(io) catch unreachable;
+    const _now = std.Io.Clock.real.now(io);
     return Datetime.fromUnix(
         _now.nanoseconds,
         Duration.Resolution.nanosecond,
