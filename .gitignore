@@ -1,8 +1,9 @@
 # zig output
-zig-cache/
 .zig-cache/
-zig-out/
 autodoc/
+zig-cache/
+zig-out/
+zig-pkg/
 
 util/*.ods
 util/directives.md
@@ -11,6 +12,6 @@ util/directives.md
 # tz submodule
 tz/
 
-# util / Python / pyenv
+# util / Python
 *.fish
 .python-version
