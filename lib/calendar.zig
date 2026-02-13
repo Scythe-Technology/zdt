@@ -1,5 +1,9 @@
 //! calendrical calculations
 
+// This file contains translated code from
+// <https://github.com/cassioneri/eaf/blob/main/algorithms/neri_schneider.hpp>;
+// License: MIT, Copyright: 2022 Cassio Neri <cassio.neri@gmail.com>, Lorenz Schneider <schneider@em-lyon.com>
+
 const std = @import("std");
 const log = std.log.scoped(.zdt__calendar);
 const assert = std.debug.assert;
@@ -251,6 +255,9 @@ pub fn dateFromUnixdays(unix_days: i32) [3]u16 {
 // ```
 // The C++ version can be found here:
 // <https://github.com/cassioneri/eaf/blob/main/algorithms/neri_schneider.hpp>
+//
+// License: MIT
+// Copyright: 2022 Cassio Neri <cassio.neri@gmail.com>, Lorenz Schneider <schneider@em-lyon.com>
 
 // Shift and correction constants:
 pub const S: u32 = 82;
