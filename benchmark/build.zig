@@ -6,7 +6,7 @@ const benchmarks = [_][]const u8{
     "main",
 };
 
-const min_zig = std.SemanticVersion.parse("0.15.0-dev") catch unreachable;
+const min_zig = std.SemanticVersion.parse("0.15.1") catch unreachable;
 comptime {
     if (builtin.zig_version.order(min_zig) == .lt) {
         @compileError(std.fmt.comptimePrint(

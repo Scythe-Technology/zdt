@@ -7,6 +7,14 @@ const zbench = @import("zbench");
 
 var gpa = std.heap.DebugAllocator(.{}){};
 
+// ----- std.time.epoch algo
+//
+
+pub fn std_epoch_rd_2_date(ed: std.time.epoch.EpochDay) std.time.epoch.MonthAndDay {
+    const yd = ed.calculateYearDay();
+    return yd.calculateMonthDay();
+}
+
 // ----- Howard Hinnant's data algorithms:
 //
 pub fn unixdaysFromDate(ymd: [3]u16) i32 {
@@ -149,6 +157,17 @@ pub fn dateToRDcpp(date: Date) i32 {
 }
 
 // -----
+//
+
+fn benchStdEpoch_rd2date(_: std.mem.Allocator) void {
+    const epoch_seconds = std.time.epoch.EpochSeconds{ .secs = 0 };
+    const epoch_day = epoch_seconds.getEpochDay();
+    var i: usize = 0;
+    while (i < 1000) : (i += 1) {
+        const yd = std_epoch_rd_2_date(epoch_day);
+        std.mem.doNotOptimizeAway(yd);
+    }
+}
 
 fn benchHinnantDate2RD(_: std.mem.Allocator) void {
     var y: u16 = 1;
@@ -204,6 +223,8 @@ pub fn run() !void {
     var bench = zbench.Benchmark.init(gpa.allocator(), .{});
     defer bench.deinit();
 
+    try bench.add("std epochday-2-date", benchStdEpoch_rd2date, .{ .iterations = config.N });
+
     try bench.add("hin date-2-rd", benchHinnantDate2RD, .{ .iterations = config.N });
     try bench.add("ner date-2-rd (trs)", benchNeriSchnDate2RD, .{ .iterations = config.N });
     try bench.add("ner date-2-rd (cpp)", benchNeriSchnDate2RDcpp, .{ .iterations = config.N });
@@ -212,7 +233,6 @@ pub fn run() !void {
     try bench.add("ner rd-2-date (trs)", benchNeriSchnRD2Date, .{ .iterations = config.N });
     try bench.add("ner rd-2-date (cpp)", benchNeriSchnRD2DateCpp, .{ .iterations = config.N });
 
-    // try .writeAll("\n");
     try bench.run(&stdout.interface);
 
     std.debug.print("\n", .{});
