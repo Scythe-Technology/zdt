@@ -13,6 +13,8 @@ Types of changes
 
 ## [Unreleased]
 
+## 2026-03-03, v0.9.1-zig_master
+
 ### Added
 
 - CI script, zig-0.15 branch ([#28](https://codeberg.org/FObersteiner/zdt/pulls/28))
@@ -23,6 +25,7 @@ Types of changes
 - BREAKING: introduce io interface for `Timezone.fromTzdata` and `Timezone.fromSystemTzdata` (by @pollend, [#23](https://codeberg.org/FObersteiner/zdt/pulls/23), [#25](https://codeberg.org/FObersteiner/zdt/pulls/25))
 - BREAKING: Datetime.now and Datetime.UTCnow API now needs `io` to be passed since we use std.Io.Clock ([#29](https://codeberg.org/FObersteiner/zdt/pulls/29))
 - use juicy main in demo
+- tzdata version to 2026a
 
 ## 2025-12-11, v0.9.0-zig_master
 
