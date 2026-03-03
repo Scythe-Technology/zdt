@@ -12,8 +12,12 @@
             .url = "https://github.com/hendriknielaender/zBench/archive/refs/tags/v0.11.1.tar.gz",
             .hash = "zbench-0.11.1-YTdc7zgmAQDtDcHPFwsLeawui27WjMLWmUwrfz7pIlB2",
         },
+        // .zdt_latest = .{
+        //     .path = "../",
+        // },
         .zdt_latest = .{
-            .path = "../",
+            .url = "https://codeberg.org/FObersteiner/zdt/archive/d8e6b8a4d72aff2348d290130419dc49d654478d.tar.gz",
+            .hash = "zdt-0.8.2-xr0_vAxbDwCls8V4MLlamv4JHrDkziMYnySAc2bL2n3t",
         },
     },
     .paths = .{""},
