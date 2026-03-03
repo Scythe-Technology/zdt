@@ -83,7 +83,7 @@ pub fn main(init: std.process.Init) !void {
     const argv_compile = [_][]const u8{ "make", target_dir_cmd, "ZFLAGS=-b fat", "POSIXRULES=", "install" };
 
     const proc_compile = try std.process.run(allocator, io, .{
-        .cwd = tz_dir.?,
+        .cwd = .{ .path = tz_dir.? },
         .argv = &argv_compile,
     });
     if (proc_compile.stdout.len > 0) {
@@ -144,7 +144,7 @@ pub fn main(init: std.process.Init) !void {
     // 6) make Windows tz mapping
     //
     const proc_wintzmapping = try std.process.run(allocator, io, .{
-        .cwd = ".",
+        .cwd = .{ .path = "." },
         .argv = &[_][]const u8{
             "python3",
             "scripts/gen_wintz_mapping.py",
@@ -162,7 +162,7 @@ pub fn main(init: std.process.Init) !void {
     // 6) make tzdata embedding
     //
     const proc_tzembed = try std.process.run(allocator, io, .{
-        .cwd = ".",
+        .cwd = .{ .path = "." },
         .argv = &[_][]const u8{
             "python3",
             "scripts/gen_tzdb_embedding.py",
