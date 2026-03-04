@@ -82,8 +82,8 @@ pub fn main(init: std.process.Init) !void {
 
 ## Zig version requirements
 
-- `v0.9.x`: Zig 0.16.0-dev *may* work
-- `v0.8.x`: Zig 0.15.1 / -2
+- `v0.9.x`: Zig 0.16 / master *may* work
+- `v0.8.x`: Zig 0.15 / 0.15.2
 - `v0.7.x`: Zig 0.14 / 0.14.1
 - `v0.6.x`: Zig 0.14 / 0.14.1
 - `v0.5.x`: Zig 0.13 / 0.14
@@ -97,7 +97,9 @@ pub fn main(init: std.process.Init) !void {
 
 ## IANA timezone database version
 
-- `v0.8.2+`: `2025c` (current)
+- `v0.9.1+`: `2026a` (current)
+- `v0.8.3+`: `2026a` (current)
+- `v0.8.2`: `2025c`
 - `v0.6.2+`: `2025b`
 - `v0.4.5+`: `2025a`
 - `v0.2.2+`: `2024b`
@@ -105,10 +107,9 @@ pub fn main(init: std.process.Init) !void {
 
 ## Dependencies
 
-- No dependencies on other Zig libraries
+- Free from dependencies besides Zig std
 - Time zone database: `zdt` comes with [eggert/tz](https://github.com/eggert/tz). The database is compiled and shipped with `zdt`.
 - if you wish to use your own version of the [IANA time zone db](https://www.iana.org/time-zones), you can set a path to it using the `-Dprefix-tzdb="path/to/your/tzdb"` option. See also `zig build --help`.
-- `libc`: linked via build.zig
 
 ## Development
 
