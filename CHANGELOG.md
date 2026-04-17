@@ -13,6 +13,12 @@ Types of changes
 
 ## [Unreleased]
 
+## 2026-04-17, v0.9.2
+
+### Changed
+
+- updated zdt error set
+
 ## 2026-03-03, v0.9.1-zig_master
 
 ### Added
