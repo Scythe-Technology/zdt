@@ -13,7 +13,7 @@ Types of changes
 
 ## [Unreleased]
 
-## 2026-04-17, v0.9.2
+## 2026-04-18, v0.9.2
 
 ### Changed
 
