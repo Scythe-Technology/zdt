@@ -13,6 +13,12 @@ Types of changes
 
 ## [Unreleased]
 
+## 2026-04-23, v0.9.3
+
+### Changed
+
+- tzdb to 2026b
+
 ## 2026-04-18, v0.9.2
 
 ### Changed
