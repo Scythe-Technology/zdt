@@ -97,7 +97,7 @@ pub fn main(init: std.process.Init) !void {
 
 ## IANA timezone database version
 
-- `v0.9.3+`: `2026a` (current)
+- `v0.9.3+`: `2026b` (current)
 - `v0.9.1+`: `2026a`
 - `v0.8.3+`: `2026a`
 - `v0.8.2`: `2025c`
