@@ -13,6 +13,8 @@ Types of changes
 
 ## [Unreleased]
 
+## 2026-04-29, v0.9.4
+
 ### Added
 
 - script to check version consistency (LLM-generated)
