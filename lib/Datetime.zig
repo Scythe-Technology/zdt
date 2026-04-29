@@ -618,6 +618,18 @@ pub fn nowUTC(io: std.Io) Datetime {
     ) catch unreachable;
 }
 
+/// Get current TAI time / UTC /wo leap seconds.
+/// Based on `std.Io.Clock.real`.
+pub fn nowTAI(io: std.Io) Datetime {
+    const _now = std.Io.Clock.real.now(io);
+    const leaps = cal.leapCorrection(@intCast(@divFloor(_now.nanoseconds, ns_per_s)));
+    return Datetime.fromUnix(
+        _now.nanoseconds + @as(u64, leaps) * ns_per_s,
+        Duration.Resolution.nanosecond,
+        null,
+    ) catch unreachable;
+}
+
 /// Check if a datetime is within a leap year
 pub fn isLeapYear(dt: *const Datetime) bool {
     return cal.isLeapYear(dt.year);

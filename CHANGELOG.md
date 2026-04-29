@@ -16,6 +16,8 @@ Types of changes
 ### Added
 
 - script to check version consistency (LLM-generated)
+- Datetime method to get TAI (currently UTC + 37s)
+- Timezones: test for Canada / BC on constant DST offset (-7h)
 
 ### Changed
 

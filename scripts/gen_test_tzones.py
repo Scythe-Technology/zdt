@@ -44,13 +44,13 @@ if s_c.count(":") < 4:
     s_c += ":00"
 content.append(
     f"""
-    var tz_a = try Tz.fromTzdata("{za}", testing.allocator);
-    var tz_b = try Tz.fromTzdata("{zb}", testing.allocator);
+    var tz_a = try Tz.fromTzdata(testing.io, "{za}", testing.allocator);
+    var tz_b = try Tz.fromTzdata(testing.io, "{zb}", testing.allocator);
 
-    var dt_a = try Datetime.fromUnix({ta}, Duration.Resolution.second, .{OPEN_BRACE}.tz=&tz_a{CLOSE_BRACE});
-    var dt_b = try Datetime.fromUnix({tb}, Duration.Resolution.second,  .{OPEN_BRACE}.tz=&tz_b{CLOSE_BRACE});
-    var dt_c = try dt_a.tzConvert(.{OPEN_BRACE}.tz=&tz_b{CLOSE_BRACE});
-    dt_b = try dt_b.tzConvert(.{OPEN_BRACE}.tz=&tz_a{CLOSE_BRACE});
+    var dt_a = try Datetime.fromUnix({ta}, Duration.Resolution.second, .{OPEN_BRACE} .tz = &tz_a {CLOSE_BRACE});
+    var dt_b = try Datetime.fromUnix({tb}, Duration.Resolution.second, .{OPEN_BRACE} .tz = &tz_b {CLOSE_BRACE});
+    var dt_c = try dt_a.tzConvert(.{OPEN_BRACE} .tz = &tz_b {CLOSE_BRACE});
+    dt_b = try dt_b.tzConvert(.{OPEN_BRACE} .tz = &tz_a {CLOSE_BRACE});
 
     var buf: [64]u8 = undefined;
     var w: std.Io.Writer = .fixed(&buf);
@@ -78,13 +78,13 @@ for _ in range(N):
         s_c += ":00"
     content.append(
         f"""
-    tz_a = try Tz.fromTzdata("{za}", testing.allocator);
-    tz_b = try Tz.fromTzdata("{zb}", testing.allocator);
+    tz_a = try Tz.fromTzdata(testing.io, "{za}", testing.allocator);
+    tz_b = try Tz.fromTzdata(testing.io, "{zb}", testing.allocator);
 
-    dt_a = try Datetime.fromUnix({ta}, Duration.Resolution.second, .{OPEN_BRACE}.tz=&tz_a{CLOSE_BRACE});
-    dt_b = try Datetime.fromUnix({tb}, Duration.Resolution.second,  .{OPEN_BRACE}.tz=&tz_b{CLOSE_BRACE});
-    dt_c = try dt_a.tzConvert(.{OPEN_BRACE}.tz=&tz_b{CLOSE_BRACE});
-    dt_b = try dt_b.tzConvert(.{OPEN_BRACE}.tz=&tz_a{CLOSE_BRACE});
+    dt_a = try Datetime.fromUnix({ta}, Duration.Resolution.second, .{OPEN_BRACE} .tz = &tz_a {CLOSE_BRACE});
+    dt_b = try Datetime.fromUnix({tb}, Duration.Resolution.second, .{OPEN_BRACE} .tz = &tz_b {CLOSE_BRACE});
+    dt_c = try dt_a.tzConvert(.{OPEN_BRACE} .tz = &tz_b {CLOSE_BRACE});
+    dt_b = try dt_b.tzConvert(.{OPEN_BRACE} .tz = &tz_a {CLOSE_BRACE});
 
     w = .fixed(&buf);
     try dt_b.toString("%Y-%m-%dT%H:%M:%S%::z", &w);

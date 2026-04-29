@@ -9,6 +9,7 @@ const Tz = zdt.Timezone;
 pub fn main() !void {
     var threaded: std.Io.Threaded = .init_single_threaded;
     const io = threaded.io();
+    var writer: std.Io.File.Writer = std.Io.File.stdout().writerStreaming(io, &.{});
 
     println("---> datetime example", .{});
 
@@ -26,8 +27,10 @@ pub fn main() !void {
 
     // we can directly write to stdout with the 'toString' method:
     const now = Datetime.nowUTC(io);
-    var writer: std.Io.File.Writer = std.Io.File.stdout().writerStreaming(io, &.{});
+    const now_tai = Datetime.nowTAI(io);
+
     try now.toString("'now', UTC      : %T\n", &writer.interface);
+    try now_tai.toString("'now', TAI      : %T\n", &writer.interface);
     try now.toString("'now', UTC      : %Y-%m-%dT%H:%M:%S.%:f%z (only ms shown)\n", &writer.interface);
 
     const now_s = try now.floorTo(Duration.Timespan.second);

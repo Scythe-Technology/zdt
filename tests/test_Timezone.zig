@@ -539,603 +539,603 @@ test "floor to date changes UTC offset" {
 
 test "load a lot of zones" {
     const zones = [_][]const u8{
-        "America/La_Paz",
-        "Pacific/Saipan",
-        "Asia/Muscat",
-        "Pacific/Gambier",
-        "Asia/Kolkata",
-        "Asia/Anadyr",
-        "Asia/Baku",
-        "Africa/Maseru",
-        "Europe/Brussels",
-        "Indian/Mahe",
         "Africa/Abidjan",
-        "Etc/GMT-1",
-        "America/Guyana",
-        "Mexico/BajaNorte",
-        "Antarctica/Davis",
-        "Europe/Malta",
-        "Africa/Libreville",
-        "Singapore",
-        "America/Aruba",
-        "Australia/Broken_Hill",
-        "Asia/Yekaterinburg",
-        "Europe/Sarajevo",
-        "Europe/Warsaw",
-        "Antarctica/Mawson",
-        "Europe/Zurich",
-        "Atlantic/Reykjavik",
-        "Africa/Porto-Novo",
-        "Asia/Vientiane",
-        "America/Argentina/San_Juan",
-        "Etc/GMT+3",
-        "America/Maceio",
-        "America/Manaus",
-        "Poland",
-        "US/Central",
-        "Pacific/Auckland",
-        "GMT0",
-        "Asia/Kashgar",
-        "Asia/Barnaul",
-        "Etc/GMT-10",
-        "Asia/Phnom_Penh",
-        "America/Metlakatla",
-        "America/Nome",
-        "America/Anguilla",
-        "Iceland",
-        "America/Whitehorse",
-        "Asia/Kuwait",
-        "Asia/Almaty",
-        "America/Indiana/Winamac",
-        "America/Eirunepe",
-        "Africa/Asmara",
-        "Etc/GMT0",
-        "Asia/Ujung_Pandang",
-        "Jamaica",
-        "Asia/Famagusta",
-        "Asia/Jerusalem",
-        "Australia/Yancowinna",
-        "Brazil/DeNoronha",
-        "America/St_Thomas",
-        "EST",
-        "America/Jujuy",
-        "Pacific/Tongatapu",
-        "America/Araguaina",
-        "Australia/Queensland",
-        "Pacific/Marquesas",
-        "Europe/Mariehamn",
-        "Europe/Belfast",
-        "Africa/Malabo",
-        "Europe/London",
-        "Asia/Dacca",
-        "America/Rainy_River",
-        "US/Arizona",
-        "America/Jamaica",
-        "Asia/Pontianak",
-        "Canada/Mountain",
-        "America/Cordoba",
-        "CST6CDT",
-        "America/Tegucigalpa",
-        "America/Pangnirtung",
-        "GMT",
-        "Atlantic/Canary",
-        "America/Panama",
-        "Africa/Mbabane",
-        "Europe/Zagreb",
-        "America/Coral_Harbour",
-        "Australia/South",
-        "Eire",
-        "America/Chihuahua",
-        "Africa/Johannesburg",
-        "Asia/Aden",
-        "Asia/Aqtobe",
-        "America/St_Vincent",
-        "Australia/Hobart",
-        "Australia/Melbourne",
-        "Asia/Saigon",
-        "Europe/Copenhagen",
-        "GMT+0",
-        "America/Montserrat",
-        "America/Fort_Wayne",
-        "America/North_Dakota/Center",
-        "America/Cuiaba",
-        "Asia/Chita",
-        "Europe/Simferopol",
-        "Pacific/Wake",
-        "Asia/Aqtau",
-        "America/Recife",
-        "Africa/Banjul",
-        "Africa/Nairobi",
-        "Asia/Yangon",
-        "Asia/Novokuznetsk",
-        "Asia/Ashgabat",
-        "America/Belem",
-        "PRC",
-        "America/Cayenne",
-        "Africa/Harare",
-        "Asia/Magadan",
-        "Atlantic/Faroe",
-        "America/Atikokan",
-        "Africa/Timbuktu",
-        "Australia/Lord_Howe",
-        "Europe/Rome",
-        "Europe/Bucharest",
-        "Africa/Tripoli",
-        "Pacific/Honolulu",
-        "America/Thule",
-        "America/Merida",
-        "Asia/Krasnoyarsk",
-        "Atlantic/St_Helena",
-        "America/Guayaquil",
-        "Etc/GMT+9",
-        "Asia/Irkutsk",
-        "US/Hawaii",
-        "America/Argentina/Ushuaia",
-        "Europe/Kirov",
-        "Asia/Kathmandu",
-        "Europe/Luxembourg",
-        "Africa/Ouagadougou",
-        "America/Argentina/Catamarca",
-        "Africa/Cairo",
-        "America/Porto_Acre",
-        "Europe/San_Marino",
-        "Asia/Ho_Chi_Minh",
-        "America/Cambridge_Bay",
-        "Chile/Continental",
-        "Pacific/Pago_Pago",
-        "America/Fortaleza",
-        "America/Port-au-Prince",
-        "Africa/Gaborone",
-        "Africa/Freetown",
-        "America/Kralendijk",
-        "America/Argentina/ComodRivadavia",
-        "Atlantic/South_Georgia",
-        "Europe/Bratislava",
-        "Cuba",
-        "Australia/Victoria",
-        "Pacific/Apia",
-        "NZ",
-        "Pacific/Pohnpei",
-        "America/North_Dakota/Beulah",
-        "Australia/North",
-        "US/Eastern",
-        "NZ-CHAT",
-        "Indian/Kerguelen",
-        "America/Rankin_Inlet",
-        "America/Creston",
-        "Asia/Tbilisi",
-        "America/Marigot",
-        "Etc/GMT-2",
-        "America/Winnipeg",
-        "Europe/Oslo",
-        "America/Tijuana",
-        "Chile/EasterIsland",
-        "America/Sitka",
-        "America/Curacao",
-        "Asia/Tokyo",
-        "Brazil/East",
-        "Asia/Dubai",
-        "Africa/Juba",
-        "Asia/Tehran",
-        "America/Halifax",
-        "Australia/Lindeman",
-        "America/Blanc-Sablon",
-        "Europe/Budapest",
-        "Asia/Jayapura",
-        "Pacific/Palau",
-        "Hongkong",
-        "America/Atka",
-        "Asia/Atyrau",
-        "Africa/Djibouti",
-        "Atlantic/Stanley",
-        "America/Santarem",
-        "Antarctica/Casey",
-        "America/Dominica",
-        "Africa/Bangui",
-        "Asia/Novosibirsk",
-        "Europe/Guernsey",
-        "Pacific/Yap",
-        "Australia/Tasmania",
-        "Africa/Lagos",
-        "Etc/GMT-13",
-        "Etc/GMT-9",
-        "Canada/Central",
-        "America/Ojinaga",
-        "America/Costa_Rica",
-        "Asia/Dhaka",
-        "Asia/Amman",
-        "Africa/Monrovia",
-        "Asia/Qyzylorda",
-        "Europe/Skopje",
-        "Asia/Nicosia",
-        "America/Ciudad_Juarez",
-        "Israel",
-        "Etc/GMT+5",
-        "Africa/Kampala",
-        "Asia/Calcutta",
-        "Europe/Volgograd",
-        "Asia/Beirut",
-        "Australia/Perth",
-        "America/Guatemala",
-        "America/Indiana/Petersburg",
-        "America/Paramaribo",
-        "Asia/Baghdad",
-        "Australia/Currie",
-        "Pacific/Truk",
-        "America/Porto_Velho",
-        "Indian/Comoro",
-        "Pacific/Midway",
-        "Pacific/Easter",
-        "Canada/Yukon",
-        "America/Indiana/Vincennes",
-        "Etc/GMT-5",
-        "America/Punta_Arenas",
-        "Mexico/BajaSur",
-        "America/Ensenada",
-        "America/Inuvik",
-        "Australia/ACT",
-        "EET",
-        "America/Los_Angeles",
-        "Asia/Srednekolymsk",
-        "Zulu",
-        "Europe/Jersey",
-        "Europe/Zaporozhye",
-        "America/Cancun",
-        "Pacific/Tahiti",
-        "Europe/Istanbul",
-        "Africa/Maputo",
-        "Asia/Kabul",
-        "Europe/Busingen",
-        "America/Detroit",
-        "America/Argentina/Tucuman",
-        "Asia/Qatar",
-        "Europe/Saratov",
-        "Europe/Belgrade",
-        "America/Dawson",
-        "Asia/Ulan_Bator",
-        "Indian/Christmas",
-        "Europe/Ulyanovsk",
-        "Pacific/Guadalcanal",
-        "Canada/Atlantic",
-        "Africa/Ceuta",
-        "Etc/GMT-4",
-        "America/Antigua",
-        "Antarctica/Vostok",
-        "America/Mazatlan",
-        "US/Michigan",
-        "Australia/Eucla",
-        "Africa/Addis_Ababa",
-        "Africa/Lubumbashi",
-        "Asia/Thimphu",
-        "Antarctica/Syowa",
-        "Europe/Ljubljana",
-        "Asia/Urumqi",
-        "America/St_Johns",
-        "America/Godthab",
-        "Europe/Riga",
-        "Asia/Katmandu",
-        "Pacific/Funafuti",
-        "America/Moncton",
-        "ROK",
-        "Pacific/Chuuk",
-        "Factory",
-        "America/Swift_Current",
-        "America/Goose_Bay",
-        "Europe/Vatican",
-        "America/Tortola",
-        "America/Argentina/Cordoba",
-        "America/Boa_Vista",
-        "Africa/Sao_Tome",
-        "Pacific/Nauru",
-        "America/Argentina/Buenos_Aires",
-        "Canada/Newfoundland",
-        "Antarctica/McMurdo",
-        "PST8PDT",
-        "Australia/Brisbane",
-        "Europe/Paris",
-        "Africa/Khartoum",
-        "Etc/GMT-3",
-        "America/Catamarca",
-        "Europe/Uzhgorod",
-        "Pacific/Bougainville",
-        "America/Noronha",
-        "America/Guadeloupe",
-        "Europe/Lisbon",
-        "America/Kentucky/Monticello",
-        "Asia/Harbin",
-        "Europe/Kiev",
-        "America/Cayman",
-        "Pacific/Kanton",
-        "America/Martinique",
-        "America/Santa_Isabel",
-        "America/Lower_Princes",
-        "Pacific/Port_Moresby",
-        "America/Thunder_Bay",
-        "Asia/Dili",
-        "Iran",
-        "America/Hermosillo",
-        "Europe/Samara",
-        "America/Matamoros",
-        "America/Bogota",
-        "Europe/Tiraspol",
-        "Atlantic/Jan_Mayen",
         "Africa/Accra",
-        "America/Boise",
-        "Libya",
+        "Africa/Addis_Ababa",
+        "Africa/Algiers",
+        "Africa/Asmara",
+        "Africa/Asmera",
+        "Africa/Bamako",
+        "Africa/Bangui",
+        "Africa/Banjul",
         "Africa/Bissau",
-        "WET",
-        "Asia/Bangkok",
-        "America/Puerto_Rico",
-        "Asia/Pyongyang",
-        "Etc/GMT-0",
+        "Africa/Blantyre",
+        "Africa/Brazzaville",
+        "Africa/Bujumbura",
+        "Africa/Cairo",
+        "Africa/Casablanca",
+        "Africa/Ceuta",
+        "Africa/Conakry",
+        "Africa/Dakar",
         "Africa/Dar_es_Salaam",
-        "America/Argentina/Salta",
-        "Etc/GMT-6",
-        "America/Shiprock",
-        "America/Anchorage",
-        "Atlantic/Azores",
-        "America/St_Lucia",
-        "America/Grenada",
-        "Asia/Tomsk",
-        "Asia/Colombo",
-        "Europe/Athens",
-        "America/Rosario",
-        "Australia/Sydney",
-        "Europe/Tallinn",
-        "Asia/Singapore",
-        "Europe/Astrakhan",
-        "Africa/Windhoek",
-        "Europe/Podgorica",
+        "Africa/Djibouti",
         "Africa/Douala",
-        "Asia/Gaza",
-        "Canada/Pacific",
-        "Pacific/Rarotonga",
+        "Africa/El_Aaiun",
+        "Africa/Freetown",
+        "Africa/Gaborone",
+        "Africa/Harare",
+        "Africa/Johannesburg",
+        "Africa/Juba",
+        "Africa/Kampala",
+        "Africa/Khartoum",
+        "Africa/Kigali",
+        "Africa/Kinshasa",
+        "Africa/Lagos",
+        "Africa/Libreville",
+        "Africa/Lome",
+        "Africa/Luanda",
+        "Africa/Lubumbashi",
+        "Africa/Lusaka",
+        "Africa/Malabo",
+        "Africa/Maputo",
+        "Africa/Maseru",
+        "Africa/Mbabane",
+        "Africa/Mogadishu",
+        "Africa/Monrovia",
+        "Africa/Nairobi",
+        "Africa/Ndjamena",
+        "Africa/Niamey",
+        "Africa/Nouakchott",
+        "Africa/Ouagadougou",
+        "Africa/Porto-Novo",
+        "Africa/Sao_Tome",
+        "Africa/Timbuktu",
+        "Africa/Tripoli",
+        "Africa/Tunis",
+        "Africa/Windhoek",
+        "America/Adak",
+        "America/Anchorage",
+        "America/Anguilla",
+        "America/Antigua",
+        "America/Araguaina",
+        "America/Argentina/Buenos_Aires",
+        "America/Argentina/Catamarca",
+        "America/Argentina/ComodRivadavia",
+        "America/Argentina/Cordoba",
+        "America/Argentina/Jujuy",
+        "America/Argentina/La_Rioja",
+        "America/Argentina/Mendoza",
+        "America/Argentina/Rio_Gallegos",
+        "America/Argentina/Salta",
+        "America/Argentina/San_Juan",
+        "America/Argentina/San_Luis",
+        "America/Argentina/Tucuman",
+        "America/Argentina/Ushuaia",
+        "America/Aruba",
+        "America/Asuncion",
+        "America/Atikokan",
+        "America/Atka",
+        "America/Bahia",
+        "America/Bahia_Banderas",
+        "America/Barbados",
+        "America/Belem",
+        "America/Belize",
+        "America/Blanc-Sablon",
+        "America/Boa_Vista",
+        "America/Bogota",
+        "America/Boise",
+        "America/Buenos_Aires",
+        "America/Cambridge_Bay",
+        "America/Campo_Grande",
+        "America/Cancun",
+        "America/Caracas",
+        "America/Catamarca",
+        "America/Cayenne",
+        "America/Cayman",
+        "America/Chicago",
+        "America/Chihuahua",
+        "America/Ciudad_Juarez",
+        "America/Coral_Harbour",
+        "America/Cordoba",
+        "America/Costa_Rica",
+        "America/Creston",
+        "America/Cuiaba",
+        "America/Curacao",
+        "America/Danmarkshavn",
+        "America/Dawson",
+        "America/Dawson_Creek",
+        "America/Denver",
+        "America/Detroit",
+        "America/Dominica",
+        "America/Edmonton",
+        "America/Eirunepe",
+        "America/El_Salvador",
+        "America/Ensenada",
+        "America/Fort_Nelson",
+        "America/Fort_Wayne",
+        "America/Fortaleza",
+        "America/Glace_Bay",
+        "America/Godthab",
+        "America/Goose_Bay",
+        "America/Grand_Turk",
+        "America/Grenada",
+        "America/Guadeloupe",
+        "America/Guatemala",
+        "America/Guayaquil",
+        "America/Guyana",
+        "America/Halifax",
+        "America/Havana",
+        "America/Hermosillo",
+        "America/Indiana/Indianapolis",
+        "America/Indiana/Knox",
+        "America/Indiana/Marengo",
+        "America/Indiana/Petersburg",
+        "America/Indiana/Tell_City",
+        "America/Indiana/Vevay",
+        "America/Indiana/Vincennes",
+        "America/Indiana/Winamac",
+        "America/Indianapolis",
+        "America/Inuvik",
+        "America/Iqaluit",
+        "America/Jamaica",
+        "America/Jujuy",
+        "America/Juneau",
+        "America/Kentucky/Louisville",
+        "America/Kentucky/Monticello",
+        "America/Knox_IN",
+        "America/Kralendijk",
+        "America/La_Paz",
+        "America/Lima",
+        "America/Los_Angeles",
+        "America/Louisville",
+        "America/Lower_Princes",
+        "America/Maceio",
+        "America/Managua",
+        "America/Manaus",
+        "America/Marigot",
+        "America/Martinique",
+        "America/Matamoros",
+        "America/Mazatlan",
+        "America/Mendoza",
+        "America/Menominee",
+        "America/Merida",
+        "America/Metlakatla",
+        "America/Mexico_City",
+        "America/Miquelon",
+        "America/Moncton",
+        "America/Monterrey",
+        "America/Montevideo",
+        "America/Montreal",
+        "America/Montserrat",
+        "America/Nassau",
+        "America/New_York",
+        "America/Nipigon",
+        "America/Nome",
+        "America/Noronha",
+        "America/North_Dakota/Beulah",
+        "America/North_Dakota/Center",
+        "America/North_Dakota/New_Salem",
+        "America/Nuuk",
+        "America/Ojinaga",
+        "America/Panama",
+        "America/Pangnirtung",
+        "America/Paramaribo",
+        "America/Phoenix",
+        "America/Port-au-Prince",
+        "America/Port_of_Spain",
+        "America/Porto_Acre",
+        "America/Porto_Velho",
+        "America/Puerto_Rico",
+        "America/Punta_Arenas",
+        "America/Rainy_River",
+        "America/Rankin_Inlet",
+        "America/Recife",
+        "America/Regina",
+        "America/Resolute",
         "America/Rio_Branco",
+        "America/Rosario",
+        "America/Santa_Isabel",
+        "America/Santarem",
+        "America/Santiago",
+        "America/Santo_Domingo",
+        "America/Sao_Paulo",
+        "America/Scoresbysund",
+        "America/Shiprock",
+        "America/Sitka",
+        "America/St_Barthelemy",
+        "America/St_Johns",
+        "America/St_Kitts",
+        "America/St_Lucia",
+        "America/St_Thomas",
+        "America/St_Vincent",
+        "America/Swift_Current",
+        "America/Tegucigalpa",
+        "America/Thule",
+        "America/Thunder_Bay",
+        "America/Tijuana",
+        "America/Toronto",
+        "America/Tortola",
+        "America/Vancouver",
+        "America/Virgin",
+        "America/Whitehorse",
+        "America/Winnipeg",
+        "America/Yakutat",
+        "America/Yellowknife",
+        "Antarctica/Casey",
+        "Antarctica/Davis",
+        "Antarctica/DumontDUrville",
+        "Antarctica/Macquarie",
+        "Antarctica/Mawson",
+        "Antarctica/McMurdo",
+        "Antarctica/Palmer",
+        "Antarctica/Rothera",
+        "Antarctica/South_Pole",
+        "Antarctica/Syowa",
+        "Antarctica/Troll",
+        "Antarctica/Vostok",
+        "Arctic/Longyearbyen",
+        "Asia/Aden",
+        "Asia/Almaty",
+        "Asia/Amman",
+        "Asia/Anadyr",
+        "Asia/Aqtau",
+        "Asia/Aqtobe",
+        "Asia/Ashgabat",
+        "Asia/Ashkhabad",
+        "Asia/Atyrau",
+        "Asia/Baghdad",
         "Asia/Bahrain",
+        "Asia/Baku",
+        "Asia/Bangkok",
+        "Asia/Barnaul",
+        "Asia/Beirut",
+        "Asia/Bishkek",
+        "Asia/Brunei",
+        "Asia/Calcutta",
+        "Asia/Chita",
+        "Asia/Choibalsan",
+        "Asia/Chongqing",
+        "Asia/Chungking",
+        "Asia/Colombo",
+        "Asia/Dacca",
+        "Asia/Damascus",
+        "Asia/Dhaka",
+        "Asia/Dili",
+        "Asia/Dubai",
+        "Asia/Dushanbe",
+        "Asia/Famagusta",
+        "Asia/Gaza",
+        "Asia/Harbin",
+        "Asia/Hebron",
+        "Asia/Ho_Chi_Minh",
+        "Asia/Hong_Kong",
+        "Asia/Hovd",
+        "Asia/Irkutsk",
+        "Asia/Istanbul",
+        "Asia/Jakarta",
+        "Asia/Jayapura",
+        "Asia/Jerusalem",
+        "Asia/Kabul",
+        "Asia/Kamchatka",
+        "Asia/Karachi",
+        "Asia/Kashgar",
+        "Asia/Kathmandu",
+        "Asia/Katmandu",
+        "Asia/Khandyga",
+        "Asia/Kolkata",
+        "Asia/Krasnoyarsk",
+        "Asia/Kuala_Lumpur",
+        "Asia/Kuching",
+        "Asia/Kuwait",
+        "Asia/Macao",
+        "Asia/Macau",
+        "Asia/Magadan",
+        "Asia/Makassar",
+        "Asia/Manila",
+        "Asia/Muscat",
+        "Asia/Nicosia",
+        "Asia/Novokuznetsk",
+        "Asia/Novosibirsk",
+        "Asia/Omsk",
+        "Asia/Oral",
+        "Asia/Phnom_Penh",
+        "Asia/Pontianak",
+        "Asia/Pyongyang",
+        "Asia/Qatar",
+        "Asia/Qostanay",
+        "Asia/Qyzylorda",
+        "Asia/Rangoon",
+        "Asia/Riyadh",
+        "Asia/Saigon",
+        "Asia/Sakhalin",
+        "Asia/Samarkand",
+        "Asia/Seoul",
+        "Asia/Shanghai",
+        "Asia/Singapore",
+        "Asia/Srednekolymsk",
+        "Asia/Taipei",
+        "Asia/Tashkent",
+        "Asia/Tbilisi",
+        "Asia/Tehran",
+        "Asia/Tel_Aviv",
+        "Asia/Thimbu",
+        "Asia/Thimphu",
+        "Asia/Tokyo",
+        "Asia/Tomsk",
+        "Asia/Ujung_Pandang",
+        "Asia/Ulaanbaatar",
+        "Asia/Ulan_Bator",
+        "Asia/Urumqi",
+        "Asia/Ust-Nera",
+        "Asia/Vientiane",
+        "Asia/Vladivostok",
+        "Asia/Yakutsk",
+        "Asia/Yangon",
+        "Asia/Yekaterinburg",
+        "Asia/Yerevan",
+        "Atlantic/Azores",
+        "Atlantic/Bermuda",
+        "Atlantic/Canary",
+        "Atlantic/Cape_Verde",
+        "Atlantic/Faeroe",
+        "Atlantic/Faroe",
+        "Atlantic/Jan_Mayen",
+        "Atlantic/Madeira",
+        "Atlantic/Reykjavik",
+        "Atlantic/South_Georgia",
+        "Atlantic/St_Helena",
+        "Atlantic/Stanley",
+        "Australia/ACT",
+        "Australia/Adelaide",
+        "Australia/Brisbane",
+        "Australia/Broken_Hill",
+        "Australia/Canberra",
+        "Australia/Currie",
+        "Australia/Darwin",
+        "Australia/Eucla",
+        "Australia/Hobart",
+        "Australia/LHI",
+        "Australia/Lindeman",
+        "Australia/Lord_Howe",
+        "Australia/Melbourne",
+        "Australia/NSW",
+        "Australia/North",
+        "Australia/Perth",
+        "Australia/Queensland",
+        "Australia/South",
+        "Australia/Sydney",
+        "Australia/Tasmania",
+        "Australia/Victoria",
+        "Australia/West",
+        "Australia/Yancowinna",
+        "Brazil/Acre",
+        "Brazil/DeNoronha",
+        "Brazil/East",
+        "Brazil/West",
+        "CET",
+        "CST6CDT",
+        "Canada/Atlantic",
+        "Canada/Central",
+        "Canada/Eastern",
+        "Canada/Mountain",
+        "Canada/Newfoundland",
+        "Canada/Pacific",
+        "Canada/Saskatchewan",
+        "Canada/Yukon",
+        "Chile/Continental",
+        "Chile/EasterIsland",
+        "Cuba",
+        "EET",
+        "EST",
+        "EST5EDT",
+        "Egypt",
+        "Eire",
+        "Etc/GMT",
+        "Etc/GMT+0",
+        "Etc/GMT+1",
+        "Etc/GMT+10",
+        "Etc/GMT+11",
+        "Etc/GMT+12",
+        "Etc/GMT+2",
+        "Etc/GMT+3",
+        "Etc/GMT+4",
+        "Etc/GMT+5",
+        "Etc/GMT+6",
+        "Etc/GMT+7",
+        "Etc/GMT+8",
+        "Etc/GMT+9",
+        "Etc/GMT-0",
+        "Etc/GMT-1",
+        "Etc/GMT-10",
+        "Etc/GMT-11",
+        "Etc/GMT-12",
+        "Etc/GMT-13",
+        "Etc/GMT-14",
+        "Etc/GMT-2",
+        "Etc/GMT-3",
+        "Etc/GMT-4",
+        "Etc/GMT-5",
+        "Etc/GMT-6",
+        "Etc/GMT-7",
+        "Etc/GMT-8",
+        "Etc/GMT-9",
+        "Etc/GMT0",
+        "Etc/Greenwich",
+        "Etc/UCT",
+        "Etc/UTC",
+        "Etc/Universal",
+        "Etc/Zulu",
+        "Europe/Amsterdam",
+        "Europe/Andorra",
+        "Europe/Astrakhan",
+        "Europe/Athens",
+        "Europe/Belfast",
+        "Europe/Belgrade",
+        "Europe/Berlin",
+        "Europe/Bratislava",
+        "Europe/Brussels",
+        "Europe/Bucharest",
+        "Europe/Budapest",
+        "Europe/Busingen",
+        "Europe/Chisinau",
+        "Europe/Copenhagen",
+        "Europe/Dublin",
+        "Europe/Gibraltar",
+        "Europe/Guernsey",
+        "Europe/Helsinki",
+        "Europe/Isle_of_Man",
+        "Europe/Istanbul",
+        "Europe/Jersey",
+        "Europe/Kaliningrad",
+        "Europe/Kiev",
+        "Europe/Kirov",
+        "Europe/Kyiv",
+        "Europe/Lisbon",
+        "Europe/Ljubljana",
+        "Europe/London",
+        "Europe/Luxembourg",
+        "Europe/Madrid",
+        "Europe/Malta",
+        "Europe/Mariehamn",
+        "Europe/Minsk",
+        "Europe/Monaco",
+        "Europe/Moscow",
+        "Europe/Nicosia",
+        "Europe/Oslo",
+        "Europe/Paris",
+        "Europe/Podgorica",
+        "Europe/Prague",
+        "Europe/Riga",
+        "Europe/Rome",
+        "Europe/Samara",
+        "Europe/San_Marino",
+        "Europe/Sarajevo",
+        "Europe/Saratov",
+        "Europe/Simferopol",
+        "Europe/Skopje",
+        "Europe/Sofia",
+        "Europe/Stockholm",
+        "Europe/Tallinn",
+        "Europe/Tirane",
+        "Europe/Tiraspol",
+        "Europe/Ulyanovsk",
+        "Europe/Uzhgorod",
+        "Europe/Vaduz",
+        "Europe/Vatican",
+        "Europe/Vienna",
+        "Europe/Vilnius",
+        "Europe/Volgograd",
+        "Europe/Warsaw",
+        "Europe/Zagreb",
+        "Europe/Zaporozhye",
+        "Europe/Zurich",
+        "Factory",
+        "GB",
+        "GB-Eire",
+        "GMT",
+        "GMT+0",
+        "GMT-0",
+        "GMT0",
+        "Greenwich",
+        "HST",
+        "Hongkong",
+        "Iceland",
+        "Indian/Antananarivo",
+        "Indian/Chagos",
+        "Indian/Christmas",
+        "Indian/Cocos",
+        "Indian/Comoro",
+        "Indian/Kerguelen",
+        "Indian/Mahe",
+        "Indian/Maldives",
+        "Indian/Mauritius",
+        "Indian/Mayotte",
+        "Indian/Reunion",
+        "Iran",
+        "Israel",
+        "Jamaica",
+        "Japan",
+        "Kwajalein",
+        "Libya",
+        "MET",
+        "MST",
+        "MST7MDT",
+        "Mexico/BajaNorte",
+        "Mexico/BajaSur",
+        "Mexico/General",
+        "NZ",
+        "NZ-CHAT",
+        "Navajo",
+        "PRC",
+        "PST8PDT",
+        "Pacific/Apia",
+        "Pacific/Auckland",
+        "Pacific/Bougainville",
+        "Pacific/Chatham",
+        "Pacific/Chuuk",
+        "Pacific/Easter",
+        "Pacific/Efate",
+        "Pacific/Enderbury",
+        "Pacific/Fakaofo",
+        "Pacific/Fiji",
+        "Pacific/Funafuti",
+        "Pacific/Galapagos",
+        "Pacific/Gambier",
+        "Pacific/Guadalcanal",
+        "Pacific/Guam",
+        "Pacific/Honolulu",
+        "Pacific/Johnston",
+        "Pacific/Kanton",
+        "Pacific/Kiritimati",
+        "Pacific/Kosrae",
+        "Pacific/Kwajalein",
+        "Pacific/Majuro",
+        "Pacific/Marquesas",
+        "Pacific/Midway",
+        "Pacific/Nauru",
+        "Pacific/Niue",
         "Pacific/Norfolk",
         "Pacific/Noumea",
-        "Europe/Kaliningrad",
-        "Greenwich",
-        "US/Samoa",
-        "Africa/Bujumbura",
-        "America/Dawson_Creek",
-        "Pacific/Niue",
-        "America/Argentina/La_Rioja",
-        "America/Glace_Bay",
-        "Atlantic/Bermuda",
-        "Asia/Hovd",
-        "America/Campo_Grande",
-        "Asia/Istanbul",
-        "Asia/Tel_Aviv",
-        "Australia/Adelaide",
-        "America/Danmarkshavn",
-        "Asia/Ulaanbaatar",
+        "Pacific/Pago_Pago",
+        "Pacific/Palau",
         "Pacific/Pitcairn",
-        "Pacific/Guam",
-        "Pacific/Samoa",
-        "Asia/Qostanay",
-        "America/Nipigon",
-        "Africa/Nouakchott",
-        "Asia/Bishkek",
-        "GB",
-        "Etc/GMT-7",
-        "America/Yellowknife",
-        "Indian/Antananarivo",
-        "America/Belize",
-        "Asia/Karachi",
-        "Asia/Taipei",
-        "Africa/Brazzaville",
-        "Asia/Choibalsan",
-        "GB-Eire",
-        "Etc/GMT+0",
-        "Asia/Sakhalin",
-        "America/Mendoza",
-        "Africa/Lusaka",
-        "Canada/Saskatchewan",
-        "America/St_Kitts",
-        "Indian/Mayotte",
-        "Europe/Isle_of_Man",
-        "Indian/Cocos",
-        "America/Grand_Turk",
-        "W-SU",
-        "America/Kentucky/Louisville",
-        "Africa/Kigali",
-        "America/Vancouver",
-        "Europe/Prague",
-        "Etc/GMT+6",
-        "Africa/Blantyre",
-        "Asia/Chungking",
-        "Asia/Oral",
-        "Pacific/Fiji",
-        "Indian/Maldives",
-        "Australia/LHI",
-        "Australia/NSW",
-        "US/Mountain",
-        "Pacific/Chatham",
-        "Africa/Kinshasa",
-        "America/North_Dakota/New_Salem",
-        "Europe/Nicosia",
-        "Asia/Riyadh",
-        "Pacific/Enderbury",
-        "Africa/Casablanca",
-        "Etc/UCT",
-        "US/Indiana-Starke",
-        "Universal",
-        "Pacific/Wallis",
-        "MST7MDT",
-        "Asia/Khandyga",
-        "Europe/Dublin",
-        "America/Adak",
-        "America/Monterrey",
-        "Asia/Chongqing",
-        "Europe/Minsk",
-        "Antarctica/Macquarie",
-        "Asia/Omsk",
-        "America/Bahia",
-        "Asia/Rangoon",
-        "US/Aleutian",
-        "Etc/GMT+12",
-        "America/Indiana/Marengo",
-        "Africa/Tunis",
-        "Europe/Vaduz",
-        "Portugal",
-        "HST",
-        "America/Santo_Domingo",
-        "Pacific/Kosrae",
-        "Etc/GMT+7",
-        "Etc/GMT-12",
-        "Asia/Dushanbe",
-        "America/Indiana/Knox",
-        "Pacific/Kiritimati",
-        "America/Louisville",
-        "America/Argentina/Mendoza",
-        "Europe/Chisinau",
-        "Etc/GMT+1",
-        "Africa/Algiers",
-        "Asia/Kuala_Lumpur",
-        "Asia/Hebron",
-        "America/Phoenix",
-        "America/Caracas",
-        "Asia/Manila",
-        "Asia/Jakarta",
-        "America/Edmonton",
-        "Africa/Bamako",
-        "Pacific/Tarawa",
-        "America/Fort_Nelson",
-        "America/St_Barthelemy",
-        "Australia/Darwin",
-        "Asia/Yerevan",
-        "Asia/Yakutsk",
-        "Europe/Tirane",
-        "Navajo",
-        "Etc/GMT+4",
-        "Africa/Niamey",
-        "Europe/Sofia",
-        "Pacific/Fakaofo",
-        "Antarctica/Palmer",
-        "Asia/Thimbu",
-        "Europe/Madrid",
-        "US/East-Indiana",
-        "Africa/Dakar",
-        "Etc/Zulu",
-        "Pacific/Kwajalein",
-        "America/Argentina/Rio_Gallegos",
-        "Etc/GMT-8",
-        "GMT-0",
-        "America/Nassau",
-        "Europe/Berlin",
-        "Europe/Vilnius",
-        "Brazil/West",
-        "Etc/GMT+11",
-        "America/Menominee",
-        "Etc/UTC",
-        "America/Scoresbysund",
-        "Pacific/Johnston",
-        "America/Sao_Paulo",
-        "America/Port_of_Spain",
-        "Kwajalein",
-        "America/Buenos_Aires",
-        "Indian/Reunion",
-        "Asia/Makassar",
-        "America/Toronto",
-        "Antarctica/DumontDUrville",
-        "America/Indianapolis",
-        "Asia/Brunei",
-        "Asia/Kamchatka",
-        "Etc/GMT+10",
-        "CET",
-        "Atlantic/Faeroe",
-        "Atlantic/Cape_Verde",
-        "Pacific/Galapagos",
-        "US/Alaska",
+        "Pacific/Pohnpei",
         "Pacific/Ponape",
-        "America/Resolute",
-        "Turkey",
-        "Europe/Moscow",
-        "America/El_Salvador",
-        "Antarctica/South_Pole",
-        "Asia/Vladivostok",
-        "America/Asuncion",
-        "Asia/Samarkand",
-        "Indian/Chagos",
-        "Atlantic/Madeira",
-        "Europe/Kyiv",
-        "Asia/Macao",
-        "MET",
-        "EST5EDT",
-        "Europe/Stockholm",
-        "Africa/Asmera",
-        "Japan",
-        "America/Bahia_Banderas",
-        "Asia/Damascus",
-        "Europe/Helsinki",
-        "America/Denver",
-        "America/Iqaluit",
-        "America/Managua",
-        "Pacific/Majuro",
-        "Etc/GMT+8",
-        "America/Indiana/Tell_City",
-        "America/Lima",
-        "America/Nuuk",
-        "Etc/GMT-14",
-        "Africa/El_Aaiun",
-        "America/Miquelon",
-        "Africa/Ndjamena",
-        "America/Indiana/Vevay",
-        "Etc/GMT-11",
-        "US/Pacific",
-        "Asia/Seoul",
-        "America/Barbados",
-        "America/Regina",
-        "UTC",
-        "Etc/GMT+2",
-        "Africa/Luanda",
-        "America/Montreal",
-        "Africa/Mogadishu",
-        "America/Chicago",
-        "Antarctica/Troll",
-        "Egypt",
-        "Asia/Ust-Nera",
+        "Pacific/Port_Moresby",
+        "Pacific/Rarotonga",
+        "Pacific/Saipan",
+        "Pacific/Samoa",
+        "Pacific/Tahiti",
+        "Pacific/Tarawa",
+        "Pacific/Tongatapu",
+        "Pacific/Truk",
+        "Pacific/Wake",
+        "Pacific/Wallis",
+        "Pacific/Yap",
+        "Poland",
+        "Portugal",
         "ROC",
-        "Pacific/Efate",
-        "Asia/Macau",
-        "Asia/Shanghai",
-        "America/Mexico_City",
-        "Etc/Greenwich",
-        "America/Yakutat",
-        "America/Virgin",
-        "Africa/Conakry",
-        "Etc/Universal",
-        "Australia/Canberra",
-        "MST",
-        "Asia/Kuching",
-        "America/Montevideo",
-        "America/Indiana/Indianapolis",
-        "Asia/Tashkent",
-        "America/Havana",
-        "Canada/Eastern",
-        "Europe/Andorra",
-        "America/Argentina/San_Luis",
-        "Europe/Gibraltar",
-        "Europe/Amsterdam",
-        "Etc/GMT",
-        "Europe/Monaco",
-        "America/Knox_IN",
-        "America/New_York",
-        "Indian/Mauritius",
-        "America/Juneau",
+        "ROK",
+        "Singapore",
+        "Turkey",
         "UCT",
-        "Asia/Hong_Kong",
-        "America/Santiago",
-        "Europe/Vienna",
-        "Brazil/Acre",
-        "Mexico/General",
-        "Australia/West",
-        "America/Argentina/Jujuy",
-        "Africa/Lome",
-        "Antarctica/Rothera",
-        "Asia/Ashkhabad",
-        "Arctic/Longyearbyen",
+        "US/Alaska",
+        "US/Aleutian",
+        "US/Arizona",
+        "US/Central",
+        "US/East-Indiana",
+        "US/Eastern",
+        "US/Hawaii",
+        "US/Indiana-Starke",
+        "US/Michigan",
+        "US/Mountain",
+        "US/Pacific",
+        "US/Samoa",
+        "UTC",
+        "Universal",
+        "W-SU",
+        "WET",
+        "Zulu",
     };
 
     for (zones) |zone| {
@@ -1156,6 +1156,31 @@ test "load a lot of zones" {
             tz_b.deinit();
         }
     }
+}
+
+test "Canada / BC: permanent DST (2026+)" {
+    var tz_BC = try Tz.fromTzdata(testing.io, "Canada/Pacific", null);
+    defer tz_BC.deinit();
+
+    // winter time offset is -8 hours
+    const dt_no_DST = try Datetime.fromFields(.{ .year = 2026, .tz_options = .{ .tz = &tz_BC } });
+    try testing.expectEqual(3600 * -8, dt_no_DST.utc_offset.?.seconds_east);
+    try testing.expect(!dt_no_DST.isDST());
+
+    // summer time / DST offset is -7 hours
+    const dt_DST = try Datetime.fromFields(.{ .year = 2026, .month = 6, .tz_options = .{ .tz = &tz_BC } });
+    try testing.expectEqual(3600 * -7, dt_DST.utc_offset.?.seconds_east);
+    try testing.expect(dt_DST.isDST());
+
+    // this is not considered DST anymore, but the offset remains
+    const dt_still_DST_offset = try Datetime.fromFields(.{ .year = 2026, .month = 12, .tz_options = .{ .tz = &tz_BC } });
+    try testing.expectEqual(3600 * -7, dt_still_DST_offset.utc_offset.?.seconds_east);
+    try testing.expect(!dt_still_DST_offset.isDST());
+
+    // next year / 2027 should not have DST
+    const dt_DST_anymore = try Datetime.fromFields(.{ .year = 2027, .month = 6, .tz_options = .{ .tz = &tz_BC } });
+    try testing.expectEqual(3600 * -7, dt_DST.utc_offset.?.seconds_east);
+    try testing.expect(!dt_DST_anymore.isDST());
 }
 
 test "conversion between random time zones, no-alloc" {
@@ -1210,8 +1235,8 @@ test "conversion between random time zones, no-alloc" {
 // the following test is auto-generated by gen_test_tzones.py. do not edit this line and below.
 
 test "conversion between random time zones" {
-    var tz_a = try Tz.fromTzdata(testing.io, "Israel", testing.allocator);
-    var tz_b = try Tz.fromTzdata(testing.io, "America/Guadeloupe", testing.allocator);
+    var tz_a = try Tz.fromTzdata(testing.io, "Europe/Malta", testing.allocator);
+    var tz_b = try Tz.fromTzdata(testing.io, "Europe/Samara", testing.allocator);
 
     var dt_a = try Datetime.fromUnix(-816207319, Duration.Resolution.second, .{ .tz = &tz_a });
     var dt_b = try Datetime.fromUnix(1921722761, Duration.Resolution.second, .{ .tz = &tz_b });
@@ -1222,16 +1247,16 @@ test "conversion between random time zones" {
     var w: std.Io.Writer = .fixed(&buf);
 
     try dt_b.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("2030-11-24T05:52:41+02:00:00", w.buffered());
+    try testing.expectEqualStrings("2030-11-24T04:52:41+01:00:00", w.buffered());
     w = .fixed(&buf);
     try dt_c.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1944-02-20T00:44:41-03:00:00", w.buffered());
+    try testing.expectEqualStrings("1944-02-20T07:44:41+04:00:00", w.buffered());
 
     tz_a.deinit();
     tz_b.deinit();
 
-    tz_a = try Tz.fromTzdata(testing.io, "America/Cayenne", testing.allocator);
-    tz_b = try Tz.fromTzdata(testing.io, "Indian/Cocos", testing.allocator);
+    tz_a = try Tz.fromTzdata(testing.io, "Indian/Maldives", testing.allocator);
+    tz_b = try Tz.fromTzdata(testing.io, "Africa/Mogadishu", testing.allocator);
 
     dt_a = try Datetime.fromUnix(1942114456, Duration.Resolution.second, .{ .tz = &tz_a });
     dt_b = try Datetime.fromUnix(-1893647018, Duration.Resolution.second, .{ .tz = &tz_b });
@@ -1240,16 +1265,16 @@ test "conversion between random time zones" {
 
     w = .fixed(&buf);
     try dt_b.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1909-12-29T15:27:02-03:29:20", w.buffered());
+    try testing.expectEqualStrings("1909-12-29T23:50:22+04:54:00", w.buffered());
     w = .fixed(&buf);
     try dt_c.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("2031-07-18T10:44:16+06:30:00", w.buffered());
+    try testing.expectEqualStrings("2031-07-18T07:14:16+03:00:00", w.buffered());
 
     tz_a.deinit();
     tz_b.deinit();
 
-    tz_a = try Tz.fromTzdata(testing.io, "Australia/North", testing.allocator);
-    tz_b = try Tz.fromTzdata(testing.io, "Asia/Kathmandu", testing.allocator);
+    tz_a = try Tz.fromTzdata(testing.io, "Europe/Stockholm", testing.allocator);
+    tz_b = try Tz.fromTzdata(testing.io, "UTC", testing.allocator);
 
     dt_a = try Datetime.fromUnix(-1128113058, Duration.Resolution.second, .{ .tz = &tz_a });
     dt_b = try Datetime.fromUnix(1223021131, Duration.Resolution.second, .{ .tz = &tz_b });
@@ -1258,16 +1283,16 @@ test "conversion between random time zones" {
 
     w = .fixed(&buf);
     try dt_b.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("2008-10-03T17:35:31+09:30:00", w.buffered());
+    try testing.expectEqualStrings("2008-10-03T10:05:31+02:00:00", w.buffered());
     w = .fixed(&buf);
     try dt_c.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1934-04-03T08:45:42+05:30:00", w.buffered());
+    try testing.expectEqualStrings("1934-04-03T03:15:42+00:00:00", w.buffered());
 
     tz_a.deinit();
     tz_b.deinit();
 
-    tz_a = try Tz.fromTzdata(testing.io, "America/Denver", testing.allocator);
-    tz_b = try Tz.fromTzdata(testing.io, "Asia/Vientiane", testing.allocator);
+    tz_a = try Tz.fromTzdata(testing.io, "NZ-CHAT", testing.allocator);
+    tz_b = try Tz.fromTzdata(testing.io, "America/Kentucky/Monticello", testing.allocator);
 
     dt_a = try Datetime.fromUnix(-485869856, Duration.Resolution.second, .{ .tz = &tz_a });
     dt_b = try Datetime.fromUnix(-1894391592, Duration.Resolution.second, .{ .tz = &tz_b });
@@ -1276,16 +1301,16 @@ test "conversion between random time zones" {
 
     w = .fixed(&buf);
     try dt_b.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1909-12-20T21:06:48-07:00:00", w.buffered());
+    try testing.expectEqualStrings("1909-12-21T16:21:48+12:15:00", w.buffered());
     w = .fixed(&buf);
     try dt_c.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1954-08-09T19:09:04+07:00:00", w.buffered());
+    try testing.expectEqualStrings("1954-08-09T06:09:04-06:00:00", w.buffered());
 
     tz_a.deinit();
     tz_b.deinit();
 
-    tz_a = try Tz.fromTzdata(testing.io, "Australia/Yancowinna", testing.allocator);
-    tz_b = try Tz.fromTzdata(testing.io, "Australia/North", testing.allocator);
+    tz_a = try Tz.fromTzdata(testing.io, "Pacific/Auckland", testing.allocator);
+    tz_b = try Tz.fromTzdata(testing.io, "Europe/Stockholm", testing.allocator);
 
     dt_a = try Datetime.fromUnix(-999522008, Duration.Resolution.second, .{ .tz = &tz_a });
     dt_b = try Datetime.fromUnix(719055854, Duration.Resolution.second, .{ .tz = &tz_b });
@@ -1294,16 +1319,16 @@ test "conversion between random time zones" {
 
     w = .fixed(&buf);
     try dt_b.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1992-10-14T19:14:14+09:30:00", w.buffered());
+    try testing.expectEqualStrings("1992-10-14T22:44:14+13:00:00", w.buffered());
     w = .fixed(&buf);
     try dt_c.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1938-04-30T20:29:52+09:30:00", w.buffered());
+    try testing.expectEqualStrings("1938-04-30T11:59:52+01:00:00", w.buffered());
 
     tz_a.deinit();
     tz_b.deinit();
 
-    tz_a = try Tz.fromTzdata(testing.io, "Etc/GMT+3", testing.allocator);
-    tz_b = try Tz.fromTzdata(testing.io, "America/Coral_Harbour", testing.allocator);
+    tz_a = try Tz.fromTzdata(testing.io, "America/Coyhaique", testing.allocator);
+    tz_b = try Tz.fromTzdata(testing.io, "America/Detroit", testing.allocator);
 
     dt_a = try Datetime.fromUnix(-1389478107, Duration.Resolution.second, .{ .tz = &tz_a });
     dt_b = try Datetime.fromUnix(-195234029, Duration.Resolution.second, .{ .tz = &tz_b });
@@ -1312,7 +1337,7 @@ test "conversion between random time zones" {
 
     w = .fixed(&buf);
     try dt_b.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1963-10-25T05:19:31-03:00:00", w.buffered());
+    try testing.expectEqualStrings("1963-10-25T04:19:31-04:00:00", w.buffered());
     w = .fixed(&buf);
     try dt_c.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
     try testing.expectEqualStrings("1925-12-20T20:51:33-05:00:00", w.buffered());
@@ -1320,8 +1345,8 @@ test "conversion between random time zones" {
     tz_a.deinit();
     tz_b.deinit();
 
-    tz_a = try Tz.fromTzdata(testing.io, "America/Vancouver", testing.allocator);
-    tz_b = try Tz.fromTzdata(testing.io, "NZ-CHAT", testing.allocator);
+    tz_a = try Tz.fromTzdata(testing.io, "America/Indiana/Vevay", testing.allocator);
+    tz_b = try Tz.fromTzdata(testing.io, "Atlantic/Faroe", testing.allocator);
 
     dt_a = try Datetime.fromUnix(794111713, Duration.Resolution.second, .{ .tz = &tz_a });
     dt_b = try Datetime.fromUnix(-1262529920, Duration.Resolution.second, .{ .tz = &tz_b });
@@ -1330,16 +1355,16 @@ test "conversion between random time zones" {
 
     w = .fixed(&buf);
     try dt_b.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1929-12-29T01:14:40-08:00:00", w.buffered());
+    try testing.expectEqualStrings("1929-12-29T03:14:40-06:00:00", w.buffered());
     w = .fixed(&buf);
     try dt_c.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1995-03-02T16:20:13+13:45:00", w.buffered());
+    try testing.expectEqualStrings("1995-03-02T02:35:13+00:00:00", w.buffered());
 
     tz_a.deinit();
     tz_b.deinit();
 
-    tz_a = try Tz.fromTzdata(testing.io, "Europe/Helsinki", testing.allocator);
-    tz_b = try Tz.fromTzdata(testing.io, "America/Anguilla", testing.allocator);
+    tz_a = try Tz.fromTzdata(testing.io, "Europe/Nicosia", testing.allocator);
+    tz_b = try Tz.fromTzdata(testing.io, "EET", testing.allocator);
 
     dt_a = try Datetime.fromUnix(-1846174622, Duration.Resolution.second, .{ .tz = &tz_a });
     dt_b = try Datetime.fromUnix(364596200, Duration.Resolution.second, .{ .tz = &tz_b });
@@ -1351,13 +1376,13 @@ test "conversion between random time zones" {
     try testing.expectEqualStrings("1981-07-21T23:43:20+03:00:00", w.buffered());
     w = .fixed(&buf);
     try dt_c.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1911-07-02T01:42:58-04:00:00", w.buffered());
+    try testing.expectEqualStrings("1911-07-02T07:17:50+01:34:52", w.buffered());
 
     tz_a.deinit();
     tz_b.deinit();
 
-    tz_a = try Tz.fromTzdata(testing.io, "Pacific/Guadalcanal", testing.allocator);
-    tz_b = try Tz.fromTzdata(testing.io, "Etc/GMT-3", testing.allocator);
+    tz_a = try Tz.fromTzdata(testing.io, "Atlantic/Bermuda", testing.allocator);
+    tz_b = try Tz.fromTzdata(testing.io, "America/Eirunepe", testing.allocator);
 
     dt_a = try Datetime.fromUnix(1967326856, Duration.Resolution.second, .{ .tz = &tz_a });
     dt_b = try Datetime.fromUnix(142696408, Duration.Resolution.second, .{ .tz = &tz_b });
@@ -1366,16 +1391,16 @@ test "conversion between random time zones" {
 
     w = .fixed(&buf);
     try dt_b.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1974-07-11T00:53:28+11:00:00", w.buffered());
+    try testing.expectEqualStrings("1974-07-10T10:53:28-03:00:00", w.buffered());
     w = .fixed(&buf);
     try dt_c.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("2032-05-05T02:40:56+03:00:00", w.buffered());
+    try testing.expectEqualStrings("2032-05-04T18:40:56-05:00:00", w.buffered());
 
     tz_a.deinit();
     tz_b.deinit();
 
-    tz_a = try Tz.fromTzdata(testing.io, "Etc/GMT-14", testing.allocator);
-    tz_b = try Tz.fromTzdata(testing.io, "Africa/Monrovia", testing.allocator);
+    tz_a = try Tz.fromTzdata(testing.io, "Asia/Tbilisi", testing.allocator);
+    tz_b = try Tz.fromTzdata(testing.io, "Asia/Novosibirsk", testing.allocator);
 
     dt_a = try Datetime.fromUnix(-865972273, Duration.Resolution.second, .{ .tz = &tz_a });
     dt_b = try Datetime.fromUnix(-639392452, Duration.Resolution.second, .{ .tz = &tz_b });
@@ -1384,16 +1409,16 @@ test "conversion between random time zones" {
 
     w = .fixed(&buf);
     try dt_b.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1949-09-28T04:59:08+14:00:00", w.buffered());
+    try testing.expectEqualStrings("1949-09-27T17:59:08+03:00:00", w.buffered());
     w = .fixed(&buf);
     try dt_c.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1942-07-24T03:24:17-00:44:30", w.buffered());
+    try testing.expectEqualStrings("1942-07-24T11:08:47+07:00:00", w.buffered());
 
     tz_a.deinit();
     tz_b.deinit();
 
-    tz_a = try Tz.fromTzdata(testing.io, "America/Nome", testing.allocator);
-    tz_b = try Tz.fromTzdata(testing.io, "Europe/Ulyanovsk", testing.allocator);
+    tz_a = try Tz.fromTzdata(testing.io, "Asia/Magadan", testing.allocator);
+    tz_b = try Tz.fromTzdata(testing.io, "Navajo", testing.allocator);
 
     dt_a = try Datetime.fromUnix(-1571932065, Duration.Resolution.second, .{ .tz = &tz_a });
     dt_b = try Datetime.fromUnix(-782078436, Duration.Resolution.second, .{ .tz = &tz_b });
@@ -1402,16 +1427,16 @@ test "conversion between random time zones" {
 
     w = .fixed(&buf);
     try dt_b.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1945-03-20T17:59:24-10:00:00", w.buffered());
+    try testing.expectEqualStrings("1945-03-21T14:59:24+11:00:00", w.buffered());
     w = .fixed(&buf);
     try dt_c.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1920-03-10T11:12:15+03:00:00", w.buffered());
+    try testing.expectEqualStrings("1920-03-10T01:12:15-07:00:00", w.buffered());
 
     tz_a.deinit();
     tz_b.deinit();
 
-    tz_a = try Tz.fromTzdata(testing.io, "Pacific/Pago_Pago", testing.allocator);
-    tz_b = try Tz.fromTzdata(testing.io, "America/Nome", testing.allocator);
+    tz_a = try Tz.fromTzdata(testing.io, "Asia/Tomsk", testing.allocator);
+    tz_b = try Tz.fromTzdata(testing.io, "Asia/Magadan", testing.allocator);
 
     dt_a = try Datetime.fromUnix(-1516539100, Duration.Resolution.second, .{ .tz = &tz_a });
     dt_b = try Datetime.fromUnix(986091715, Duration.Resolution.second, .{ .tz = &tz_b });
@@ -1420,16 +1445,16 @@ test "conversion between random time zones" {
 
     w = .fixed(&buf);
     try dt_b.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("2001-03-31T15:21:55-11:00:00", w.buffered());
+    try testing.expectEqualStrings("2001-04-01T10:21:55+08:00:00", w.buffered());
     w = .fixed(&buf);
     try dt_c.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1921-12-11T00:08:20-11:00:00", w.buffered());
+    try testing.expectEqualStrings("1921-12-11T21:11:32+10:03:12", w.buffered());
 
     tz_a.deinit();
     tz_b.deinit();
 
-    tz_a = try Tz.fromTzdata(testing.io, "America/Danmarkshavn", testing.allocator);
-    tz_b = try Tz.fromTzdata(testing.io, "US/Arizona", testing.allocator);
+    tz_a = try Tz.fromTzdata(testing.io, "Africa/Mbabane", testing.allocator);
+    tz_b = try Tz.fromTzdata(testing.io, "America/Atka", testing.allocator);
 
     dt_a = try Datetime.fromUnix(-1215106914, Duration.Resolution.second, .{ .tz = &tz_a });
     dt_b = try Datetime.fromUnix(-487293440, Duration.Resolution.second, .{ .tz = &tz_b });
@@ -1438,16 +1463,16 @@ test "conversion between random time zones" {
 
     w = .fixed(&buf);
     try dt_b.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1954-07-23T21:42:40-03:00:00", w.buffered());
+    try testing.expectEqualStrings("1954-07-24T02:42:40+02:00:00", w.buffered());
     w = .fixed(&buf);
     try dt_c.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1931-06-30T23:18:06-07:00:00", w.buffered());
+    try testing.expectEqualStrings("1931-06-30T19:18:06-11:00:00", w.buffered());
 
     tz_a.deinit();
     tz_b.deinit();
 
-    tz_a = try Tz.fromTzdata(testing.io, "Africa/Maputo", testing.allocator);
-    tz_b = try Tz.fromTzdata(testing.io, "W-SU", testing.allocator);
+    tz_a = try Tz.fromTzdata(testing.io, "WET", testing.allocator);
+    tz_b = try Tz.fromTzdata(testing.io, "Africa/Lusaka", testing.allocator);
 
     dt_a = try Datetime.fromUnix(1367598722, Duration.Resolution.second, .{ .tz = &tz_a });
     dt_b = try Datetime.fromUnix(-1473054982, Duration.Resolution.second, .{ .tz = &tz_b });
@@ -1456,16 +1481,16 @@ test "conversion between random time zones" {
 
     w = .fixed(&buf);
     try dt_b.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1923-04-28T20:03:38+02:00:00", w.buffered());
+    try testing.expectEqualStrings("1923-04-28T18:03:38+00:00:00", w.buffered());
     w = .fixed(&buf);
     try dt_c.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("2013-05-03T20:32:02+04:00:00", w.buffered());
+    try testing.expectEqualStrings("2013-05-03T18:32:02+02:00:00", w.buffered());
 
     tz_a.deinit();
     tz_b.deinit();
 
-    tz_a = try Tz.fromTzdata(testing.io, "America/Los_Angeles", testing.allocator);
-    tz_b = try Tz.fromTzdata(testing.io, "America/Martinique", testing.allocator);
+    tz_a = try Tz.fromTzdata(testing.io, "Asia/Kuching", testing.allocator);
+    tz_b = try Tz.fromTzdata(testing.io, "Indian/Cocos", testing.allocator);
 
     dt_a = try Datetime.fromUnix(-260468215, Duration.Resolution.second, .{ .tz = &tz_a });
     dt_b = try Datetime.fromUnix(-1511958403, Duration.Resolution.second, .{ .tz = &tz_b });
@@ -1474,16 +1499,16 @@ test "conversion between random time zones" {
 
     w = .fixed(&buf);
     try dt_b.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1922-02-02T03:33:17-08:00:00", w.buffered());
+    try testing.expectEqualStrings("1922-02-02T18:54:37+07:21:20", w.buffered());
     w = .fixed(&buf);
     try dt_c.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1961-09-30T03:43:05-04:00:00", w.buffered());
+    try testing.expectEqualStrings("1961-09-30T14:13:05+06:30:00", w.buffered());
 
     tz_a.deinit();
     tz_b.deinit();
 
-    tz_a = try Tz.fromTzdata(testing.io, "America/Merida", testing.allocator);
-    tz_b = try Tz.fromTzdata(testing.io, "Libya", testing.allocator);
+    tz_a = try Tz.fromTzdata(testing.io, "Europe/Vaduz", testing.allocator);
+    tz_b = try Tz.fromTzdata(testing.io, "Canada/Mountain", testing.allocator);
 
     dt_a = try Datetime.fromUnix(824105261, Duration.Resolution.second, .{ .tz = &tz_a });
     dt_b = try Datetime.fromUnix(477126985, Duration.Resolution.second, .{ .tz = &tz_b });
@@ -1492,16 +1517,16 @@ test "conversion between random time zones" {
 
     w = .fixed(&buf);
     try dt_b.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1985-02-13T01:16:25-06:00:00", w.buffered());
+    try testing.expectEqualStrings("1985-02-13T08:16:25+01:00:00", w.buffered());
     w = .fixed(&buf);
     try dt_c.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1996-02-12T08:07:41+02:00:00", w.buffered());
+    try testing.expectEqualStrings("1996-02-11T23:07:41-07:00:00", w.buffered());
 
     tz_a.deinit();
     tz_b.deinit();
 
-    tz_a = try Tz.fromTzdata(testing.io, "Etc/GMT+6", testing.allocator);
-    tz_b = try Tz.fromTzdata(testing.io, "Pacific/Kanton", testing.allocator);
+    tz_a = try Tz.fromTzdata(testing.io, "America/Paramaribo", testing.allocator);
+    tz_b = try Tz.fromTzdata(testing.io, "Europe/Gibraltar", testing.allocator);
 
     dt_a = try Datetime.fromUnix(-444856409, Duration.Resolution.second, .{ .tz = &tz_a });
     dt_b = try Datetime.fromUnix(-2017440120, Duration.Resolution.second, .{ .tz = &tz_b });
@@ -1510,16 +1535,16 @@ test "conversion between random time zones" {
 
     w = .fixed(&buf);
     try dt_b.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1906-01-26T17:58:00-06:00:00", w.buffered());
+    try testing.expectEqualStrings("1906-01-26T20:17:20-03:40:40", w.buffered());
     w = .fixed(&buf);
     try dt_c.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1955-11-26T16:46:31-12:00:00", w.buffered());
+    try testing.expectEqualStrings("1955-11-27T04:46:31+00:00:00", w.buffered());
 
     tz_a.deinit();
     tz_b.deinit();
 
-    tz_a = try Tz.fromTzdata(testing.io, "EST5EDT", testing.allocator);
-    tz_b = try Tz.fromTzdata(testing.io, "Africa/Casablanca", testing.allocator);
+    tz_a = try Tz.fromTzdata(testing.io, "Pacific/Rarotonga", testing.allocator);
+    tz_b = try Tz.fromTzdata(testing.io, "Europe/Moscow", testing.allocator);
 
     dt_a = try Datetime.fromUnix(2081029752, Duration.Resolution.second, .{ .tz = &tz_a });
     dt_b = try Datetime.fromUnix(230882752, Duration.Resolution.second, .{ .tz = &tz_b });
@@ -1528,16 +1553,16 @@ test "conversion between random time zones" {
 
     w = .fixed(&buf);
     try dt_b.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1977-04-26T02:05:52-04:00:00", w.buffered());
+    try testing.expectEqualStrings("1977-04-25T19:35:52-10:30:00", w.buffered());
     w = .fixed(&buf);
     try dt_c.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("2035-12-12T00:49:12+01:00:00", w.buffered());
+    try testing.expectEqualStrings("2035-12-12T02:49:12+03:00:00", w.buffered());
 
     tz_a.deinit();
     tz_b.deinit();
 
-    tz_a = try Tz.fromTzdata(testing.io, "Pacific/Chuuk", testing.allocator);
-    tz_b = try Tz.fromTzdata(testing.io, "Asia/Thimphu", testing.allocator);
+    tz_a = try Tz.fromTzdata(testing.io, "Indian/Antananarivo", testing.allocator);
+    tz_b = try Tz.fromTzdata(testing.io, "NZ", testing.allocator);
 
     dt_a = try Datetime.fromUnix(1751368983, Duration.Resolution.second, .{ .tz = &tz_a });
     dt_b = try Datetime.fromUnix(693621470, Duration.Resolution.second, .{ .tz = &tz_b });
@@ -1546,16 +1571,16 @@ test "conversion between random time zones" {
 
     w = .fixed(&buf);
     try dt_b.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1991-12-25T10:37:50+10:00:00", w.buffered());
+    try testing.expectEqualStrings("1991-12-25T03:37:50+03:00:00", w.buffered());
     w = .fixed(&buf);
     try dt_c.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("2025-07-01T17:23:03+06:00:00", w.buffered());
+    try testing.expectEqualStrings("2025-07-01T23:23:03+12:00:00", w.buffered());
 
     tz_a.deinit();
     tz_b.deinit();
 
-    tz_a = try Tz.fromTzdata(testing.io, "Africa/Banjul", testing.allocator);
-    tz_b = try Tz.fromTzdata(testing.io, "Zulu", testing.allocator);
+    tz_a = try Tz.fromTzdata(testing.io, "Asia/Famagusta", testing.allocator);
+    tz_b = try Tz.fromTzdata(testing.io, "Pacific/Apia", testing.allocator);
 
     dt_a = try Datetime.fromUnix(715858672, Duration.Resolution.second, .{ .tz = &tz_a });
     dt_b = try Datetime.fromUnix(-373086081, Duration.Resolution.second, .{ .tz = &tz_b });
@@ -1564,16 +1589,16 @@ test "conversion between random time zones" {
 
     w = .fixed(&buf);
     try dt_b.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1958-03-06T20:58:39+00:00:00", w.buffered());
+    try testing.expectEqualStrings("1958-03-06T22:58:39+02:00:00", w.buffered());
     w = .fixed(&buf);
     try dt_c.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1992-09-07T09:37:52+00:00:00", w.buffered());
+    try testing.expectEqualStrings("1992-09-06T22:37:52-11:00:00", w.buffered());
 
     tz_a.deinit();
     tz_b.deinit();
 
-    tz_a = try Tz.fromTzdata(testing.io, "Europe/Kirov", testing.allocator);
-    tz_b = try Tz.fromTzdata(testing.io, "NZ", testing.allocator);
+    tz_a = try Tz.fromTzdata(testing.io, "Africa/Djibouti", testing.allocator);
+    tz_b = try Tz.fromTzdata(testing.io, "Asia/Macao", testing.allocator);
 
     dt_a = try Datetime.fromUnix(-293022949, Duration.Resolution.second, .{ .tz = &tz_a });
     dt_b = try Datetime.fromUnix(-1445358615, Duration.Resolution.second, .{ .tz = &tz_b });
@@ -1582,16 +1607,16 @@ test "conversion between random time zones" {
 
     w = .fixed(&buf);
     try dt_b.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1924-03-14T10:29:45+03:00:00", w.buffered());
+    try testing.expectEqualStrings("1924-03-14T09:59:45+02:30:00", w.buffered());
     w = .fixed(&buf);
     try dt_c.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1960-09-19T00:44:11+12:00:00", w.buffered());
+    try testing.expectEqualStrings("1960-09-18T21:44:11+09:00:00", w.buffered());
 
     tz_a.deinit();
     tz_b.deinit();
 
-    tz_a = try Tz.fromTzdata(testing.io, "Pacific/Marquesas", testing.allocator);
-    tz_b = try Tz.fromTzdata(testing.io, "America/Miquelon", testing.allocator);
+    tz_a = try Tz.fromTzdata(testing.io, "Asia/Samarkand", testing.allocator);
+    tz_b = try Tz.fromTzdata(testing.io, "Asia/Baghdad", testing.allocator);
 
     dt_a = try Datetime.fromUnix(560485083, Duration.Resolution.second, .{ .tz = &tz_a });
     dt_b = try Datetime.fromUnix(2064615505, Duration.Resolution.second, .{ .tz = &tz_b });
@@ -1600,16 +1625,16 @@ test "conversion between random time zones" {
 
     w = .fixed(&buf);
     try dt_b.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("2035-06-04T14:48:25-09:30:00", w.buffered());
+    try testing.expectEqualStrings("2035-06-05T05:18:25+05:00:00", w.buffered());
     w = .fixed(&buf);
     try dt_c.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1987-10-06T00:18:03-02:00:00", w.buffered());
+    try testing.expectEqualStrings("1987-10-06T05:18:03+03:00:00", w.buffered());
 
     tz_a.deinit();
     tz_b.deinit();
 
-    tz_a = try Tz.fromTzdata(testing.io, "Australia/West", testing.allocator);
-    tz_b = try Tz.fromTzdata(testing.io, "Pacific/Truk", testing.allocator);
+    tz_a = try Tz.fromTzdata(testing.io, "Etc/GMT-10", testing.allocator);
+    tz_b = try Tz.fromTzdata(testing.io, "Etc/GMT-1", testing.allocator);
 
     dt_a = try Datetime.fromUnix(-1010224506, Duration.Resolution.second, .{ .tz = &tz_a });
     dt_b = try Datetime.fromUnix(579644539, Duration.Resolution.second, .{ .tz = &tz_b });
@@ -1618,16 +1643,16 @@ test "conversion between random time zones" {
 
     w = .fixed(&buf);
     try dt_b.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1988-05-15T04:22:19+08:00:00", w.buffered());
+    try testing.expectEqualStrings("1988-05-15T06:22:19+10:00:00", w.buffered());
     w = .fixed(&buf);
     try dt_c.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1937-12-28T00:04:54+10:00:00", w.buffered());
+    try testing.expectEqualStrings("1937-12-27T15:04:54+01:00:00", w.buffered());
 
     tz_a.deinit();
     tz_b.deinit();
 
-    tz_a = try Tz.fromTzdata(testing.io, "Asia/Dhaka", testing.allocator);
-    tz_b = try Tz.fromTzdata(testing.io, "Asia/Taipei", testing.allocator);
+    tz_a = try Tz.fromTzdata(testing.io, "US/Eastern", testing.allocator);
+    tz_b = try Tz.fromTzdata(testing.io, "Australia/Melbourne", testing.allocator);
 
     dt_a = try Datetime.fromUnix(42640281, Duration.Resolution.second, .{ .tz = &tz_a });
     dt_b = try Datetime.fromUnix(-1385885032, Duration.Resolution.second, .{ .tz = &tz_b });
@@ -1636,16 +1661,16 @@ test "conversion between random time zones" {
 
     w = .fixed(&buf);
     try dt_b.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1926-01-31T21:49:28+05:53:20", w.buffered());
+    try testing.expectEqualStrings("1926-01-31T10:56:08-05:00:00", w.buffered());
     w = .fixed(&buf);
     try dt_c.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1971-05-09T20:31:21+08:00:00", w.buffered());
+    try testing.expectEqualStrings("1971-05-09T22:31:21+10:00:00", w.buffered());
 
     tz_a.deinit();
     tz_b.deinit();
 
-    tz_a = try Tz.fromTzdata(testing.io, "America/Merida", testing.allocator);
-    tz_b = try Tz.fromTzdata(testing.io, "Atlantic/St_Helena", testing.allocator);
+    tz_a = try Tz.fromTzdata(testing.io, "Europe/Vaduz", testing.allocator);
+    tz_b = try Tz.fromTzdata(testing.io, "America/Port_of_Spain", testing.allocator);
 
     dt_a = try Datetime.fromUnix(1094749082, Duration.Resolution.second, .{ .tz = &tz_a });
     dt_b = try Datetime.fromUnix(775994453, Duration.Resolution.second, .{ .tz = &tz_b });
@@ -1654,16 +1679,16 @@ test "conversion between random time zones" {
 
     w = .fixed(&buf);
     try dt_b.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1994-08-04T04:00:53-06:00:00", w.buffered());
+    try testing.expectEqualStrings("1994-08-04T12:00:53+02:00:00", w.buffered());
     w = .fixed(&buf);
     try dt_c.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("2004-09-09T16:58:02+00:00:00", w.buffered());
+    try testing.expectEqualStrings("2004-09-09T12:58:02-04:00:00", w.buffered());
 
     tz_a.deinit();
     tz_b.deinit();
 
-    tz_a = try Tz.fromTzdata(testing.io, "America/Kentucky/Monticello", testing.allocator);
-    tz_b = try Tz.fromTzdata(testing.io, "Pacific/Chatham", testing.allocator);
+    tz_a = try Tz.fromTzdata(testing.io, "Asia/Kuala_Lumpur", testing.allocator);
+    tz_b = try Tz.fromTzdata(testing.io, "Pacific/Pitcairn", testing.allocator);
 
     dt_a = try Datetime.fromUnix(-44705548, Duration.Resolution.second, .{ .tz = &tz_a });
     dt_b = try Datetime.fromUnix(788932013, Duration.Resolution.second, .{ .tz = &tz_b });
@@ -1672,10 +1697,10 @@ test "conversion between random time zones" {
 
     w = .fixed(&buf);
     try dt_b.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1994-12-31T21:46:53-06:00:00", w.buffered());
+    try testing.expectEqualStrings("1995-01-01T11:46:53+08:00:00", w.buffered());
     w = .fixed(&buf);
     try dt_c.toString("%Y-%m-%dT%H:%M:%S%::z", &w);
-    try testing.expectEqualStrings("1968-08-02T02:32:32+12:45:00", w.buffered());
+    try testing.expectEqualStrings("1968-08-01T05:17:32-08:30:00", w.buffered());
 
     tz_a.deinit();
     tz_b.deinit();

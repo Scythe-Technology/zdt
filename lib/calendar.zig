@@ -644,7 +644,7 @@ test "leap correction" {
     try testing.expectEqual(@as(u8, 37), corr);
 }
 
-test "against Pyhton ordinal" {
+test "against Python ordinal" {
     var days_want: i32 = 1962788;
     var days_hin: i32 = unixdaysFromDate([_]u16{ 7343, 12, 7 });
     var days_neri: i32 = dateToRD(.{ .year = 7343, .month = 12, .day = 7 });

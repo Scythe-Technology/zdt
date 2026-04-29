@@ -91,13 +91,21 @@ def check_versions(project_root: Path) -> tuple[dict, list[str]]:
 
         result = extract_zig_version(content, "zdt_version")
         if result:
-            versions["zdt_version"] = {"value": result[0], "line": result[1], "file": "build.zig"}
+            versions["zdt_version"] = {
+                "value": result[0],
+                "line": result[1],
+                "file": "build.zig",
+            }
         else:
             errors.append("Could not find zdt_version in build.zig")
 
         result = extract_zig_string(content, "tzdb_release")
         if result:
-            versions["tzdb_release"] = {"value": result[0], "line": result[1], "file": "build.zig"}
+            versions["tzdb_release"] = {
+                "value": result[0],
+                "line": result[1],
+                "file": "build.zig",
+            }
         else:
             errors.append("Could not find tzdb_release in build.zig")
 
@@ -161,7 +169,11 @@ def check_versions(project_root: Path) -> tuple[dict, list[str]]:
         content = readme_path.read_text()
         result = extract_readme_tzdb_badge(content)
         if result:
-            versions["readme_badge"] = {"value": result[0], "line": result[1], "file": "README.md"}
+            versions["readme_badge"] = {
+                "value": result[0],
+                "line": result[1],
+                "file": "README.md",
+            }
         else:
             errors.append("Could not find tzdata badge in README.md")
     else:
@@ -173,14 +185,20 @@ def check_versions(project_root: Path) -> tuple[dict, list[str]]:
         content = changelog_path.read_text()
         result = extract_changelog_version(content)
         if result:
-            versions["changelog"] = {"value": result[0], "line": result[1], "file": "CHANGELOG.md"}
+            versions["changelog"] = {
+                "value": result[0],
+                "line": result[1],
+                "file": "CHANGELOG.md",
+            }
         else:
             errors.append("Could not find version in CHANGELOG.md")
     else:
         errors.append(f"File not found: {changelog_path}")
 
     # Validate project version consistency
-    project_versions = [k for k in ("zdt_version", "build.zig.zon", "changelog") if k in versions]
+    project_versions = [
+        k for k in ("zdt_version", "build.zig.zon", "changelog") if k in versions
+    ]
     if len(project_versions) >= 2:
         unique_values = set(versions[k]["value"] for k in project_versions)
         if len(unique_values) > 1:
@@ -191,7 +209,9 @@ def check_versions(project_root: Path) -> tuple[dict, list[str]]:
             errors.append(error_msg.rstrip())
 
     # Validate TZDB version consistency
-    tzdb_versions = [k for k in ("tzdb_release", "tzdb_version", "readme_badge") if k in versions]
+    tzdb_versions = [
+        k for k in ("tzdb_release", "tzdb_version", "readme_badge") if k in versions
+    ]
     if len(tzdb_versions) >= 2:
         unique_values = set(versions[k]["value"] for k in tzdb_versions)
         if len(unique_values) > 1:
@@ -202,7 +222,9 @@ def check_versions(project_root: Path) -> tuple[dict, list[str]]:
             errors.append(error_msg.rstrip())
 
     # Validate minimum Zig version consistency
-    zig_versions = [k for k in ("minimum_zig_version", "minimum_zig_version_zon") if k in versions]
+    zig_versions = [
+        k for k in ("minimum_zig_version", "minimum_zig_version_zon") if k in versions
+    ]
     if len(zig_versions) == 2:
         if versions[zig_versions[0]]["value"] != versions[zig_versions[1]]["value"]:
             error_msg = "Minimum Zig version inconsistency detected:\n"
@@ -236,7 +258,9 @@ def main() -> int:
         value_width = max(len(v["value"]) for v in versions.values())
 
         # Print header
-        print(f"  {'File':<{file_width}}  {'Key':<{key_width}}  {'Version':<{value_width}}  Line")
+        print(
+            f"  {'File':<{file_width}}  {'Key':<{key_width}}  {'Version':<{value_width}}  Line"
+        )
         print(f"  {'-' * file_width}  {'-' * key_width}  {'-' * value_width}  ----")
 
         # Print each version entry

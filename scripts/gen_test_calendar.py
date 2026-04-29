@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import random
 from datetime import datetime
 
@@ -9,7 +8,7 @@ CLOSE_BRACE = "}"
 UNIX_ORDINAL = 719163
 MAX_ORDINAL = 3652058
 
-print('test "against Pyhton ordinal" {')
+print('test "against Python ordinal" {')
 for d in random.sample(range(-UNIX_ORDINAL + 1, MAX_ORDINAL - UNIX_ORDINAL + 1), 50):
     dt = datetime.fromordinal(d + UNIX_ORDINAL)
     print(
