@@ -1,9 +1,22 @@
+// SPDX-FileCopyrightText: 2024-2026 Florian Obersteiner
+// SPDX-FileContributor: Florian Obersteiner <f.obersteiner@posteo.de>
+// SPDX-FileComment: assisted-by Claude Sonnet 4.6
+//
+// SPDX-License-Identifier: Unlicense
+
 const std = @import("std");
+const windows = std.os.windows;
 const unicode = std.unicode;
 const log = std.log.scoped(.zdt__string_windows);
-const winnls = @cImport(@cInclude("winnls.h"));
 
-const locale_ptr = winnls.LOCALE_NAME_USER_DEFAULT;
+extern "kernel32" fn GetLocaleInfoEx(
+    lpLocaleName: ?[*:0]const u16, // LPCWSTR
+    LCType: windows.DWORD, // LCTYPE
+    lpLCData: ?[*:0]u16, // LPWSTR
+    cchData: c_int, // int
+) callconv(std.os.windows.WINAPI) c_int;
+
+const default_locale_ptr = null; // LOCALE_NAME_USER_DEFAULT;
 const sz_abbr: usize = 32;
 const sz_normal: usize = 64;
 
@@ -12,8 +25,8 @@ pub fn getDayNameAbbr_(n: u8) [sz_abbr]u8 {
     result[0] = '?';
 
     var buf: [sz_abbr]c_ushort = undefined; // u16
-    const code = winnls.GetLocaleInfoEx(
-        @ptrCast(@alignCast(locale_ptr)),
+    const code = GetLocaleInfoEx(
+        default_locale_ptr,
         day_names_abbr[n],
         &buf,
         sz_abbr,
@@ -35,8 +48,8 @@ pub fn getDayName_(n: u8) [sz_normal]u8 {
     result[0] = '?';
 
     var buf: [sz_normal]c_ushort = undefined; // u16
-    const code = winnls.GetLocaleInfoEx(
-        @ptrCast(@alignCast(locale_ptr)),
+    const code = GetLocaleInfoEx(
+        default_locale_ptr,
         day_names[n],
         &buf,
         sz_normal,
@@ -57,8 +70,8 @@ pub fn getMonthNameAbbr_(n: u8) [sz_abbr]u8 {
     result[0] = '?';
 
     var buf: [sz_abbr]c_ushort = undefined; // u16
-    const code = winnls.GetLocaleInfoEx(
-        @ptrCast(@alignCast(locale_ptr)),
+    const code = GetLocaleInfoEx(
+        default_locale_ptr,
         month_names_abbr[n],
         &buf,
         sz_abbr,
@@ -79,8 +92,8 @@ pub fn getMonthName_(n: u8) [sz_normal]u8 {
     result[0] = '?';
 
     var buf: [sz_normal]c_ushort = undefined; // u16
-    const code = winnls.GetLocaleInfoEx(
-        @ptrCast(@alignCast(locale_ptr)),
+    const code = GetLocaleInfoEx(
+        default_locale_ptr,
         month_names[n],
         &buf,
         sz_normal,
@@ -98,54 +111,56 @@ pub fn getMonthName_(n: u8) [sz_normal]u8 {
 
 // abbreviated day name; for %a
 const day_names_abbr = [7]c_ulong{
-    winnls.LOCALE_SABBREVDAYNAME7,
-    winnls.LOCALE_SABBREVDAYNAME1, // Windows uses Mon as first day of week
-    winnls.LOCALE_SABBREVDAYNAME2,
-    winnls.LOCALE_SABBREVDAYNAME3,
-    winnls.LOCALE_SABBREVDAYNAME4,
-    winnls.LOCALE_SABBREVDAYNAME5,
-    winnls.LOCALE_SABBREVDAYNAME6,
+    0x00000037,
+    0x00000031, // Windows uses Mon as first day of week
+    0x00000032,
+    0x00000033,
+    0x00000034,
+    0x00000035,
+    0x00000036,
 };
 
 // day name; for %A
 const day_names = [7]c_ulong{
-    winnls.LOCALE_SDAYNAME7,
-    winnls.LOCALE_SDAYNAME1, // Windows uses Mon as first day of week
-    winnls.LOCALE_SDAYNAME2,
-    winnls.LOCALE_SDAYNAME3,
-    winnls.LOCALE_SDAYNAME4,
-    winnls.LOCALE_SDAYNAME5,
-    winnls.LOCALE_SDAYNAME6,
+    0x00000030,
+    0x0000002a, // Windows uses Mon as first day of week
+    0x0000002b,
+    0x0000002c,
+    0x0000002d,
+    0x0000002e,
+    0x0000002f,
 };
 
 // abbreviated month name; for %b
-const month_names_abbr = [12]c_ulong{
-    winnls.LOCALE_SABBREVMONTHNAME1,
-    winnls.LOCALE_SABBREVMONTHNAME2,
-    winnls.LOCALE_SABBREVMONTHNAME3,
-    winnls.LOCALE_SABBREVMONTHNAME4,
-    winnls.LOCALE_SABBREVMONTHNAME5,
-    winnls.LOCALE_SABBREVMONTHNAME6,
-    winnls.LOCALE_SABBREVMONTHNAME7,
-    winnls.LOCALE_SABBREVMONTHNAME8,
-    winnls.LOCALE_SABBREVMONTHNAME9,
-    winnls.LOCALE_SABBREVMONTHNAME10,
-    winnls.LOCALE_SABBREVMONTHNAME11,
-    winnls.LOCALE_SABBREVMONTHNAME12,
+const month_names_abbr = [13]c_ulong{
+    0x00000044,
+    0x00000045,
+    0x00000046,
+    0x00000047,
+    0x00000048,
+    0x00000049,
+    0x0000004a,
+    0x0000004b,
+    0x0000004c,
+    0x0000004d,
+    0x0000004e,
+    0x0000004f,
+    0x0000100f,
 };
 
 // abbreviated month name; for %B
-const month_names = [12]c_ulong{
-    winnls.LOCALE_SMONTHNAME1,
-    winnls.LOCALE_SMONTHNAME2,
-    winnls.LOCALE_SMONTHNAME3,
-    winnls.LOCALE_SMONTHNAME4,
-    winnls.LOCALE_SMONTHNAME5,
-    winnls.LOCALE_SMONTHNAME6,
-    winnls.LOCALE_SMONTHNAME7,
-    winnls.LOCALE_SMONTHNAME8,
-    winnls.LOCALE_SMONTHNAME9,
-    winnls.LOCALE_SMONTHNAME10,
-    winnls.LOCALE_SMONTHNAME11,
-    winnls.LOCALE_SMONTHNAME12,
+const month_names = [13]c_ulong{
+    0x00000038,
+    0x00000039,
+    0x0000003a,
+    0x0000003b,
+    0x0000003c,
+    0x0000003d,
+    0x0000003e,
+    0x0000003f,
+    0x00000040,
+    0x00000041,
+    0x00000042,
+    0x00000043,
+    0x0000100e,
 };

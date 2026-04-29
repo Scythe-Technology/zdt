@@ -1,4 +1,4 @@
-[![Zig](https://img.shields.io/badge/-Zig-F7A41D?style=flat&logo=zig&logoColor=white)](https://ziglang.org/) ⚡ [![tzdata](https://img.shields.io/badge/tzdata-2025c-blue)](https://www.iana.org/time-zones) [![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg)](http://unlicense.org/)
+[![Zig](https://img.shields.io/badge/-Zig-F7A41D?style=flat&logo=zig&logoColor=white)](https://ziglang.org/) ⚡ [![tzdata](https://img.shields.io/badge/tzdata-2026b-blue)](https://www.iana.org/time-zones) [![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg)](http://unlicense.org/)
 
 # zdt
 
@@ -82,7 +82,7 @@ pub fn main(init: std.process.Init) !void {
 
 ## Zig version requirements
 
-- `v0.9.x`: Zig 0.16 / master *may* work
+- `v0.9.x`: Zig 0.16 / see specific tags for 0.17 master
 - `v0.8.x`: Zig 0.15 / 0.15.2
 - `v0.7.x`: Zig 0.14 / 0.14.1
 - `v0.6.x`: Zig 0.14 / 0.14.1
@@ -109,6 +109,7 @@ pub fn main(init: std.process.Init) !void {
 ## Dependencies
 
 - Free from dependencies besides Zig std
+- Requires system libc to work with localized month / day names
 - Time zone database: `zdt` comes with [eggert/tz](https://github.com/eggert/tz). The database is compiled and shipped with `zdt`.
 - if you wish to use your own version of the [IANA time zone db](https://www.iana.org/time-zones), you can set a path to it using the `-Dprefix-tzdb="path/to/your/tzdb"` option. See also `zig build --help`.
 
@@ -125,6 +126,10 @@ Special thanks to the creators of the following resources:
 - inspiration for early version of string-to-datetime parser, and most of the POSIX TZ code: [leroycep/zig-tzif](https://github.com/leroycep/zig-tzif)
 - date <--> days since Unix epoch conversion, algorithms: [cassioneri/eaf](https://github.com/cassioneri/eaf)
 - general support from [ziggit.dev](https://ziggit.dev/)
+
+## LLM / agent usage disclosure
+
+- source code files that contain large language model (LLM) generated code do specify so in the SPDX header, see 'FileComment'.
 
 ## License
 

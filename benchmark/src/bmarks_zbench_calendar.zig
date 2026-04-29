@@ -217,8 +217,8 @@ fn benchNeriSchnRD2DateCpp(_: std.mem.Allocator) void {
     }
 }
 
-pub fn run() !void {
-    var stdout = std.fs.File.stdout().writerStreaming(&.{});
+pub fn run(io: std.Io) !void {
+    const stdout: std.Io.File = .stdout();
 
     var bench = zbench.Benchmark.init(gpa.allocator(), .{});
     defer bench.deinit();
@@ -233,7 +233,7 @@ pub fn run() !void {
     try bench.add("ner rd-2-date (trs)", benchNeriSchnRD2Date, .{ .iterations = config.N });
     try bench.add("ner rd-2-date (cpp)", benchNeriSchnRD2DateCpp, .{ .iterations = config.N });
 
-    try bench.run(&stdout.interface);
+    try bench.run(io, stdout);
 
     std.debug.print("\n", .{});
 }

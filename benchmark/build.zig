@@ -6,7 +6,7 @@ const benchmarks = [_][]const u8{
     "main",
 };
 
-const min_zig = std.SemanticVersion.parse("0.15.1") catch unreachable;
+const min_zig = std.SemanticVersion.parse("0.16.0") catch unreachable;
 comptime {
     if (builtin.zig_version.order(min_zig) == .lt) {
         @compileError(std.fmt.comptimePrint(
@@ -35,13 +35,13 @@ pub fn build(b: *std.Build) void {
                 .root_source_file = b.path(b.fmt("src/{s}.zig", .{benchname})),
                 .target = target,
                 .optimize = optimize,
+                //                .link_libc = true,
             }),
         });
         b.installArtifact(_bench);
         _bench.root_module.addImport("zeit", zeit_module);
         _bench.root_module.addImport("zbench", zbench_module);
         _bench.root_module.addImport("zdt_current", zdt_latest_module);
-        _bench.linkLibC();
 
         const run_cmd = b.addRunArtifact(_bench);
         run_cmd.step.dependOn(b.getInstallStep());

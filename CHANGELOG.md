@@ -13,6 +13,15 @@ Types of changes
 
 ## [Unreleased]
 
+### Added
+
+- script to check version consistency (LLM-generated)
+
+### Changed
+
+- windows_mdnames, unix_mdnames: define external functions locally (system libraries) so that @cImport is not needed anymore
+- windows_mdnames, unix_mdnames: define constants (name indices / pointers) locally
+
 ## 2026-04-23, v0.9.3
 
 ### Changed

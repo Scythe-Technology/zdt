@@ -1,23 +1,22 @@
 const std = @import("std");
 const builtin = @import("builtin");
-const c_locale = @cImport(@cInclude("locale.h"));
 
 const zdt = @import("zdt");
 const Datetime = zdt.Datetime;
 
+extern fn setlocale(__category: c_int, __locale: [*c]const u8) [*c]u8;
+
 pub fn main() !void {
     println("---> locale example", .{});
 
-    const time_mask = switch (builtin.os.tag) {
-        .linux, .windows => c_locale.LC_ALL,
-        else => c_locale.LC_TIME,
+    const time_mask: c_int = switch (builtin.os.tag) {
+        .linux, .windows => 6,
+        else => 2,
     };
 
     const loc = "de_DE.UTF-8";
-    const new_loc = c_locale.setlocale(time_mask, loc);
+    const new_loc = setlocale(time_mask, loc);
     if (new_loc == null) {
-        // Zig 0.14:
-        // std.process.fatal("skip example, failed to set locale", .{});
         std.log.err("skip example, failed to set locale", .{});
     }
 

@@ -5,8 +5,6 @@ const builtin = @import("builtin");
 const testing = std.testing;
 const log = std.log.scoped(.zdt_test_string);
 
-const c_locale = @cImport(@cInclude("locale.h"));
-
 const zdt = @import("zdt");
 const Datetime = zdt.Datetime;
 const Formats = zdt.Formats;
@@ -15,15 +13,21 @@ const Tz = zdt.Timezone;
 const UTCoffset = zdt.UTCoffset;
 const ZdtError = zdt.ZdtError;
 
+const __LC_TIME: c_int = 2;
+const __LC_TIME_MASK: c_int = 1 << __LC_TIME;
+const __LC_ALL: c_int = 6;
+
+extern fn setlocale(__category: c_int, __locale: [*c]const u8) [*c]u8;
+
 // ----
 
 const masks_to_try = switch (builtin.os.tag) {
     .linux => [_]c_int{
-        c_locale.LC_TIME,
-        c_locale.LC_TIME_MASK,
+        __LC_TIME,
+        __LC_TIME_MASK,
     },
     else => [_]c_int{
-        c_locale.LC_ALL,
+        __LC_ALL,
     },
 };
 
@@ -33,7 +37,7 @@ const masks_to_try = switch (builtin.os.tag) {
 fn locale_ok() bool {
     var loc: [*c]u8 = undefined;
     for (masks_to_try) |mask| {
-        loc = c_locale.setlocale(mask, "");
+        loc = setlocale(mask, "");
         if (loc != null) break;
     }
     if (loc == null) {
@@ -681,7 +685,7 @@ test "parse with month name and day, user-defined locale" {
     const loc = "de_DE.UTF-8";
     var new_loc: [*c]u8 = undefined;
     for (masks_to_try) |mask| {
-        new_loc = c_locale.setlocale(mask, loc);
+        new_loc = setlocale(mask, loc);
         if (new_loc != null) break;
     }
 

@@ -61,8 +61,8 @@ fn benchEasterJulLatest(_: std.mem.Allocator) void {
     _ = zdt_latest.Datetime.EasterDateJulian(2025) catch unreachable;
 }
 
-pub fn run() !void {
-    var stdout = std.fs.File.stdout().writerStreaming(&.{});
+pub fn run(io: std.Io) !void {
+    const stdout: std.Io.File = .stdout();
 
     var bench = zbench.Benchmark.init(gpa.allocator(), .{});
     defer bench.deinit();
@@ -83,7 +83,7 @@ pub fn run() !void {
     try bench.add("\nZoned local, zeit", benchZonedZeit, .{ .iterations = 1000 });
     try bench.add("Zoned local, zeit", benchZonedZeit, .{ .iterations = 1000, .track_allocations = true });
 
-    try bench.run(&stdout.interface);
+    try bench.run(io, stdout);
 
     std.debug.print("\n", .{});
 }

@@ -1,4 +1,30 @@
 //! POSIXTZ time zone
+//!
+//! Code in this file is inspired by leroycep's 'zig-tzif', <https://github.com/leroycep/zig-tzif>
+//
+// --- license of 'zig-tzif' ---
+//
+// MIT License
+//
+// Copyright (c) 2021 LeRoyce Pearson
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 
 const std = @import("std");
 const assert = std.debug.assert;
@@ -8,8 +34,12 @@ const UTCoffset = @import("./UTCoffset.zig");
 const FormatError = @import("./errors.zig").FormatError;
 const TzError = @import("./errors.zig").TzError;
 
+const s_per_min: u8 = 60;
+const s_per_hour: u16 = 3600;
+const s_per_day: u32 = 86400;
+
 /// The default DST transition time is 2 am local time
-const default_transition_time: i32 = 2 * std.time.s_per_hour;
+const default_transition_time: i32 = 2 * s_per_hour;
 
 /// Do not accept POSIX TZ strings longer than this.
 /// The value is arbitrary but seems reasonable.
@@ -81,16 +111,16 @@ pub const PosixTz = struct {
         pub fn toUnixTimeLocal(rule: Rule, year: i16) i64 {
             const is_leap: bool = cal.isLeapYear(year);
             const start_of_year: i32 = cal.dateToRD(.{ .year = year, .month = 1, .day = 1 });
-            var t: i64 = @as(i64, start_of_year) * std.time.s_per_day;
+            var t: i64 = @as(i64, start_of_year) * s_per_day;
 
             switch (rule) {
                 .JulianDay => |j| {
                     var x: i64 = j.day;
                     if (x < 60 or !is_leap) x -= 1;
-                    t += std.time.s_per_day * x + j.time;
+                    t += s_per_day * x + j.time;
                 },
                 .JulianDayZero => |j| {
-                    t += std.time.s_per_day * @as(i64, j.day) + j.time;
+                    t += s_per_day * @as(i64, j.day) + j.time;
                 },
                 .MonthNthWeekDay => |mwd| {
                     const days_since_epoch: i32 = cal.dateToRD(.{ .year = year, .month = mwd.month, .day = 1 });
@@ -113,8 +143,8 @@ pub const PosixTz = struct {
                         else => unreachable,
                     };
 
-                    t += (days_since_epoch - start_of_year) * std.time.s_per_day +
-                        std.time.s_per_day * @as(i64, days_since_start_of_month) +
+                    t += (days_since_epoch - start_of_year) * s_per_day +
+                        s_per_day * @as(i64, days_since_start_of_month) +
                         mwd.time;
                 },
             }
@@ -130,7 +160,7 @@ pub const PosixTz = struct {
             return try UTCoffset.fromSeconds(tz.std_offset, tz.std_designation, false);
         };
         if (tz.dst_range) |range| {
-            const ymd = cal.rdToDate(@truncate(@divFloor(unix_seconds, std.time.s_per_day)));
+            const ymd = cal.rdToDate(@truncate(@divFloor(unix_seconds, s_per_day)));
             const start_dst = range.start.toUnixTimeLocal(@as(i16, @intCast(ymd.year))) - tz.std_offset;
             const end_dst = range.end.toUnixTimeLocal(@as(i16, @intCast(ymd.year))) - tz.dst_offset.?;
             const is_dst_all_year = range.start.isAtStartOfYear() and range.end.isAtEndOfYear();
@@ -179,7 +209,7 @@ pub fn parsePosixTzString(string: []const u8) FormatError!PosixTz {
             // multiply by -1 to get offset as seconds East of Greenwich as TZif specifies it:
             result.dst_offset = try parseHHmmss(string[idx..], &idx) * -1;
         } else {
-            result.dst_offset = result.std_offset + std.time.s_per_hour;
+            result.dst_offset = result.std_offset + s_per_hour;
         }
 
         if (idx >= string.len) return result;
@@ -294,7 +324,7 @@ fn parseHHmmss(string: []const u8, idx_ptr: *usize) FormatError!i32 {
     const hour_string = segment_iter.next() orelse return FormatError.EmptyString;
     const hours = std.fmt.parseInt(u32, hour_string, 10) catch return FormatError.InvalidFormat;
     if (hours > 167) return FormatError.InvalidFormat;
-    result += std.time.s_per_hour * @as(i32, @intCast(hours));
+    result += s_per_hour * @as(i32, @intCast(hours));
 
     if (segment_iter.next()) |minute_string| {
         if (minute_string.len != 2) {
@@ -302,7 +332,7 @@ fn parseHHmmss(string: []const u8, idx_ptr: *usize) FormatError!i32 {
         }
         const minutes = try std.fmt.parseInt(u32, minute_string, 10);
         if (minutes > 59) return FormatError.InvalidFormat;
-        result += std.time.s_per_min * @as(i32, @intCast(minutes));
+        result += s_per_min * @as(i32, @intCast(minutes));
     }
 
     if (segment_iter.next()) |second_string| {

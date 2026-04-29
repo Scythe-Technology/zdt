@@ -5,20 +5,20 @@
     .minimum_zig_version = "0.15.1",
     .dependencies = .{
         .zeit = .{
-            .url = "https://github.com/rockorager/zeit/archive/ed2ca60db118414bda2b12df2039e33bad3b0b88.tar.gz",
-            .hash = "zeit-0.6.0-5I6bk0J9AgCVa0nnyL0lNY9Xa9F68hHq-ZarhuXNV-Jb",
+            .url = "https://github.com/rockorager/zeit/archive/refs/tags/v0.8.0.tar.gz",
+            .hash = "zeit-0.6.0-5I6bk7q6AgBdMJxze3D4l9ylQhkviQ_BX9FigDt13MFn",
         },
         .zbench = .{ // requires zig-015
-            .url = "https://github.com/hendriknielaender/zBench/archive/refs/tags/v0.11.1.tar.gz",
-            .hash = "zbench-0.11.1-YTdc7zgmAQDtDcHPFwsLeawui27WjMLWmUwrfz7pIlB2",
+            .url = "https://github.com/hendriknielaender/zBench/archive/refs/tags/v0.13.0.tar.gz",
+            .hash = "zbench-0.13.0-YTdc7xVBAQCCMC-IdLLuotBeiNNNm8k9Pi2V4VYqrwfI",
+        },
+        .zdt_latest = .{
+            .path = "../",
         },
         // .zdt_latest = .{
-        //     .path = "../",
+        //     .url = "https://codeberg.org/FObersteiner/zdt/archive/1bf426f9abe734587e2a57e51b5839aca85ad8a8.tar.gz",
+        //     .hash = "zdt-0.9.3-xr0_vPLYEQAs1H8MSc3ZFfa4C_kO8REX-gghqR5njKVk",
         // },
-        .zdt_latest = .{
-            .url = "https://codeberg.org/FObersteiner/zdt/archive/d8e6b8a4d72aff2348d290130419dc49d654478d.tar.gz",
-            .hash = "zdt-0.8.2-xr0_vAxbDwCls8V4MLlamv4JHrDkziMYnySAc2bL2n3t",
-        },
     },
     .paths = .{""},
 }
