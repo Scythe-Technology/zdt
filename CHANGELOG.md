@@ -13,6 +13,10 @@ Types of changes
 
 ## [Unreleased]
 
+### Changed
+
+- updated benchmark code so it works with zig 0.16+
+
 ## 2026-04-29, v0.9.4
 
 ### Added

@@ -35,7 +35,7 @@ pub fn build(b: *std.Build) void {
                 .root_source_file = b.path(b.fmt("src/{s}.zig", .{benchname})),
                 .target = target,
                 .optimize = optimize,
-                //                .link_libc = true,
+                .link_libc = true,
             }),
         });
         b.installArtifact(_bench);
