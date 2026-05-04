@@ -17,6 +17,18 @@ Types of changes
 
 - updated benchmark code so it works with zig 0.16+
 
+### Removed
+
+- build.zig: libc linking for zdt module. Since we use external functions from libc, any module *using* zdt must still link libc using
+
+  ```zig
+    .root_module = b.createModule(.{
+    // ...
+    .link_libc = true,
+    // ...
+    })
+  ```
+
 ## 2026-04-29, v0.9.4
 
 ### Added
