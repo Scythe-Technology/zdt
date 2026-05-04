@@ -110,6 +110,7 @@ pub fn main(init: std.process.Init) !void {
 
 - Free from dependencies besides Zig std
 - Requires system libc to work with localized month / day names
+  - NOTE: if you use this library, make sure to link libc in your build.zig
 - Time zone database: `zdt` comes with [eggert/tz](https://github.com/eggert/tz). The database is compiled and shipped with `zdt`.
 - if you wish to use your own version of the [IANA time zone db](https://www.iana.org/time-zones), you can set a path to it using the `-Dprefix-tzdb="path/to/your/tzdb"` option. See also `zig build --help`.
 
