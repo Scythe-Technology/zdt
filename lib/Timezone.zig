@@ -1,3 +1,10 @@
+// SPDX-FileCopyrightText: 2024-2026 Florian Obersteiner
+// SPDX-FileContributor: Florian Obersteiner <f.obersteiner@posteo.de>
+// SPDX-FileContributor: Michael Pollind <mpollind@gmail.com>
+// SPDX-FileContributor: Ratakor <45130910+Ratakor@users.noreply.github.com>
+//
+// SPDX-License-Identifier: Unlicense
+
 //! A set of rules to describe date and time somewhere on earth, relative to universal time (UTC).
 
 const std = @import("std");

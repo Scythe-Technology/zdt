@@ -128,10 +128,11 @@ Special thanks to the creators of the following resources:
 - date <--> days since Unix epoch conversion, algorithms: [cassioneri/eaf](https://github.com/cassioneri/eaf)
 - general support from [ziggit.dev](https://ziggit.dev/)
 
-## LLM / agent usage disclosure
+## LLM usage disclosure
 
-- source code files that contain large language model (LLM) generated code do specify so in the SPDX header, see 'FileComment'.
+- the core of the library was written "by hand", without LLM-based assistance, since my priority was on learning and understanding, not output quantity.
+- source code files (helper scripts etc.) that contain large language model (LLM) generated code do specify so in the SPDX header, see 'FileComment'.
 
 ## License
 
-Unlicense (public domain). See the LICENSE file in the root directory of the repository.
+Unlicense / public domain, see LICENSE.

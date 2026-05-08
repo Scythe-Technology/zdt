@@ -1,3 +1,8 @@
+// SPDX-FileCopyrightText: 2024-2025 Florian Obersteiner
+// SPDX-FileContributor: Florian Obersteiner <f.obersteiner@posteo.de>
+//
+// SPDX-License-Identifier: Unlicense
+
 //! test datetime from a users's perspective (no internal functionality)
 
 const std = @import("std");

@@ -1,3 +1,8 @@
+// SPDX-FileCopyrightText: 2025-2026 Florian Obersteiner
+// SPDX-FileContributor: Florian Obersteiner <f.obersteiner@posteo.de>
+//
+// SPDX-License-Identifier: Unlicense
+
 const std = @import("std");
 const assert = std.debug.assert;
 

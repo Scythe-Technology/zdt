@@ -1,3 +1,10 @@
+// SPDX-FileCopyrightText: 2024-2026 Florian Obersteiner
+// SPDX-FileContributor: Florian Obersteiner <f.obersteiner@posteo.de>
+// SPDX-FileContributor: Michael Pollind <mpollind@gmail.com>
+// SPDX-FileContributor: sethvincent <sethvincent@gmail.com>
+//
+// SPDX-License-Identifier: Unlicense
+
 //! test datetime <--> string conversion
 
 const std = @import("std");

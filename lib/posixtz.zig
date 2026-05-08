@@ -1,3 +1,8 @@
+// SPDX-FileCopyrightText: 2025-2026 Florian Obersteiner
+// SPDX-FileContributor: Florian Obersteiner <f.obersteiner@posteo.de>
+//
+// SPDX-License-Identifier: Unlicense
+
 //! POSIXTZ time zone
 //!
 //! Code in this file is inspired by leroycep's 'zig-tzif', <https://github.com/leroycep/zig-tzif>

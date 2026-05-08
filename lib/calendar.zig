@@ -1,3 +1,8 @@
+// SPDX-FileCopyrightText: 2024-2026 Florian Obersteiner
+// SPDX-FileContributor: Florian Obersteiner <f.obersteiner@posteo.de>
+//
+// SPDX-License-Identifier: Unlicense
+
 //! calendrical calculations
 
 // This file contains translated code from

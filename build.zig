@@ -1,3 +1,9 @@
+// SPDX-FileCopyrightText: 2023-2026 Florian Obersteiner
+// SPDX-FileContributor: Florian Obersteiner <f.obersteiner@posteo.de>
+// SPDX-FileContributor: Michael Pollind <mpollind@gmail.com>
+//
+// SPDX-License-Identifier: Unlicense
+
 //! build steps:
 //! ---
 //! `test`               - run unit tests

@@ -1,3 +1,10 @@
+// SPDX-FileCopyrightText: 2024-2025 Florian Obersteiner
+// SPDX-FileContributor: Florian Obersteiner <f.obersteiner@posteo.de>
+// SPDX-FileContributor: Ratakor <45130910+Ratakor@users.noreply.github.com>
+// SPDX-FileContributor: sethvincent <sethvincent@gmail.com>
+//
+// SPDX-License-Identifier: Unlicense
+
 //! conversion between datetime and string representation
 
 const builtin = @import("builtin");

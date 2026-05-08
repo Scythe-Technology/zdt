@@ -1,7 +1,5 @@
 # Roadmap
 
-- TAI datetime
-
 - extend range of datetimes that can be represented; 5-digit signed year
 
 - host/run docs and CI on codeberg (<https://codeberg.org/FObersteiner/zdt/issues/15>, <https://codeberg.org/FObersteiner/zdt/issues/7>)

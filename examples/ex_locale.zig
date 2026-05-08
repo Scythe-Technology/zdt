@@ -1,3 +1,9 @@
+// SPDX-FileCopyrightText: 2024-2026 Florian Obersteiner
+// SPDX-FileContributor: Florian Obersteiner <f.obersteiner@posteo.de>
+// SPDX-FileContributor: Ratakor <45130910+Ratakor@users.noreply.github.com>
+//
+// SPDX-License-Identifier: Unlicense
+
 const std = @import("std");
 const builtin = @import("builtin");
 
@@ -6,8 +12,11 @@ const Datetime = zdt.Datetime;
 
 extern fn setlocale(__category: c_int, __locale: [*c]const u8) [*c]u8;
 
-pub fn main() !void {
-    println("---> locale example", .{});
+pub fn main(init: std.process.Init) !void {
+    const io: std.Io = init.io;
+    var stdout: std.Io.File.Writer = std.Io.File.stdout().writerStreaming(io, &.{});
+
+    println(&stdout, "---> locale example", .{});
 
     const time_mask: c_int = switch (builtin.os.tag) {
         .linux, .windows => 6,
@@ -28,33 +37,26 @@ pub fn main() !void {
     // datetime to string
     //
     try dt.toString("%a, %b %d %Y, %H:%Mh", &w);
-    println("", .{});
-    println("formatted {f}\n  to '{s}'", .{ dt, buf });
+    println(&stdout, "\nformatted {f}\n  to '{s}'", .{ dt, buf });
 
     w = std.Io.Writer.fixed(&buf);
     try dt.toString("%A, %B %d %Y, %H:%Mh", &w);
-    println("", .{});
-    println("formatted {f}\n  to '{s}'", .{ dt, buf });
+    println(&stdout, "\nformatted {f}\n  to '{s}'", .{ dt, buf });
 
     // string to datetime
     //
     const input = "Mittwoch, 23. Januar 1974, 03:17h";
     const parsed = try Datetime.fromString(input, "%A, %d. %B %Y, %H:%Mh");
-    println("", .{});
-    println("parsed '{s}'\n  to '{f}'", .{ input, parsed });
+    println(&stdout, "\nparsed '{s}'\n  to '{f}'", .{ input, parsed });
 
     // by adding a modifier character, you can always parse English month names,
     // independent of the locale:
     const input_eng = "Wednesday, January 23 1974, 03:17h";
     const parsed_eng = try Datetime.fromString(input_eng, "%:A, %:B %d %Y, %H:%Mh");
-    println("", .{});
-    println("parsed '{s}'\n  to '{f}'", .{ input_eng, parsed_eng });
+    println(&stdout, "\nparsed '{s}'\n  to '{f}'", .{ input_eng, parsed_eng });
 }
 
-fn println(comptime fmt: []const u8, args: anytype) void {
-    var threaded: std.Io.Threaded = .init_single_threaded;
-    const io = threaded.io();
-    var stdout = std.Io.File.stdout().writerStreaming(io, &.{});
+fn println(stdout: *std.Io.File.Writer, comptime fmt: []const u8, args: anytype) void {
     var writer = &stdout.interface;
     writer.print(fmt ++ "\n", args) catch return;
 }

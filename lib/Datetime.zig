@@ -1,3 +1,11 @@
+// SPDX-FileCopyrightText: 2024-2026 Florian Obersteiner
+// SPDX-FileContributor: Florian Obersteiner <f.obersteiner@posteo.de>
+// SPDX-FileContributor: Christopher Davis <christopherdavis@gnome.org>
+// SPDX-FileContributor: Michael Pollind <mpollind@gmail.com>
+// SPDX-FileContributor: Ratakor <45130910+Ratakor@users.noreply.github.com>
+//
+// SPDX-License-Identifier: Unlicense
+
 //! an instant in time
 
 const std = @import("std");

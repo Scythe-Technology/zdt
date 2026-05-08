@@ -1,3 +1,8 @@
+// SPDX-FileCopyrightText: 2024-2026 Florian Obersteiner
+// SPDX-FileContributor: Florian Obersteiner <f.obersteiner@posteo.de>
+//
+// SPDX-License-Identifier: Unlicense
+
 //! Parsers for RFC 9636 TZif files, <https://www.rfc-editor.org/rfc/rfc9636>.
 //!
 //! Originally taken from Zig 0.12.0-dev.2059+42389cb9c standard library, modified.

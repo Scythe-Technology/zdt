@@ -1,3 +1,8 @@
+// SPDX-FileCopyrightText: 2024-2026 Florian Obersteiner
+// SPDX-FileContributor: Florian Obersteiner <f.obersteiner@posteo.de>
+//
+// SPDX-License-Identifier: Unlicense
+
 //! Update eggert/tz submodule, build the time zone database and move
 //! its 'zoneinfo' directory to /lib/tzdata. Remove all other build artifacts.
 //

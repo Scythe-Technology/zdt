@@ -1,3 +1,9 @@
+// SPDX-FileCopyrightText: 2024-2025 Florian Obersteiner
+// SPDX-FileContributor: Florian Obersteiner <f.obersteiner@posteo.de>
+// SPDX-FileContributor: Michael Pollind <mpollind@gmail.com>
+//
+// SPDX-License-Identifier: Unlicense
+
 //! test duration from a users's perspective (no internal functionality)
 
 const std = @import("std");

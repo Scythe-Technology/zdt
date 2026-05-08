@@ -1,5 +1,7 @@
-// Copyright © 2023-2025 Florian Obersteiner <f.obersteiner@posteo.de>
-// License: see LICENSE file in the root directory of the zdt repository.
+// SPDX-FileCopyrightText: 2025 Florian Obersteiner
+// SPDX-FileContributor: Florian Obersteiner <f.obersteiner@posteo.de>
+//
+// SPDX-License-Identifier: Unlicense
 
 const std = @import("std");
 const log = std.log.scoped(.zdt__root);

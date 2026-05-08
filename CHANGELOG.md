@@ -13,9 +13,14 @@ Types of changes
 
 ## [Unreleased]
 
+### Added
+
+- SPDX headers / reuse compliance
+
 ### Changed
 
 - updated benchmark code so it works with zig 0.16+
+- examples: use juicy main
 
 ### Removed
 
