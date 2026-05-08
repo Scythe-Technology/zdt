@@ -15,7 +15,7 @@ Types of changes
 
 ### Added
 
-- SPDX headers / reuse compliance
+- SPDX headers
 
 ### Changed
 
