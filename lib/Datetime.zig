@@ -117,15 +117,15 @@ pub const Weekday = enum(u8) {
     }
 
     pub fn nameToInt(name: []const u8) RangeError!u8 {
-        inline for (std.meta.fields(Weekday)) |f| {
-            if (std.mem.eql(u8, name, f.name)) return f.value;
+        for (0.., std.meta.fieldNames(Weekday)) |i, fname| {
+            if (std.mem.eql(u8, name, fname)) return @intCast(i);
         }
         return RangeError.DayOutOfRange;
     }
 
     pub fn nameShortToInt(name: []const u8) RangeError!u8 {
-        inline for (std.meta.fields(Weekday)) |f| {
-            if (std.mem.eql(u8, name, f.name[0..3])) return f.value;
+        for (0.., std.meta.fieldNames(Weekday)) |i, fname| {
+            if (std.mem.eql(u8, name, fname[0..3])) return @intCast(i);
         }
         return RangeError.DayOutOfRange;
     }
@@ -156,15 +156,15 @@ pub const Month = enum(u8) {
     }
 
     pub fn nameToInt(name: []const u8) RangeError!u8 {
-        inline for (std.meta.fields(Month)) |f| {
-            if (std.mem.eql(u8, name, f.name)) return f.value;
+        for (1.., std.meta.fieldNames(Month)) |i, fname| {
+            if (std.mem.eql(u8, name, fname)) return @intCast(i);
         }
         return RangeError.MonthOutOfRange;
     }
 
     pub fn nameShortToInt(name: []const u8) RangeError!u8 {
-        inline for (std.meta.fields(Month)) |f| {
-            if (std.mem.eql(u8, name, f.name[0..3])) return f.value;
+        for (1.., std.meta.fieldNames(Month)) |i, fname| {
+            if (std.mem.eql(u8, name, fname[0..3])) return @intCast(i);
         }
         return RangeError.MonthOutOfRange;
     }

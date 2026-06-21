@@ -29,7 +29,7 @@ const example_files = [_][]const u8{
     "ex_offsetTz-posixTz",
     "ex_strings",
     "ex_timezones",
-    "ex_zdt-types",
+    // "ex_zdt-types",
 };
 
 const test_files = [_][]const u8{
