@@ -13,6 +13,8 @@ Types of changes
 
 ## [Unreleased]
 
+## 2026-07-09, v0.10.0-dev
+
 ### Added
 
 - SPDX headers
@@ -21,6 +23,7 @@ Types of changes
 
 - updated benchmark code so it works with zig 0.16+
 - examples: use juicy main
+- tzdb to 2026c
 
 ### Removed
 
