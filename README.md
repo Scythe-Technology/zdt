@@ -1,4 +1,4 @@
-[![Zig](https://img.shields.io/badge/-Zig-F7A41D?style=flat&logo=zig&logoColor=white)](https://ziglang.org/) ⚡ [![tzdata](https://img.shields.io/badge/tzdata-2026b-blue)](https://www.iana.org/time-zones) [![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg)](http://unlicense.org/)
+[![Zig](https://img.shields.io/badge/-Zig-F7A41D?style=flat&logo=zig&logoColor=white)](https://ziglang.org/) ⚡ [![tzdata](https://img.shields.io/badge/tzdata-2026c-blue)](https://www.iana.org/time-zones) [![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg)](http://unlicense.org/)
 
 # zdt
 
@@ -82,7 +82,8 @@ pub fn main(init: std.process.Init) !void {
 
 ## Zig version requirements
 
-- `v0.9.x`: Zig 0.16 / see specific tags for 0.17 master
+- `v0.10.x`: Zig 0.17 master
+- `v0.9.x`: Zig 0.16
 - `v0.8.x`: Zig 0.15 / 0.15.2
 - `v0.7.x`: Zig 0.14 / 0.14.1
 - `v0.6.x`: Zig 0.14 / 0.14.1
@@ -97,7 +98,9 @@ pub fn main(init: std.process.Init) !void {
 
 ## IANA timezone database version
 
-- `v0.9.3+`: `2026b` (current)
+- `v0.10.0+`: `2026c` (current)
+- `v0.9.4`: `2026c` (current)
+- `v0.9.3`: `2026b`
 - `v0.9.1+`: `2026a`
 - `v0.8.3+`: `2026a`
 - `v0.8.2`: `2025c`

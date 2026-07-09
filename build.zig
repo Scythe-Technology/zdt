@@ -17,9 +17,9 @@ const builtin = @import("builtin");
 const std = @import("std");
 const log = std.log.scoped(.zdt_build);
 
-const zdt_version = std.SemanticVersion{ .major = 0, .minor = 9, .patch = 4 };
-const minimum_zig_version = "0.16.0";
-const tzdb_release = "2026b";
+const zdt_version = std.SemanticVersion{ .major = 0, .minor = 10, .patch = 0 };
+const minimum_zig_version = "0.17.0-dev";
+const tzdb_release = "2026c";
 
 const example_files = [_][]const u8{
     "demo",
@@ -29,7 +29,7 @@ const example_files = [_][]const u8{
     "ex_offsetTz-posixTz",
     "ex_strings",
     "ex_timezones",
-    "ex_zdt-types",
+    // "ex_zdt-types",
 };
 
 const test_files = [_][]const u8{
