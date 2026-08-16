@@ -13,6 +13,11 @@ Types of changes
 
 ## [Unreleased]
 
+### Changed
+
+- `@intFromEnum` replaced by `@backingInt`
+- replace `std.meta.Fields` (deprecated) with more recent functionality
+
 ## 2026-07-09, v0.10.0-dev
 
 ### Added

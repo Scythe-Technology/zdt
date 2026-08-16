@@ -449,8 +449,8 @@ pub fn fromUnix(
     resolution: Duration.Resolution,
     tz_opts: ?tz_options,
 ) ZdtError!Datetime {
-    if (quantity > @as(i128, unix_s_max) * @intFromEnum(resolution) or
-        quantity < @as(i128, unix_s_min) * @intFromEnum(resolution))
+    if (quantity > @as(i128, unix_s_max) * @backingInt(resolution) or
+        quantity < @as(i128, unix_s_min) * @backingInt(resolution))
         return ZdtError.UnixOutOfRange;
 
     var _dt = Datetime{};
@@ -814,11 +814,11 @@ pub fn weeksInYear(dt: Datetime) u8 {
 
 /// Day of the week as an enum value; Sun as first day of the week.
 pub fn weekday(dt: Datetime) Weekday {
-    return @as(Weekday, @enumFromInt(dt.weekdayNumber()));
+    return @as(Weekday, @fromBackingInt(@intCast(dt.weekdayNumber())));
 }
 
 pub fn monthEnum(dt: Datetime) Month {
-    return @as(Month, @enumFromInt(dt.month));
+    return @as(Month, @fromBackingInt(@intCast(dt.month)));
 }
 
 /// Number of the weekday starting at 0 == Sunday (strftime/strptime: `%w`).
@@ -837,7 +837,7 @@ pub fn nextWeekday(dt: Datetime, d: Weekday) Datetime {
     if (dt.weekday() == d) {
         daysdiff = 7;
     } else {
-        daysdiff = cal.weekdayDifference(@intFromEnum(d), dt.weekdayNumber());
+        daysdiff = cal.weekdayDifference(@backingInt(d), dt.weekdayNumber());
         if (daysdiff < 0) daysdiff += 7; // ensure a positive shift since we want 'next'
     }
     const offset = Duration.fromTimespanMultiple(daysdiff, Duration.Timespan.day);
@@ -850,7 +850,7 @@ pub fn previousWeekday(dt: Datetime, d: Weekday) Datetime {
     if (dt.weekday() == d) {
         daysdiff = -7;
     } else {
-        daysdiff = cal.weekdayDifference(@intFromEnum(d), dt.weekdayNumber());
+        daysdiff = cal.weekdayDifference(@backingInt(d), dt.weekdayNumber());
         if (daysdiff > 0) daysdiff -= 7;
     }
     const offset = Duration.fromTimespanMultiple(daysdiff, Duration.Timespan.day);
