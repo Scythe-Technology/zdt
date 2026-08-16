@@ -334,6 +334,63 @@ test "floor naive datetime to the date" {
     try testing.expectEqual(@as(i64, 1613606400), dt_floored.unix_sec);
 }
 
+test "floor datetime with UTC offset to the hour" {
+    const dt = try Datetime.fromISO8601("2026-08-01T12:34:56+02:00");
+    const dt_floored = try dt.floorTo(Duration.Timespan.hour);
+    try testing.expect(dt_floored.isAware());
+    try testing.expectEqual(dt.utc_offset.?.seconds_east, dt_floored.utc_offset.?.seconds_east);
+    try testing.expectEqual(@as(u8, 12), dt_floored.hour);
+    try testing.expectEqual(@as(u8, 0), dt_floored.minute);
+    try testing.expectEqual(@as(u8, 0), dt_floored.second);
+}
+
+test "add/sub duration to datetime with UTC offset" {
+    const dt = try Datetime.fromISO8601("2026-08-01T12:00:00+02:00");
+    try testing.expect(dt.isAware());
+
+    const one_hour = Duration.fromTimespanMultiple(1, Duration.Timespan.hour);
+
+    var buf: [64]u8 = undefined;
+    var w: std.Io.Writer = .fixed(&buf);
+
+    var result = try dt.add(one_hour);
+    try testing.expect(result.isAware());
+    try result.format(&w);
+    try testing.expectEqualStrings("2026-08-01T13:00:00+02:00", w.buffered());
+
+    w = .fixed(&buf);
+    result = try dt.sub(one_hour);
+    try testing.expect(result.isAware());
+    try result.format(&w);
+    try testing.expectEqualStrings("2026-08-01T11:00:00+02:00", w.buffered());
+}
+
+test "addRelative to datetime with UTC offset" {
+    const dt = try Datetime.fromISO8601("2026-08-01T12:00:00+02:00");
+
+    var result = try dt.addRelative(.{ .days = 1 });
+    try testing.expect(result.isAware());
+
+    var buf: [64]u8 = undefined;
+    var w: std.Io.Writer = .fixed(&buf);
+    try result.format(&w);
+    try testing.expectEqualStrings("2026-08-02T12:00:00+02:00", w.buffered());
+
+    w = .fixed(&buf);
+    result = try dt.addRelative(.{ .months = 1 });
+    try testing.expect(result.isAware());
+    try result.format(&w);
+    try testing.expectEqualStrings("2026-09-01T12:00:00+02:00", w.buffered());
+}
+
+test "add duration to naive datetime stays naive" {
+    const dt = try Datetime.fromFields(.{ .year = 2026, .month = 8, .day = 1, .hour = 12 });
+    const one_hour = Duration.fromTimespanMultiple(1, Duration.Timespan.hour);
+    const result = try dt.add(one_hour);
+    try testing.expect(result.isNaive());
+    try testing.expectEqual(@as(u8, 13), result.hour);
+}
+
 test "day of year" {
     // leap year
     var dt = try Datetime.fromFields(.{ .year = 2020 });
