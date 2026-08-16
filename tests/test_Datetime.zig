@@ -380,6 +380,12 @@ test "weekday enum" {
 
     d = try Datetime.Weekday.nameShortToInt("Thu");
     try testing.expectEqual(4, d);
+
+    var err = Datetime.Weekday.nameToInt("not a dayname");
+    try testing.expectError(ZdtError.DayOutOfRange, err);
+
+    err = Datetime.Weekday.nameShortToInt("not a dayname");
+    try testing.expectError(ZdtError.DayOutOfRange, err);
 }
 
 test "month enum" {
