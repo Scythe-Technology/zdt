@@ -2,7 +2,7 @@
 
 # SPDX-FileCopyrightText: 2026 Florian Obersteiner
 # SPDX-FileContributor: Florian Obersteiner <f.obersteiner@posteo.de>
-# SPDX-FileComment: assisted-by Qwen3.5 397B A17B
+# SPDX-FileComment: assisted-by [Qwen3.5 397B A17B]
 
 #
 # SPDX-License-Identifier: Unlicense
