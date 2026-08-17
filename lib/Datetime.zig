@@ -3,6 +3,7 @@
 // SPDX-FileContributor: Christopher Davis <christopherdavis@gnome.org>
 // SPDX-FileContributor: Michael Pollind <mpollind@gmail.com>
 // SPDX-FileContributor: Ratakor <45130910+Ratakor@users.noreply.github.com>
+// SPDX-FileContributor: Lluc Simó Margalef <lluc.simo@protonmail.com>
 //
 // SPDX-License-Identifier: Unlicense
 
@@ -565,13 +566,11 @@ pub fn floorTo(dt: *const Datetime, timespan: Duration.Timespan) ZdtError!Dateti
     // any other timespan than second can lead to ambiguous or non-existent
     // datetime - therefore we need to make a new datetime.
     var fields = Fields{
-        // timezone takes precedence:
-        .tz_options = if (dt.tz) |tz_ptr| .{ .tz = tz_ptr } else null,
+        // timezone takes precedence over a bare UTC offset:
+        .tz_options = if (dt.tz) |tz_ptr| .{ .tz = tz_ptr } //
+        else if (dt.utc_offset) |off| .{ .utc_offset = off } //
+        else null,
     };
-    // if there is no timezone, there might still be a UTC offset:
-    if (fields.tz_options == null and dt.utc_offset != null) {
-        fields.tz_options = .{ .utc_offset = dt.utc_offset.? };
-    }
     switch (timespan) {
         .second => {
             fields.year = dt.year;
@@ -673,7 +672,9 @@ pub fn add(dt: *const Datetime, td: Duration) ZdtError!Datetime {
         @as(i128, dt.unix_sec) * ns_per_s + @as(i128, dt.nanosecond) + //
             td.asNanoseconds() //
     );
-    const opts: ?tz_options = if (dt.tz) |tz_ptr| .{ .tz = tz_ptr } else null;
+    const opts: ?tz_options = if (dt.tz) |tz_ptr| .{ .tz = tz_ptr } //
+        else if (dt.utc_offset) |off| .{ .utc_offset = off } //
+        else null;
     return try Datetime.fromUnix(ns, Duration.Resolution.nanosecond, opts);
 }
 
@@ -716,7 +717,9 @@ pub fn addRelative(dt: *const Datetime, rel_delta: Duration.RelativeDelta) ZdtEr
         .second = @truncate(new_time[2]),
         .nanosecond = new_time[3],
         .dst_fold = dt.dst_fold,
-        .tz_options = if (dt.tz) |tz_ptr| .{ .tz = tz_ptr } else null,
+        .tz_options = if (dt.tz) |tz_ptr| .{ .tz = tz_ptr } //
+        else if (dt.utc_offset) |off| .{ .utc_offset = off } //
+        else null,
     };
 
     var m_off: i32 = @intCast(rel_delta.months + rel_delta.years * 12);
