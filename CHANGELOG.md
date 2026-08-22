@@ -13,6 +13,8 @@ Types of changes
 
 ## [Unreleased]
 
+## 2026-08-22, v0.10.1-master
+
 ### Changed
 
 - `@intFromEnum` replaced by `@backingInt`
@@ -25,7 +27,7 @@ Types of changes
 - `Datetime.add` keeps bare UTC offset (by @acrilique)
 - `Datetime.addRelative` correctly handles nanoseconds overflow
 
-## 2026-07-09, v0.10.0-dev
+## 2026-07-09, v0.10.0-master
 
 ### Added
 
