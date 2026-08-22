@@ -29,4 +29,4 @@ jobs:
         run: zig fmt --check build.zig lib/**/*.zig tests/*.zig
 
       - name: Test
-        run: zig build test
+        run: export LC_TIME="en_US.UTF-8" ;; zig build test
