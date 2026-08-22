@@ -17,6 +17,13 @@ Types of changes
 
 - `@intFromEnum` replaced by `@backingInt`
 - replace `std.meta.Fields` (deprecated) with more recent functionality
+- revise `Duration.RelativeDelta.fromISO8601` parser
+- `Duration.RelativeDelta.normalize` puts days > 7 into weeks
+
+### Fixed
+
+- `Datetime.add` keeps bare UTC offset (by @acrilique)
+- `Datetime.addRelative` correctly handles nanoseconds overflow
 
 ## 2026-07-09, v0.10.0-dev
 

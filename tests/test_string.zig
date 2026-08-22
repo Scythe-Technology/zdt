@@ -1093,6 +1093,9 @@ test "parse ISO" {
     dt = try Datetime.fromISO8601("2014-08-23 12:15:56.000000099+00:00:00");
     try testing.expect(std.meta.eql(dt_ref, dt));
 
+    const err = Datetime.fromISO8601("2014-08-23 12:15:56.0000000099+00:00:00");
+    try testing.expectError(ZdtError.InvalidFormat, err);
+
     offset = try UTCoffset.fromSeconds(2 * 3600 + 15 * 60 + 30, "", false);
     dt_ref = try Datetime.fromFields(.{ .year = 2014, .month = 8, .day = 23, .hour = 12, .minute = 15, .second = 56, .tz_options = .{ .utc_offset = offset } });
     dt = try Datetime.fromISO8601("2014-08-23T12:15:56+02:15:30");

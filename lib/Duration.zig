@@ -16,7 +16,7 @@ const RangeError = @import("./errors.zig").RangeError;
 const Duration = @This();
 
 // max. digits per quantity in an ISO8601 duration string (arbitrary)
-const max_n_digits: usize = 99;
+const max_n_digits: usize = 96;
 
 /// For the 'asNanoseconds' method to work correctly, the maximum number of seconds
 /// that can be represented by a Duration's __sec is (max(i128) - (1e9 - 1)) / 1e9.
@@ -39,7 +39,7 @@ __nsec: u32 = 0,
 /// The Duration type can represent any timespan that can fit into  a 64 bit
 /// signed integer, i.e. up to 2^63 weeks. Therefore, no error is returned.
 pub fn fromTimespanMultiple(n: i64, timespan: Timespan) Duration {
-    const ns: i128 = @as(i128, @intCast(@intFromEnum(timespan))) * n;
+    const ns: i128 = @as(i128, @intCast(@backingInt(timespan))) * n;
     return .{
         .__sec = @intCast(@divFloor(ns, 1_000_000_000)),
         .__nsec = @intCast(@mod(ns, 1_000_000_000)),
@@ -53,7 +53,7 @@ pub fn fromTimespanMultiple(n: i64, timespan: Timespan) Duration {
 /// "PT1.234S" : 1 second, 234 milliseconds
 /// ```
 ///
-/// Restrictions:
+/// Restrictions / what we deliberately do NOT support:
 /// - Since the Duration type represents an absolute difference in time,
 ///   'years' and 'months' fields of the string ('Y', 'M') must be zero.
 /// - A fractional value is only allowed for seconds ('S').
@@ -68,7 +68,7 @@ pub fn fromISO8601(string: []const u8) FormatError!Duration {
 /// that can contain the duration
 pub fn toTimespanMultiple(duration: Duration, timespan: Timespan) i128 {
     const ns: i128 = duration.asNanoseconds();
-    const divisor: u64 = @intFromEnum(timespan);
+    const divisor: u64 = @backingInt(timespan);
     return std.math.divCeil(i128, ns, @as(i128, divisor)) catch unreachable;
 }
 
@@ -211,7 +211,9 @@ pub fn format(
     if (rd.seconds == 0 and rd.nanoseconds == 0) return;
 
     var frac = duration.__nsec;
-    if (frac > 0) { // truncate zeros from fractional part
+    if (frac > 0) {
+        // truncate zeros from fractional part
+        // Note: kcov claims this is untested, which is incorrect
         while (frac % 10 == 0) : (frac /= 10) {}
     }
 
@@ -242,6 +244,55 @@ pub const Timespan = enum(u64) {
     day = 1_000_000_000 * 60 * 60 * 24,
     week = 1_000_000_000 * 60 * 60 * 24 * 7,
 };
+
+// Helper for the ISO8601 Duration parser
+const tracker = struct {
+    _flags: u8 = 0,
+
+    pub const token = enum(u8) {
+        none = 0,
+        seconds = 1,
+        minutes = (1 << 1),
+        hours = (1 << 2),
+        time_separator = (1 << 3),
+        days = (1 << 4),
+        weeks = (1 << 5),
+        months = (1 << 6),
+        years = (1 << 7),
+    };
+
+    pub fn add(self: *tracker, new_flag: tracker.token) void {
+        self._flags |= @backingInt(new_flag);
+    }
+
+    pub fn have(self: *tracker, check_flag: tracker.token) bool {
+        return self._flags & @backingInt(check_flag) != 0;
+    }
+
+    // Note that this depends on the ordering of the enum backing integer:
+    pub fn ge(self: *tracker, compare_flag: tracker.token) bool {
+        return self._flags >= @backingInt(compare_flag);
+    }
+};
+
+test "iso8601 duration quantities tracker flags" {
+    var token_tracker = tracker{};
+
+    token_tracker.add(.seconds);
+    try testing.expectEqual(1, token_tracker._flags);
+    try testing.expect(token_tracker.have(.seconds));
+    try testing.expect(token_tracker.ge(.none));
+    try testing.expect(!token_tracker.ge(.minutes));
+
+    token_tracker.add(.minutes);
+    token_tracker.add(.time_separator);
+    try testing.expect(token_tracker.ge(.time_separator));
+
+    token_tracker.add(.weeks);
+    try testing.expect(token_tracker.have(.seconds));
+    try testing.expect(token_tracker.have(.weeks));
+    try testing.expect(token_tracker.ge(.weeks));
+}
 
 /// Relative difference in time;
 /// might contain ambiguous quantities months and years.
@@ -279,9 +330,13 @@ pub const RelativeDelta = struct {
             result.hours += result.minutes / 60;
             result.minutes = result.minutes % 60;
         }
-        if (result.hours > 24) {
+        if (result.hours > 23) {
             result.days += result.hours / 24;
             result.hours = result.hours % 24;
+        }
+        if (result.days > 6) {
+            result.weeks += result.days / 7;
+            result.days = result.days % 7;
         }
 
         return result;
@@ -330,19 +385,25 @@ pub const RelativeDelta = struct {
 
     /// Convert ISO8601 duration from string to a RelativeDelta.
     ///
-    /// Restrictions:
-    /// - A fractional value is only allowed for seconds ('S').
-    /// - The string might be prefixed '-' to indicate a negative duration.
-    ///   Individual signed components are not allowed.
+    /// The string might be prefixed '-' to indicate a negative duration.
+    ///
+    /// Restrictions / what we deliberately do NOT support:
+    /// - datetime-like formats PYYYYMMDDTHHMMSS and PYYYY-MM-DDTHH-MM-SS give error
+    /// - individual signed components are not allowed (no '-' *after* the P)
+    /// - unicode minus ("−") is not supported
+    /// - a fractional value is only allowed for seconds ('S')
+    /// - comma (',') as a decimal separator is not supported
+    /// - we do not make special distinctions for "wall time" (as opposed to time actually passed)
+    /// - maximum values are limited to u32 (4294967295)
     pub fn fromISO8601(string: []const u8) FormatError!RelativeDelta {
-        var result: RelativeDelta = .{};
-
-        // at least 3 characters, e.g. P0D
-        if (string.len < 3) return FormatError.InvalidFormat;
+        if (string.len == 0) return FormatError.InvalidFormat;
+        // max characters, arbitrary
+        if (string.len > max_n_digits) return FormatError.InvalidFormat;
 
         // must end with a character
         if (!std.ascii.isAlphabetic(string[string.len - 1])) return FormatError.InvalidFormat;
 
+        var result: RelativeDelta = .{};
         var stop: usize = 0;
 
         if (string[stop] == '-') { // minus prefix
@@ -350,103 +411,102 @@ pub const RelativeDelta = struct {
             stop += 1;
         }
 
+        // at least 3 characters, e.g. 'P0D' or 4, e.g. '-P1Y'
+        if (string.len < (3 + @as(u8, @intFromBool(result.negative))))
+            return FormatError.InvalidFormat;
+
         // must start with P (ignore sign)
         if (string[stop] != 'P') return FormatError.InvalidFormat;
         stop += 1;
 
-        // 'P' must be followed by either 'T', '-' or a digit;
-        // if 'P' is followed by a 'T', that must also be followed by a '-' or a digit
+        // 'P' can be followed by a 'T'; the 'T' must then be followed by a digit
         if (string[stop] == 'T') {
-            if (!(std.ascii.isDigit(string[stop + 1]) or string[stop + 1] == '-'))
-                return FormatError.InvalidFormat;
+            // 'T' must be followed by a digit
+            if (!(std.ascii.isDigit(string[stop + 1]))) return FormatError.InvalidFormat;
         } else {
-            if (!(std.ascii.isDigit(string[stop]) or string[stop] == '-'))
-                return FormatError.InvalidFormat;
+            // no 'T', must be a digit
+            if (!(std.ascii.isDigit(string[stop]))) return FormatError.InvalidFormat;
         }
 
         var idx: usize = string.len - 1;
 
-        // need flags to keep track of what has been parsed already,
-        // and in which order.
-        //
-        // quantity/token:  Y m W d T H M S
-        // bit/order:       7 6 5 4 3 2 1 0
-        var flags: u8 = 0;
+        var seen = tracker{};
 
         while (idx >= stop) {
             switch (string[idx]) {
                 'S' => {
                     // seconds come last, so no other quantity must have been parsed yet
-                    if (flags > 0) return FormatError.InvalidFormat;
+                    if (seen.ge(.seconds)) return FormatError.InvalidFormat;
                     idx -= 1;
-                    flags |= 1;
+                    seen.add(.seconds);
                     _ = try parseAndAdvanceS(string, &idx, &result.seconds, &result.nanoseconds);
                 },
                 'M' => {
                     // 'M' may appear twice; it's either minutes or months;
-                    // depending on if the 'T' has been seen =>
-                    // minutes if (flags & 0b1000 == 0), otherwise months
-                    if (flags & 0b1000 == 0) {
-                        // minutes come second to last, so only seconds may have been parsed yet
-                        if (flags > 1) return FormatError.InvalidFormat;
+                    //   depending on if the 'T' exists and if so, has been seen.
+                    if (seen.have(.time_separator)) {
+                        // 'T' seen, must be months...
+                        if (seen.ge(.months)) return FormatError.InvalidFormat;
                         idx -= 1;
-                        flags |= 1 << 1;
-                        const quantity = try parseAndAdvanceYmWdHM(u32, string, &idx);
-                        result.minutes = quantity;
-                    } else {
-                        if (flags > 0b111111) return FormatError.InvalidFormat;
-                        // if no 'T' was parsed before, flags 0, 1 and 2 must be 0:
-                        if (flags & 0b1000 == 0 and flags & 0b111 != 0)
-                            return FormatError.InvalidFormat;
-                        idx -= 1;
-                        flags |= 1 << 6;
-                        const quantity = try parseAndAdvanceYmWdHM(u32, string, &idx);
+                        seen.add(.months);
+                        const quantity = try parseAndAdvanceYmWdHM(string, &idx);
                         result.months = quantity;
+                    } else {
+                        // minutes come second to last, so only seconds may have been parsed yet
+                        if (seen.ge(.minutes)) return FormatError.InvalidFormat;
+                        // whether a 'T' exists cannot be known yet (backwards scan);
+                        // enforced by the post-loop check below
+                        idx -= 1;
+                        seen.add(.minutes);
+                        const quantity = try parseAndAdvanceYmWdHM(string, &idx);
+                        result.minutes = quantity;
                     }
                 },
-                'H' => { // hours are the third-to-last component,
+                'H' => {
+                    // hours are the third-to-last component,
                     // so only seconds and minutes may have been parsed yet
-                    if (flags > 0b11) return FormatError.InvalidFormat;
+                    if (seen.ge(.hours)) return FormatError.InvalidFormat;
                     idx -= 1;
-                    flags |= 1 << 2;
-                    const quantity = try parseAndAdvanceYmWdHM(u32, string, &idx);
+                    seen.add(.hours);
+                    const quantity = try parseAndAdvanceYmWdHM(string, &idx);
                     result.hours = quantity;
                 },
-                'T' => { // date/time separator must only appear once
-                    if (flags > 0b111) return FormatError.InvalidFormat;
-                    idx -= 1;
-                    flags |= 1 << 3; // 0b1000;
-                },
-                'D' => {
-                    if (flags > 0b1111) return FormatError.InvalidFormat;
-                    if (flags & 0b1000 == 0 and flags & 0b111 != 0)
+                'T' => {
+                    if (seen.have(.time_separator)) return FormatError.InvalidFormat;
+                    if (!(seen.have(.seconds) or seen.have(.minutes) or seen.have(.hours)))
                         return FormatError.InvalidFormat;
                     idx -= 1;
-                    flags |= 1 << 4;
-                    const quantity = try parseAndAdvanceYmWdHM(u32, string, &idx);
+                    seen.add(.time_separator);
+                },
+                'D' => {
+                    if (seen.ge(.days)) return FormatError.InvalidFormat;
+                    idx -= 1;
+                    seen.add(.days);
+                    const quantity = try parseAndAdvanceYmWdHM(string, &idx);
                     result.days = quantity;
                 },
                 'W' => {
-                    if (flags > 0b11111) return FormatError.InvalidFormat;
-                    if (flags & 0b1000 == 0 and flags & 0b111 != 0)
-                        return FormatError.InvalidFormat;
+                    if (seen.ge(.weeks)) return FormatError.InvalidFormat;
                     idx -= 1;
-                    flags |= 1 << 5;
-                    const quantity = try parseAndAdvanceYmWdHM(u32, string, &idx);
+                    seen.add(.weeks);
+                    const quantity = try parseAndAdvanceYmWdHM(string, &idx);
                     result.weeks = quantity;
                 },
                 'Y' => {
-                    if (flags & 1 << 7 != 0) return FormatError.InvalidFormat;
-                    if (flags & 0b1000 == 0 and flags & 0b111 != 0)
-                        return FormatError.InvalidFormat;
+                    if (seen.ge(.years)) return FormatError.InvalidFormat;
                     idx -= 1;
-                    flags |= 1 << 7;
-                    const quantity = try parseAndAdvanceYmWdHM(u32, string, &idx);
+                    seen.add(.years);
+                    const quantity = try parseAndAdvanceYmWdHM(string, &idx);
                     result.years = quantity;
                 },
                 else => return FormatError.InvalidFormat,
             }
         }
+
+        // since we parse right to left, we might have parsed time componets although
+        // there is no time separator 'T' - therefore we need to check for it:
+        if ((seen.have(.seconds) or seen.have(.minutes) or seen.have(.hours)) and
+            !seen.have(.time_separator)) return FormatError.InvalidFormat;
 
         return result;
     }
@@ -474,7 +534,6 @@ fn parseAndAdvanceS(string: []const u8, idx_ptr: *usize, sec: *u32, nsec: *u32) 
         // and truncate anything behind the nineth digit.
         const substr = string[idx_ptr.* + 1 .. end_idx + 1];
         const idx_dot = std.mem.indexOfScalar(u8, substr, '.');
-        if (idx_dot == null) return FormatError.InvalidFormat;
 
         sec.* = try std.fmt.parseInt(u32, substr[0..idx_dot.?], 10);
 
@@ -496,11 +555,13 @@ fn parseAndAdvanceS(string: []const u8, idx_ptr: *usize, sec: *u32, nsec: *u32) 
 /// Backwards-looking parse chars from 'string' to int (base 10),
 /// end index is the value of 'idx_ptr' when the function is called.
 /// start index is determined automatically.
-fn parseAndAdvanceYmWdHM(comptime T: type, string: []const u8, idx_ptr: *usize) FormatError!T {
+fn parseAndAdvanceYmWdHM(string: []const u8, idx_ptr: *usize) FormatError!u32 {
     const end_idx = idx_ptr.*;
-    while (idx_ptr.* > 0 and
+    while ( //
+    idx_ptr.* > 0 and
         end_idx - idx_ptr.* < max_n_digits and
-        !std.ascii.isAlphabetic(string[idx_ptr.*])) : (idx_ptr.* -= 1)
-    {}
-    return try std.fmt.parseInt(T, string[idx_ptr.* + 1 .. end_idx + 1], 10);
+        !std.ascii.isAlphabetic(string[idx_ptr.*]) and
+        !(string[idx_ptr.*] == '-') //
+    ) : (idx_ptr.* -= 1) {}
+    return try std.fmt.parseInt(u32, string[idx_ptr.* + 1 .. end_idx + 1], 10);
 }

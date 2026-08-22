@@ -201,11 +201,11 @@ fn parseIntoFields(
         // 'k' - use 'H'
         'I' => fields.hour = blk: { // must be in [1..12]
             const h = try parseDigits(u8, string, idx_ptr, 2);
-            flags.* |= @intFromEnum(ParserFlags.clock_12h);
+            flags.* |= @backingInt(ParserFlags.clock_12h);
             if (h >= 1 and h <= 12) break :blk h else return FormatError.InvalidFormat;
         },
-        'P' => flags.* |= @intFromEnum(try parseAmPm(string, idx_ptr)),
-        'p' => flags.* |= @intFromEnum(try parseAmPm(string, idx_ptr)),
+        'P' => flags.* |= @backingInt(try parseAmPm(string, idx_ptr)),
+        'p' => flags.* |= @backingInt(try parseAmPm(string, idx_ptr)),
         'M' => fields.minute = try parseDigits(u8, string, idx_ptr, 2),
         'S' => fields.second = try parseDigits(u8, string, idx_ptr, 2),
         'f' => {

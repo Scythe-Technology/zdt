@@ -247,8 +247,23 @@ test "format offset" {
     dt = try Datetime.fromFields(.{ .year = 2021, .month = 2, .day = 18, .hour = 17, .tz_options = .{ .utc_offset = offset } });
 
     w = .fixed(&buf);
+    try dt.formatOffset(null, &w); // no options have to use null
+    try testing.expectEqualStrings("+09:15:42", w.buffered());
+
+    w = .fixed(&buf);
     try dt.formatOffset(.{ .fill = ':', .precision = 2 }, &w);
     try testing.expectEqualStrings("+09:15:42", w.buffered());
+
+    // naive datetime has no offset / empty string
+    dt = try Datetime.fromFields(.{ .year = 2021 });
+    w = .fixed(&buf);
+    try dt.formatOffset(.{ .fill = ':', .precision = 2 }, &w);
+    try testing.expectEqualStrings("", w.buffered());
+
+    dt = try Datetime.fromFields(.{ .year = 2021, .tz_options = .{ .tz = &Tz.UTC } });
+    w = .fixed(&buf);
+    try dt.formatOffset(null, &w);
+    try testing.expectEqualStrings("Z", w.buffered());
 }
 
 test "compare Unix time" {
@@ -282,6 +297,12 @@ test "compare wall time" {
     a = try Datetime.fromFields(.{ .year = 2021, .month = 2, .day = 18, .hour = 17, .nanosecond = 42 });
     try testing.expectEqual(std.math.Order.lt, try Datetime.compareWall(a, b));
     try testing.expectEqual(std.math.Order.gt, try Datetime.compareWall(b, a));
+}
+
+test "floor datetime, invalid timespan" {
+    const dt = try Datetime.fromFields(.{ .year = 2021 });
+    const err = dt.floorTo(Duration.Timespan.week);
+    try testing.expectError(ZdtError.NotImplemented, err);
 }
 
 test "floor naive datetime to the second" {
@@ -392,6 +413,128 @@ test "add duration to naive datetime stays naive" {
     try testing.expectEqual(@as(u8, 13), result.hour);
 }
 
+const TestCaseRelDelta = struct {
+    datetime_a: Datetime = .{},
+    rel_delta: Duration.RelativeDelta = .{},
+    datetime_b: Datetime = .{},
+};
+
+test "add relative delta to naive datetime" {
+    const cases = [_]TestCaseRelDelta{
+        .{
+            .datetime_a = .{ .year = 1970, .unix_sec = 0 },
+            .rel_delta = .{ .nanoseconds = 1 },
+            .datetime_b = .{ .year = 1970, .unix_sec = 0, .nanosecond = 1 },
+        },
+        .{
+            .datetime_a = .{ .year = 1970, .unix_sec = 0, .nanosecond = 500_000_000 },
+            .rel_delta = .{ .nanoseconds = 500_000_000 },
+            .datetime_b = .{ .year = 1970, .unix_sec = 1, .second = 1, .nanosecond = 0 },
+        },
+        .{
+            .datetime_a = .{ .year = 1970, .unix_sec = 0, .nanosecond = 999_999_999 },
+            .rel_delta = .{ .nanoseconds = 1 },
+            .datetime_b = .{ .year = 1970, .unix_sec = 1, .second = 1, .nanosecond = 0 },
+        },
+        .{
+            .datetime_a = .{ .year = 1970, .hour = 1, .unix_sec = 3600 },
+            .rel_delta = .{ .hours = 2 },
+            .datetime_b = .{ .year = 1970, .hour = 3, .unix_sec = 10800 },
+        },
+        .{
+            .datetime_a = .{ .year = 1970, .unix_sec = 0 },
+            .rel_delta = .{ .days = 1 },
+            .datetime_b = .{ .year = 1970, .day = 2, .unix_sec = 86400 },
+        },
+        .{
+            .datetime_a = try Datetime.fromFields(.{ .year = 1970 }),
+            .rel_delta = .{ .years = 1 },
+            .datetime_b = try Datetime.fromFields(.{ .year = 1971 }),
+        },
+        .{
+            .datetime_a = try Datetime.fromFields(.{ .year = 1970 }),
+            .rel_delta = .{ .years = 1, .months = 1 },
+            .datetime_b = try Datetime.fromFields(.{ .year = 1971, .month = 2 }),
+        },
+        .{
+            .datetime_a = try Datetime.fromFields(.{ .year = 1970 }),
+            .rel_delta = .{ .months = 2, .negative = true },
+            .datetime_b = try Datetime.fromFields(.{ .year = 1969, .month = 11 }),
+        },
+        .{
+            .datetime_a = try Datetime.fromFields(.{ .year = 1970 }),
+            .rel_delta = .{ .months = 1, .nanoseconds = 999_999_999, .negative = true },
+            .datetime_b = try Datetime.fromFields(.{ .year = 1969, .month = 11, .day = 30, .hour = 23, .minute = 59, .second = 59, .nanosecond = 1 }),
+        },
+        .{
+            .datetime_a = try Datetime.fromFields(.{ .year = 1970, .day = 31 }),
+            .rel_delta = .{ .months = 1 },
+            .datetime_b = try Datetime.fromFields(.{ .year = 1970, .month = 2, .day = 28 }),
+        },
+        .{
+            .datetime_a = try Datetime.fromFields(.{ .year = 1970, .month = 1, .day = 31 }),
+            .rel_delta = .{ .months = 13, .negative = true },
+            .datetime_b = try Datetime.fromFields(.{ .year = 1968, .month = 12, .day = 31 }),
+        },
+        .{
+            .datetime_a = try Datetime.fromFields(.{ .year = 1970, .month = 1, .day = 31 }),
+            .rel_delta = .{ .years = 3, .months = 14, .negative = true },
+            .datetime_b = try Datetime.fromFields(.{ .year = 1965, .month = 11, .day = 30 }),
+        },
+        .{
+            .datetime_a = try Datetime.fromFields(.{ .year = 1970, .month = 1, .day = 31 }),
+            .rel_delta = .{ .years = 1000 },
+            .datetime_b = try Datetime.fromFields(.{ .year = 2970, .month = 1, .day = 31 }),
+        },
+    };
+
+    for (cases) |case| {
+        const dt_new = try case.datetime_a.addRelative(case.rel_delta);
+        try testing.expectEqual(case.datetime_b, dt_new);
+    }
+}
+
+test "add relative delta to aware datetime" {
+    var tz = try Tz.fromTzdata(testing.io, "Europe/Berlin", testing.allocator);
+    defer tz.deinit();
+
+    var have: Datetime = try Datetime.fromFields(.{ .year = 1970, .tz_options = .{ .tz = &tz } });
+    var delta: Duration.RelativeDelta = try Duration.RelativeDelta.fromISO8601("P1Y");
+    var want: Datetime = try Datetime.fromFields(.{ .year = 1971, .tz_options = .{ .tz = &tz } });
+    var new: Datetime = try have.addRelative(delta);
+    try testing.expectEqual(want, new);
+    delta.negative = true;
+    new = try want.addRelative(delta);
+    try testing.expectEqual(have, new);
+
+    // 23 hours absolute is 1 day relative during DST off --> on
+    have = try Datetime.fromFields(.{ .year = 2024, .month = 3, .day = 30, .hour = 8, .tz_options = .{ .tz = &tz } });
+    delta = try Duration.RelativeDelta.fromISO8601("P1D");
+    want = try Datetime.fromFields(.{ .year = 2024, .month = 3, .day = 31, .hour = 8, .tz_options = .{ .tz = &tz } });
+    new = try have.addRelative(delta);
+    try testing.expectEqual(want, new);
+    var abs_diff: Duration = new.diff(have);
+    var wall_diff: Duration = try new.diffWall(have);
+    try testing.expectEqual(try Duration.fromISO8601("PT23H"), abs_diff);
+    try testing.expectEqual(try Duration.fromISO8601("PT24H"), wall_diff);
+    delta.negative = true;
+    new = try want.addRelative(delta);
+    try testing.expectEqual(have, new);
+
+    // 25 hours absolute is 1 day relative during DST on --> off
+    have = try Datetime.fromFields(.{ .year = 2024, .month = 10, .day = 26, .hour = 8, .tz_options = .{ .tz = &tz } });
+    delta = try Duration.RelativeDelta.fromISO8601("P1D");
+    want = try Datetime.fromFields(.{ .year = 2024, .month = 10, .day = 27, .hour = 8, .tz_options = .{ .tz = &tz } });
+    new = try have.addRelative(delta);
+    try testing.expectEqual(want, new);
+    abs_diff = new.diff(have);
+    wall_diff = try new.diffWall(have);
+    try testing.expectEqual(try Duration.fromISO8601("PT25H"), abs_diff);
+    try testing.expectEqual(try Duration.fromISO8601("PT24H"), wall_diff);
+    delta.negative = true;
+    new = try want.addRelative(delta);
+    try testing.expectEqual(have, new);
+}
 test "day of year" {
     // leap year
     var dt = try Datetime.fromFields(.{ .year = 2020 });
@@ -456,6 +599,12 @@ test "month enum" {
 
     m = try Datetime.Month.nameShortToInt("Apr");
     try testing.expectEqual(4, m);
+
+    var err = Datetime.Month.nameToInt("not a monthname");
+    try testing.expectError(ZdtError.MonthOutOfRange, err);
+
+    err = Datetime.Month.nameShortToInt("not a monthname");
+    try testing.expectError(ZdtError.MonthOutOfRange, err);
 }
 
 test "next weekday" {
@@ -601,7 +750,10 @@ test "isocal from string" {
     const fromstr = try Datetime.ISOCalendar.fromString("2024-W40-4");
     try testing.expectEqual(ical, fromstr);
 
-    const err = Datetime.ISOCalendar.fromString("2024-40-4");
+    var err = Datetime.ISOCalendar.fromString("2024-40-4");
+    try testing.expectError(error.InvalidFormat, err);
+
+    err = Datetime.ISOCalendar.fromString("2024xW40x4");
     try testing.expectError(error.InvalidFormat, err);
 }
 
@@ -622,6 +774,38 @@ test "replace fields" {
 
     err = dt.replace(.{ .month = 13 }); // ensure is checked
     try testing.expectError(error.MonthOutOfRange, err);
+}
+
+test "Easter, Gregorian" {
+    var dt = try Datetime.fromFields(.{ .year = 1970 });
+    try testing.expectEqual(
+        try Datetime.fromFields(.{ .year = 1970, .month = 3, .day = 29 }),
+        try Datetime.EasterDate(dt.year),
+    );
+
+    dt = try Datetime.fromFields(.{ .year = 2009 });
+    try testing.expectEqual(
+        try Datetime.fromFields(.{ .year = 2009, .month = 4, .day = 12 }),
+        try Datetime.EasterDate(dt.year),
+    );
+
+    dt = try Datetime.fromFields(.{ .year = 2018 });
+    try testing.expectEqual(
+        try Datetime.fromFields(.{ .year = 2018, .month = 4, .day = 1 }),
+        try Datetime.EasterDate(dt.year),
+    );
+
+    dt = try Datetime.fromFields(.{ .year = 2025 });
+    try testing.expectEqual(
+        try Datetime.fromFields(.{ .year = 2025, .month = 4, .day = 20 }),
+        try Datetime.EasterDate(dt.year),
+    );
+
+    dt = try Datetime.fromFields(.{ .year = 2160 });
+    try testing.expectEqual(
+        try Datetime.fromFields(.{ .year = 2160, .month = 3, .day = 23 }),
+        try Datetime.EasterDate(dt.year),
+    );
 }
 
 test "datetime from postgres raw data" {

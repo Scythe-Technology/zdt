@@ -46,7 +46,7 @@ test "offset from seconds" {
     try testing.expect(dt.unix_sec == -3600);
     try testing.expect(dt.hour == 0);
 
-    const dt_unix = try Datetime.fromUnix(0, Duration.Resolution.second, .{ .utc_offset = off });
+    const dt_unix = try Datetime.fromUnix(0, .second, .{ .utc_offset = off });
     try testing.expect(dt_unix.unix_sec == 0);
     try testing.expect(dt_unix.hour == 1);
 
@@ -220,8 +220,8 @@ test "DST transitions" {
     defer tzinfo.deinit();
 
     // DST off --> DST on (missing datetime), 2023-03-26
-    var dt_std = try Datetime.fromUnix(1679792399, Duration.Resolution.second, .{ .tz = &tzinfo });
-    var dt_dst = try Datetime.fromUnix(1679792400, Duration.Resolution.second, .{ .tz = &tzinfo });
+    var dt_std = try Datetime.fromUnix(1679792399, .second, .{ .tz = &tzinfo });
+    var dt_dst = try Datetime.fromUnix(1679792400, .second, .{ .tz = &tzinfo });
     try testing.expect(!dt_std.utc_offset.?.is_dst);
     try testing.expect(dt_dst.utc_offset.?.is_dst);
 
@@ -236,8 +236,8 @@ test "DST transitions" {
     w = .fixed(&buf);
 
     // DST on --> DST off (duplicate datetime), 2023-10-29
-    dt_dst = try Datetime.fromUnix(1698541199, Duration.Resolution.second, .{ .tz = &tzinfo });
-    dt_std = try Datetime.fromUnix(1698541200, Duration.Resolution.second, .{ .tz = &tzinfo });
+    dt_dst = try Datetime.fromUnix(1698541199, .second, .{ .tz = &tzinfo });
+    dt_std = try Datetime.fromUnix(1698541200, .second, .{ .tz = &tzinfo });
     try testing.expect(dt_dst.utc_offset.?.is_dst);
     try testing.expect(!dt_std.utc_offset.?.is_dst);
 
@@ -292,11 +292,11 @@ test "tz has name and abbreviation" {
     try testing.expectEqualStrings("Europe/Berlin", dt.tzName());
     try testing.expectEqualStrings("CEST", dt.tzAbbreviation());
 
-    dt = try Datetime.fromUnix(1672527600, Duration.Resolution.second, .{ .tz = &tzinfo });
+    dt = try Datetime.fromUnix(1672527600, .second, .{ .tz = &tzinfo });
     try testing.expectEqualStrings("Europe/Berlin", dt.tzName());
     try testing.expectEqualStrings("CET", dt.tzAbbreviation());
 
-    dt = try Datetime.fromUnix(1690840800, Duration.Resolution.second, .{ .tz = &tzinfo });
+    dt = try Datetime.fromUnix(1690840800, .second, .{ .tz = &tzinfo });
     try testing.expectEqualStrings("Europe/Berlin", dt.tzName());
     try testing.expectEqualStrings("CEST", dt.tzAbbreviation());
 }
@@ -350,17 +350,17 @@ test "tz name and abbr correct after localize" {
     // try testing.expect(now_local.tzAbbreviation().len > 0);
     //
     // const t2 = std.time.timestamp();
-    // now_local = try Datetime.fromUnix(t2, Duration.Resolution.second, .{ .tz = &tz_ny });
+    // now_local = try Datetime.fromUnix(t2, .second, .{ .tz = &tz_ny });
     // try testing.expectEqualStrings("America/New_York", now_local.tzName());
     // try testing.expect(now_local.tzAbbreviation().len > 0);
 
     const t3: i32 = 0;
-    now_local = try Datetime.fromUnix(t3, Duration.Resolution.second, .{ .tz = &tz_ny });
+    now_local = try Datetime.fromUnix(t3, .second, .{ .tz = &tz_ny });
     try testing.expectEqualStrings("America/New_York", now_local.tzName());
     try testing.expectEqualStrings("EST", now_local.tzAbbreviation());
 
     const t4: i32 = 1690840800;
-    now_local = try Datetime.fromUnix(t4, Duration.Resolution.second, .{ .tz = &tz_ny });
+    now_local = try Datetime.fromUnix(t4, .second, .{ .tz = &tz_ny });
     try testing.expectEqualStrings("America/New_York", now_local.tzName());
     try testing.expectEqualStrings("EDT", now_local.tzAbbreviation());
 }
@@ -463,7 +463,7 @@ test "make datetime aware" {
     var tzinfo = try Tz.fromTzdata(testing.io, "Europe/Berlin", testing.allocator);
     defer tzinfo.deinit();
 
-    const dt_naive = try Datetime.fromUnix(0, Duration.Resolution.second, null);
+    const dt_naive = try Datetime.fromUnix(0, .second, null);
     try testing.expect(dt_naive.utc_offset == null);
     try testing.expect(dt_naive.tz == null);
 
@@ -1147,17 +1147,17 @@ test "load a lot of zones" {
 
     for (zones) |zone| {
         var tz_a = try Tz.fromTzdata(testing.io, zone, testing.allocator);
-        const dt_a = try Datetime.fromUnix(0, Duration.Resolution.second, .{ .tz = &tz_a });
+        const dt_a = try Datetime.fromUnix(0, .second, .{ .tz = &tz_a });
         try testing.expect(dt_a.utc_offset != null);
         try testing.expectEqualStrings(zone, dt_a.tzName());
         tz_a.deinit();
 
         if (builtin.os.tag != .windows) {
             var tz_b = Tz.fromSystemTzdata(testing.io, zone, Tz.tzdb_prefix, testing.allocator) catch {
-                log.warn("skip: tz file '{s}' not available on system", .{zone});
+                log.info("skip: tz file '{s}' not available on system", .{zone});
                 continue;
             };
-            const dt_b = try Datetime.fromUnix(0, Duration.Resolution.second, .{ .tz = &tz_b });
+            const dt_b = try Datetime.fromUnix(0, .second, .{ .tz = &tz_b });
             try testing.expect(dt_b.utc_offset != null);
             try testing.expectEqualStrings(zone, dt_b.tzName());
             tz_b.deinit();
@@ -1194,8 +1194,8 @@ test "conversion between random time zones, no-alloc" {
     var tz_a = try Tz.fromTzdata(testing.io, "Africa/Luanda", null);
     var tz_b = try Tz.fromTzdata(testing.io, "Europe/Kaliningrad", null);
 
-    var dt_a = try Datetime.fromUnix(-816207319, Duration.Resolution.second, .{ .tz = &tz_a });
-    var dt_b = try Datetime.fromUnix(1921722761, Duration.Resolution.second, .{ .tz = &tz_b });
+    var dt_a = try Datetime.fromUnix(-816207319, .second, .{ .tz = &tz_a });
+    var dt_b = try Datetime.fromUnix(1921722761, .second, .{ .tz = &tz_b });
     var dt_c = try dt_a.tzConvert(.{ .tz = &tz_b });
     dt_b = try dt_b.tzConvert(.{ .tz = &tz_a });
 
@@ -1211,8 +1211,8 @@ test "conversion between random time zones, no-alloc" {
     tz_a = try Tz.fromTzdata(testing.io, "Europe/Sarajevo", null);
     tz_b = try Tz.fromTzdata(testing.io, "Pacific/Wallis", null);
 
-    dt_a = try Datetime.fromUnix(1942114456, Duration.Resolution.second, .{ .tz = &tz_a });
-    dt_b = try Datetime.fromUnix(-1893647018, Duration.Resolution.second, .{ .tz = &tz_b });
+    dt_a = try Datetime.fromUnix(1942114456, .second, .{ .tz = &tz_a });
+    dt_b = try Datetime.fromUnix(-1893647018, .second, .{ .tz = &tz_b });
     dt_c = try dt_a.tzConvert(.{ .tz = &tz_b });
     dt_b = try dt_b.tzConvert(.{ .tz = &tz_a });
 
@@ -1226,8 +1226,8 @@ test "conversion between random time zones, no-alloc" {
     tz_a = try Tz.fromTzdata(testing.io, "America/Caracas", null);
     tz_b = try Tz.fromTzdata(testing.io, "Europe/Vienna", null);
 
-    dt_a = try Datetime.fromUnix(-485869856, Duration.Resolution.second, .{ .tz = &tz_a });
-    dt_b = try Datetime.fromUnix(-1894391592, Duration.Resolution.second, .{ .tz = &tz_b });
+    dt_a = try Datetime.fromUnix(-485869856, .second, .{ .tz = &tz_a });
+    dt_b = try Datetime.fromUnix(-1894391592, .second, .{ .tz = &tz_b });
     dt_c = try dt_a.tzConvert(.{ .tz = &tz_b });
     dt_b = try dt_b.tzConvert(.{ .tz = &tz_a });
 
@@ -1245,8 +1245,8 @@ test "conversion between random time zones" {
     var tz_a = try Tz.fromTzdata(testing.io, "Europe/Malta", testing.allocator);
     var tz_b = try Tz.fromTzdata(testing.io, "Europe/Samara", testing.allocator);
 
-    var dt_a = try Datetime.fromUnix(-816207319, Duration.Resolution.second, .{ .tz = &tz_a });
-    var dt_b = try Datetime.fromUnix(1921722761, Duration.Resolution.second, .{ .tz = &tz_b });
+    var dt_a = try Datetime.fromUnix(-816207319, .second, .{ .tz = &tz_a });
+    var dt_b = try Datetime.fromUnix(1921722761, .second, .{ .tz = &tz_b });
     var dt_c = try dt_a.tzConvert(.{ .tz = &tz_b });
     dt_b = try dt_b.tzConvert(.{ .tz = &tz_a });
 
@@ -1265,8 +1265,8 @@ test "conversion between random time zones" {
     tz_a = try Tz.fromTzdata(testing.io, "Indian/Maldives", testing.allocator);
     tz_b = try Tz.fromTzdata(testing.io, "Africa/Mogadishu", testing.allocator);
 
-    dt_a = try Datetime.fromUnix(1942114456, Duration.Resolution.second, .{ .tz = &tz_a });
-    dt_b = try Datetime.fromUnix(-1893647018, Duration.Resolution.second, .{ .tz = &tz_b });
+    dt_a = try Datetime.fromUnix(1942114456, .second, .{ .tz = &tz_a });
+    dt_b = try Datetime.fromUnix(-1893647018, .second, .{ .tz = &tz_b });
     dt_c = try dt_a.tzConvert(.{ .tz = &tz_b });
     dt_b = try dt_b.tzConvert(.{ .tz = &tz_a });
 
@@ -1283,8 +1283,8 @@ test "conversion between random time zones" {
     tz_a = try Tz.fromTzdata(testing.io, "Europe/Stockholm", testing.allocator);
     tz_b = try Tz.fromTzdata(testing.io, "UTC", testing.allocator);
 
-    dt_a = try Datetime.fromUnix(-1128113058, Duration.Resolution.second, .{ .tz = &tz_a });
-    dt_b = try Datetime.fromUnix(1223021131, Duration.Resolution.second, .{ .tz = &tz_b });
+    dt_a = try Datetime.fromUnix(-1128113058, .second, .{ .tz = &tz_a });
+    dt_b = try Datetime.fromUnix(1223021131, .second, .{ .tz = &tz_b });
     dt_c = try dt_a.tzConvert(.{ .tz = &tz_b });
     dt_b = try dt_b.tzConvert(.{ .tz = &tz_a });
 
@@ -1301,8 +1301,8 @@ test "conversion between random time zones" {
     tz_a = try Tz.fromTzdata(testing.io, "NZ-CHAT", testing.allocator);
     tz_b = try Tz.fromTzdata(testing.io, "America/Kentucky/Monticello", testing.allocator);
 
-    dt_a = try Datetime.fromUnix(-485869856, Duration.Resolution.second, .{ .tz = &tz_a });
-    dt_b = try Datetime.fromUnix(-1894391592, Duration.Resolution.second, .{ .tz = &tz_b });
+    dt_a = try Datetime.fromUnix(-485869856, .second, .{ .tz = &tz_a });
+    dt_b = try Datetime.fromUnix(-1894391592, .second, .{ .tz = &tz_b });
     dt_c = try dt_a.tzConvert(.{ .tz = &tz_b });
     dt_b = try dt_b.tzConvert(.{ .tz = &tz_a });
 
@@ -1319,8 +1319,8 @@ test "conversion between random time zones" {
     tz_a = try Tz.fromTzdata(testing.io, "Pacific/Auckland", testing.allocator);
     tz_b = try Tz.fromTzdata(testing.io, "Europe/Stockholm", testing.allocator);
 
-    dt_a = try Datetime.fromUnix(-999522008, Duration.Resolution.second, .{ .tz = &tz_a });
-    dt_b = try Datetime.fromUnix(719055854, Duration.Resolution.second, .{ .tz = &tz_b });
+    dt_a = try Datetime.fromUnix(-999522008, .second, .{ .tz = &tz_a });
+    dt_b = try Datetime.fromUnix(719055854, .second, .{ .tz = &tz_b });
     dt_c = try dt_a.tzConvert(.{ .tz = &tz_b });
     dt_b = try dt_b.tzConvert(.{ .tz = &tz_a });
 
@@ -1337,8 +1337,8 @@ test "conversion between random time zones" {
     tz_a = try Tz.fromTzdata(testing.io, "America/Coyhaique", testing.allocator);
     tz_b = try Tz.fromTzdata(testing.io, "America/Detroit", testing.allocator);
 
-    dt_a = try Datetime.fromUnix(-1389478107, Duration.Resolution.second, .{ .tz = &tz_a });
-    dt_b = try Datetime.fromUnix(-195234029, Duration.Resolution.second, .{ .tz = &tz_b });
+    dt_a = try Datetime.fromUnix(-1389478107, .second, .{ .tz = &tz_a });
+    dt_b = try Datetime.fromUnix(-195234029, .second, .{ .tz = &tz_b });
     dt_c = try dt_a.tzConvert(.{ .tz = &tz_b });
     dt_b = try dt_b.tzConvert(.{ .tz = &tz_a });
 
@@ -1355,8 +1355,8 @@ test "conversion between random time zones" {
     tz_a = try Tz.fromTzdata(testing.io, "America/Indiana/Vevay", testing.allocator);
     tz_b = try Tz.fromTzdata(testing.io, "Atlantic/Faroe", testing.allocator);
 
-    dt_a = try Datetime.fromUnix(794111713, Duration.Resolution.second, .{ .tz = &tz_a });
-    dt_b = try Datetime.fromUnix(-1262529920, Duration.Resolution.second, .{ .tz = &tz_b });
+    dt_a = try Datetime.fromUnix(794111713, .second, .{ .tz = &tz_a });
+    dt_b = try Datetime.fromUnix(-1262529920, .second, .{ .tz = &tz_b });
     dt_c = try dt_a.tzConvert(.{ .tz = &tz_b });
     dt_b = try dt_b.tzConvert(.{ .tz = &tz_a });
 
@@ -1373,8 +1373,8 @@ test "conversion between random time zones" {
     tz_a = try Tz.fromTzdata(testing.io, "Europe/Nicosia", testing.allocator);
     tz_b = try Tz.fromTzdata(testing.io, "EET", testing.allocator);
 
-    dt_a = try Datetime.fromUnix(-1846174622, Duration.Resolution.second, .{ .tz = &tz_a });
-    dt_b = try Datetime.fromUnix(364596200, Duration.Resolution.second, .{ .tz = &tz_b });
+    dt_a = try Datetime.fromUnix(-1846174622, .second, .{ .tz = &tz_a });
+    dt_b = try Datetime.fromUnix(364596200, .second, .{ .tz = &tz_b });
     dt_c = try dt_a.tzConvert(.{ .tz = &tz_b });
     dt_b = try dt_b.tzConvert(.{ .tz = &tz_a });
 
@@ -1391,8 +1391,8 @@ test "conversion between random time zones" {
     tz_a = try Tz.fromTzdata(testing.io, "Atlantic/Bermuda", testing.allocator);
     tz_b = try Tz.fromTzdata(testing.io, "America/Eirunepe", testing.allocator);
 
-    dt_a = try Datetime.fromUnix(1967326856, Duration.Resolution.second, .{ .tz = &tz_a });
-    dt_b = try Datetime.fromUnix(142696408, Duration.Resolution.second, .{ .tz = &tz_b });
+    dt_a = try Datetime.fromUnix(1967326856, .second, .{ .tz = &tz_a });
+    dt_b = try Datetime.fromUnix(142696408, .second, .{ .tz = &tz_b });
     dt_c = try dt_a.tzConvert(.{ .tz = &tz_b });
     dt_b = try dt_b.tzConvert(.{ .tz = &tz_a });
 
@@ -1409,8 +1409,8 @@ test "conversion between random time zones" {
     tz_a = try Tz.fromTzdata(testing.io, "Asia/Tbilisi", testing.allocator);
     tz_b = try Tz.fromTzdata(testing.io, "Asia/Novosibirsk", testing.allocator);
 
-    dt_a = try Datetime.fromUnix(-865972273, Duration.Resolution.second, .{ .tz = &tz_a });
-    dt_b = try Datetime.fromUnix(-639392452, Duration.Resolution.second, .{ .tz = &tz_b });
+    dt_a = try Datetime.fromUnix(-865972273, .second, .{ .tz = &tz_a });
+    dt_b = try Datetime.fromUnix(-639392452, .second, .{ .tz = &tz_b });
     dt_c = try dt_a.tzConvert(.{ .tz = &tz_b });
     dt_b = try dt_b.tzConvert(.{ .tz = &tz_a });
 
@@ -1427,8 +1427,8 @@ test "conversion between random time zones" {
     tz_a = try Tz.fromTzdata(testing.io, "Asia/Magadan", testing.allocator);
     tz_b = try Tz.fromTzdata(testing.io, "Navajo", testing.allocator);
 
-    dt_a = try Datetime.fromUnix(-1571932065, Duration.Resolution.second, .{ .tz = &tz_a });
-    dt_b = try Datetime.fromUnix(-782078436, Duration.Resolution.second, .{ .tz = &tz_b });
+    dt_a = try Datetime.fromUnix(-1571932065, .second, .{ .tz = &tz_a });
+    dt_b = try Datetime.fromUnix(-782078436, .second, .{ .tz = &tz_b });
     dt_c = try dt_a.tzConvert(.{ .tz = &tz_b });
     dt_b = try dt_b.tzConvert(.{ .tz = &tz_a });
 
@@ -1445,8 +1445,8 @@ test "conversion between random time zones" {
     tz_a = try Tz.fromTzdata(testing.io, "Asia/Tomsk", testing.allocator);
     tz_b = try Tz.fromTzdata(testing.io, "Asia/Magadan", testing.allocator);
 
-    dt_a = try Datetime.fromUnix(-1516539100, Duration.Resolution.second, .{ .tz = &tz_a });
-    dt_b = try Datetime.fromUnix(986091715, Duration.Resolution.second, .{ .tz = &tz_b });
+    dt_a = try Datetime.fromUnix(-1516539100, .second, .{ .tz = &tz_a });
+    dt_b = try Datetime.fromUnix(986091715, .second, .{ .tz = &tz_b });
     dt_c = try dt_a.tzConvert(.{ .tz = &tz_b });
     dt_b = try dt_b.tzConvert(.{ .tz = &tz_a });
 
@@ -1463,8 +1463,8 @@ test "conversion between random time zones" {
     tz_a = try Tz.fromTzdata(testing.io, "Africa/Mbabane", testing.allocator);
     tz_b = try Tz.fromTzdata(testing.io, "America/Atka", testing.allocator);
 
-    dt_a = try Datetime.fromUnix(-1215106914, Duration.Resolution.second, .{ .tz = &tz_a });
-    dt_b = try Datetime.fromUnix(-487293440, Duration.Resolution.second, .{ .tz = &tz_b });
+    dt_a = try Datetime.fromUnix(-1215106914, .second, .{ .tz = &tz_a });
+    dt_b = try Datetime.fromUnix(-487293440, .second, .{ .tz = &tz_b });
     dt_c = try dt_a.tzConvert(.{ .tz = &tz_b });
     dt_b = try dt_b.tzConvert(.{ .tz = &tz_a });
 
@@ -1481,8 +1481,8 @@ test "conversion between random time zones" {
     tz_a = try Tz.fromTzdata(testing.io, "WET", testing.allocator);
     tz_b = try Tz.fromTzdata(testing.io, "Africa/Lusaka", testing.allocator);
 
-    dt_a = try Datetime.fromUnix(1367598722, Duration.Resolution.second, .{ .tz = &tz_a });
-    dt_b = try Datetime.fromUnix(-1473054982, Duration.Resolution.second, .{ .tz = &tz_b });
+    dt_a = try Datetime.fromUnix(1367598722, .second, .{ .tz = &tz_a });
+    dt_b = try Datetime.fromUnix(-1473054982, .second, .{ .tz = &tz_b });
     dt_c = try dt_a.tzConvert(.{ .tz = &tz_b });
     dt_b = try dt_b.tzConvert(.{ .tz = &tz_a });
 
@@ -1499,8 +1499,8 @@ test "conversion between random time zones" {
     tz_a = try Tz.fromTzdata(testing.io, "Asia/Kuching", testing.allocator);
     tz_b = try Tz.fromTzdata(testing.io, "Indian/Cocos", testing.allocator);
 
-    dt_a = try Datetime.fromUnix(-260468215, Duration.Resolution.second, .{ .tz = &tz_a });
-    dt_b = try Datetime.fromUnix(-1511958403, Duration.Resolution.second, .{ .tz = &tz_b });
+    dt_a = try Datetime.fromUnix(-260468215, .second, .{ .tz = &tz_a });
+    dt_b = try Datetime.fromUnix(-1511958403, .second, .{ .tz = &tz_b });
     dt_c = try dt_a.tzConvert(.{ .tz = &tz_b });
     dt_b = try dt_b.tzConvert(.{ .tz = &tz_a });
 
@@ -1517,8 +1517,8 @@ test "conversion between random time zones" {
     tz_a = try Tz.fromTzdata(testing.io, "Europe/Vaduz", testing.allocator);
     tz_b = try Tz.fromTzdata(testing.io, "Canada/Mountain", testing.allocator);
 
-    dt_a = try Datetime.fromUnix(824105261, Duration.Resolution.second, .{ .tz = &tz_a });
-    dt_b = try Datetime.fromUnix(477126985, Duration.Resolution.second, .{ .tz = &tz_b });
+    dt_a = try Datetime.fromUnix(824105261, .second, .{ .tz = &tz_a });
+    dt_b = try Datetime.fromUnix(477126985, .second, .{ .tz = &tz_b });
     dt_c = try dt_a.tzConvert(.{ .tz = &tz_b });
     dt_b = try dt_b.tzConvert(.{ .tz = &tz_a });
 
@@ -1535,8 +1535,8 @@ test "conversion between random time zones" {
     tz_a = try Tz.fromTzdata(testing.io, "America/Paramaribo", testing.allocator);
     tz_b = try Tz.fromTzdata(testing.io, "Europe/Gibraltar", testing.allocator);
 
-    dt_a = try Datetime.fromUnix(-444856409, Duration.Resolution.second, .{ .tz = &tz_a });
-    dt_b = try Datetime.fromUnix(-2017440120, Duration.Resolution.second, .{ .tz = &tz_b });
+    dt_a = try Datetime.fromUnix(-444856409, .second, .{ .tz = &tz_a });
+    dt_b = try Datetime.fromUnix(-2017440120, .second, .{ .tz = &tz_b });
     dt_c = try dt_a.tzConvert(.{ .tz = &tz_b });
     dt_b = try dt_b.tzConvert(.{ .tz = &tz_a });
 
@@ -1553,8 +1553,8 @@ test "conversion between random time zones" {
     tz_a = try Tz.fromTzdata(testing.io, "Pacific/Rarotonga", testing.allocator);
     tz_b = try Tz.fromTzdata(testing.io, "Europe/Moscow", testing.allocator);
 
-    dt_a = try Datetime.fromUnix(2081029752, Duration.Resolution.second, .{ .tz = &tz_a });
-    dt_b = try Datetime.fromUnix(230882752, Duration.Resolution.second, .{ .tz = &tz_b });
+    dt_a = try Datetime.fromUnix(2081029752, .second, .{ .tz = &tz_a });
+    dt_b = try Datetime.fromUnix(230882752, .second, .{ .tz = &tz_b });
     dt_c = try dt_a.tzConvert(.{ .tz = &tz_b });
     dt_b = try dt_b.tzConvert(.{ .tz = &tz_a });
 
@@ -1571,8 +1571,8 @@ test "conversion between random time zones" {
     tz_a = try Tz.fromTzdata(testing.io, "Indian/Antananarivo", testing.allocator);
     tz_b = try Tz.fromTzdata(testing.io, "NZ", testing.allocator);
 
-    dt_a = try Datetime.fromUnix(1751368983, Duration.Resolution.second, .{ .tz = &tz_a });
-    dt_b = try Datetime.fromUnix(693621470, Duration.Resolution.second, .{ .tz = &tz_b });
+    dt_a = try Datetime.fromUnix(1751368983, .second, .{ .tz = &tz_a });
+    dt_b = try Datetime.fromUnix(693621470, .second, .{ .tz = &tz_b });
     dt_c = try dt_a.tzConvert(.{ .tz = &tz_b });
     dt_b = try dt_b.tzConvert(.{ .tz = &tz_a });
 
@@ -1589,8 +1589,8 @@ test "conversion between random time zones" {
     tz_a = try Tz.fromTzdata(testing.io, "Asia/Famagusta", testing.allocator);
     tz_b = try Tz.fromTzdata(testing.io, "Pacific/Apia", testing.allocator);
 
-    dt_a = try Datetime.fromUnix(715858672, Duration.Resolution.second, .{ .tz = &tz_a });
-    dt_b = try Datetime.fromUnix(-373086081, Duration.Resolution.second, .{ .tz = &tz_b });
+    dt_a = try Datetime.fromUnix(715858672, .second, .{ .tz = &tz_a });
+    dt_b = try Datetime.fromUnix(-373086081, .second, .{ .tz = &tz_b });
     dt_c = try dt_a.tzConvert(.{ .tz = &tz_b });
     dt_b = try dt_b.tzConvert(.{ .tz = &tz_a });
 
@@ -1607,8 +1607,8 @@ test "conversion between random time zones" {
     tz_a = try Tz.fromTzdata(testing.io, "Africa/Djibouti", testing.allocator);
     tz_b = try Tz.fromTzdata(testing.io, "Asia/Macao", testing.allocator);
 
-    dt_a = try Datetime.fromUnix(-293022949, Duration.Resolution.second, .{ .tz = &tz_a });
-    dt_b = try Datetime.fromUnix(-1445358615, Duration.Resolution.second, .{ .tz = &tz_b });
+    dt_a = try Datetime.fromUnix(-293022949, .second, .{ .tz = &tz_a });
+    dt_b = try Datetime.fromUnix(-1445358615, .second, .{ .tz = &tz_b });
     dt_c = try dt_a.tzConvert(.{ .tz = &tz_b });
     dt_b = try dt_b.tzConvert(.{ .tz = &tz_a });
 
@@ -1625,8 +1625,8 @@ test "conversion between random time zones" {
     tz_a = try Tz.fromTzdata(testing.io, "Asia/Samarkand", testing.allocator);
     tz_b = try Tz.fromTzdata(testing.io, "Asia/Baghdad", testing.allocator);
 
-    dt_a = try Datetime.fromUnix(560485083, Duration.Resolution.second, .{ .tz = &tz_a });
-    dt_b = try Datetime.fromUnix(2064615505, Duration.Resolution.second, .{ .tz = &tz_b });
+    dt_a = try Datetime.fromUnix(560485083, .second, .{ .tz = &tz_a });
+    dt_b = try Datetime.fromUnix(2064615505, .second, .{ .tz = &tz_b });
     dt_c = try dt_a.tzConvert(.{ .tz = &tz_b });
     dt_b = try dt_b.tzConvert(.{ .tz = &tz_a });
 
@@ -1643,8 +1643,8 @@ test "conversion between random time zones" {
     tz_a = try Tz.fromTzdata(testing.io, "Etc/GMT-10", testing.allocator);
     tz_b = try Tz.fromTzdata(testing.io, "Etc/GMT-1", testing.allocator);
 
-    dt_a = try Datetime.fromUnix(-1010224506, Duration.Resolution.second, .{ .tz = &tz_a });
-    dt_b = try Datetime.fromUnix(579644539, Duration.Resolution.second, .{ .tz = &tz_b });
+    dt_a = try Datetime.fromUnix(-1010224506, .second, .{ .tz = &tz_a });
+    dt_b = try Datetime.fromUnix(579644539, .second, .{ .tz = &tz_b });
     dt_c = try dt_a.tzConvert(.{ .tz = &tz_b });
     dt_b = try dt_b.tzConvert(.{ .tz = &tz_a });
 
@@ -1661,8 +1661,8 @@ test "conversion between random time zones" {
     tz_a = try Tz.fromTzdata(testing.io, "US/Eastern", testing.allocator);
     tz_b = try Tz.fromTzdata(testing.io, "Australia/Melbourne", testing.allocator);
 
-    dt_a = try Datetime.fromUnix(42640281, Duration.Resolution.second, .{ .tz = &tz_a });
-    dt_b = try Datetime.fromUnix(-1385885032, Duration.Resolution.second, .{ .tz = &tz_b });
+    dt_a = try Datetime.fromUnix(42640281, .second, .{ .tz = &tz_a });
+    dt_b = try Datetime.fromUnix(-1385885032, .second, .{ .tz = &tz_b });
     dt_c = try dt_a.tzConvert(.{ .tz = &tz_b });
     dt_b = try dt_b.tzConvert(.{ .tz = &tz_a });
 
@@ -1679,8 +1679,8 @@ test "conversion between random time zones" {
     tz_a = try Tz.fromTzdata(testing.io, "Europe/Vaduz", testing.allocator);
     tz_b = try Tz.fromTzdata(testing.io, "America/Port_of_Spain", testing.allocator);
 
-    dt_a = try Datetime.fromUnix(1094749082, Duration.Resolution.second, .{ .tz = &tz_a });
-    dt_b = try Datetime.fromUnix(775994453, Duration.Resolution.second, .{ .tz = &tz_b });
+    dt_a = try Datetime.fromUnix(1094749082, .second, .{ .tz = &tz_a });
+    dt_b = try Datetime.fromUnix(775994453, .second, .{ .tz = &tz_b });
     dt_c = try dt_a.tzConvert(.{ .tz = &tz_b });
     dt_b = try dt_b.tzConvert(.{ .tz = &tz_a });
 
@@ -1697,8 +1697,8 @@ test "conversion between random time zones" {
     tz_a = try Tz.fromTzdata(testing.io, "Asia/Kuala_Lumpur", testing.allocator);
     tz_b = try Tz.fromTzdata(testing.io, "Pacific/Pitcairn", testing.allocator);
 
-    dt_a = try Datetime.fromUnix(-44705548, Duration.Resolution.second, .{ .tz = &tz_a });
-    dt_b = try Datetime.fromUnix(788932013, Duration.Resolution.second, .{ .tz = &tz_b });
+    dt_a = try Datetime.fromUnix(-44705548, .second, .{ .tz = &tz_a });
+    dt_b = try Datetime.fromUnix(788932013, .second, .{ .tz = &tz_b });
     dt_c = try dt_a.tzConvert(.{ .tz = &tz_b });
     dt_b = try dt_b.tzConvert(.{ .tz = &tz_a });
 

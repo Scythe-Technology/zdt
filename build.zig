@@ -33,7 +33,6 @@ const example_files = [_][]const u8{
 };
 
 const test_files = [_][]const u8{
-    "test_calendar",
     "test_Datetime",
     "test_Duration",
     "test_Formats",

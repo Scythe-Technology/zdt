@@ -60,7 +60,7 @@ pub fn weekdayDifference(x: u8, y: u8) i8 {
     assert((y >= 0) and (y <= 6));
     const z: i8 = @as(i8, @intCast(x)) - @as(i8, @intCast(y));
     if (z <= 6) return z;
-    return z + 7;
+    return z + 7; // assertions above prohibit this state
 }
 
 /// Calculate the day of the year. Result is [1, 366].
@@ -403,9 +403,17 @@ test "weekday difference" {
     // How many days to add to y to get to x
     try testing.expectEqual(0, weekdayDifference(0, 0));
     try testing.expectEqual(1, weekdayDifference(6, 5));
-    try testing.expectEqual(-1, weekdayDifference(5, 6));
-    try testing.expectEqual(-6, weekdayDifference(0, 6));
+    try testing.expectEqual(2, weekdayDifference(6, 4));
+    try testing.expectEqual(3, weekdayDifference(6, 3));
+    try testing.expectEqual(4, weekdayDifference(6, 2));
+    try testing.expectEqual(5, weekdayDifference(6, 1));
     try testing.expectEqual(6, weekdayDifference(6, 0));
+    try testing.expectEqual(-6, weekdayDifference(0, 6));
+    try testing.expectEqual(-5, weekdayDifference(1, 6));
+    try testing.expectEqual(-4, weekdayDifference(2, 6));
+    try testing.expectEqual(-3, weekdayDifference(3, 6));
+    try testing.expectEqual(-2, weekdayDifference(4, 6));
+    try testing.expectEqual(-1, weekdayDifference(5, 6));
 }
 
 test "weekday iso-weekday" {

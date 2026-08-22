@@ -17,33 +17,33 @@ const Timezone = zdt.Timezone;
 const log = std.log.scoped(.test_duration);
 
 test "from timespan" {
-    var td = Duration.fromTimespanMultiple(5, Duration.Timespan.nanosecond);
+    var td = Duration.fromTimespanMultiple(5, .nanosecond);
     try testing.expectEqual(@as(i128, 5), td.asNanoseconds());
 
-    td = Duration.fromTimespanMultiple(32, Duration.Timespan.second);
+    td = Duration.fromTimespanMultiple(32, .second);
     try testing.expectEqual(@as(i128, 32E9), td.asNanoseconds());
     try testing.expectEqual(@as(i64, 32), td.asSeconds());
 
-    td = Duration.fromTimespanMultiple(1, Duration.Timespan.week);
+    td = Duration.fromTimespanMultiple(1, .week);
     try testing.expectEqual(@as(i64, 7 * 24 * 60 * 60), td.asSeconds());
 }
 
 test "to timespan" {
-    var td = Duration.fromTimespanMultiple(5, Duration.Timespan.nanosecond);
+    var td = Duration.fromTimespanMultiple(5, .nanosecond);
     try testing.expectEqual(@as(i128, 5), td.asNanoseconds());
 
-    const ns = td.toTimespanMultiple(Duration.Timespan.nanosecond);
+    const ns = td.toTimespanMultiple(.nanosecond);
     try testing.expectEqual(@as(i128, 5), ns);
 
-    const weeks = td.toTimespanMultiple(Duration.Timespan.week);
+    const weeks = td.toTimespanMultiple(.week);
     try testing.expectEqual(@as(i128, 1), weeks);
 
-    td = Duration.fromTimespanMultiple(5500, Duration.Timespan.microsecond);
-    var ms = td.toTimespanMultiple(Duration.Timespan.millisecond);
+    td = Duration.fromTimespanMultiple(5500, .microsecond);
+    var ms = td.toTimespanMultiple(.millisecond);
     try testing.expectEqual(@as(i128, 6), ms);
 
-    td = Duration.fromTimespanMultiple(5501, Duration.Timespan.microsecond);
-    ms = td.toTimespanMultiple(Duration.Timespan.millisecond);
+    td = Duration.fromTimespanMultiple(5501, .microsecond);
+    ms = td.toTimespanMultiple(.millisecond);
     try testing.expectEqual(@as(i128, 6), ms);
 }
 
@@ -69,59 +69,69 @@ test "edge cases, min-max" {
     try testing.expectEqual(want_min_weeks, td.toTimespanMultiple(.week));
 }
 
+test "format" {
+    var buf: [64]u8 = undefined;
+    var w: std.Io.Writer = .fixed(&buf);
+
+    // fraction zeros get truncated
+    const d = try Duration.fromISO8601("PT0.123450000S");
+    try d.format(&w);
+    try testing.expectEqualStrings("PT0.12345S", w.buffered());
+}
+
 test "total seconds" {
     // Regular case
-    const td = Duration.fromTimespanMultiple(3141592653, Duration.Timespan.nanosecond);
+    const td = Duration.fromTimespanMultiple(3141592653, .nanosecond);
     try testing.expectEqual(3.141592653, td.totalSeconds());
 
     // Test large positive value
-    const large_td = Duration.fromTimespanMultiple(9223372036854775807, Duration.Timespan.second);
+    const large_td = Duration.fromTimespanMultiple(9223372036854775807, .second);
     try testing.expectEqual(9223372036854775807.0, large_td.totalSeconds());
 
     // Test large negative value
-    const neg_td = Duration.fromTimespanMultiple(-9223372036854775807, Duration.Timespan.second);
+    const neg_td = Duration.fromTimespanMultiple(-9223372036854775807, .second);
     try testing.expectEqual(-9223372036854775807.0, neg_td.totalSeconds());
 }
 
 test "total minutes" {
     // Regular case
-    const td = Duration.fromTimespanMultiple(185, Duration.Timespan.second);
+    const td = Duration.fromTimespanMultiple(185, .second);
     try testing.expectEqual(3.0833333333333335, td.totalMinutes());
 
     // Test large positive value
-    const large_td = Duration.fromTimespanMultiple(9223372036854775807, Duration.Timespan.second);
+    const large_td = Duration.fromTimespanMultiple(9223372036854775807, .second);
     try testing.expectEqual(9223372036854775807.0 / 60.0, large_td.totalMinutes());
 
     // Test large negative value
-    const neg_td = Duration.fromTimespanMultiple(-9223372036854775807, Duration.Timespan.second);
+    const neg_td = Duration.fromTimespanMultiple(-9223372036854775807, .second);
     try testing.expectEqual(-9223372036854775807.0 / 60.0, neg_td.totalMinutes());
 }
 
 test "total hours" {
     // Regular case
-    const td = Duration.fromTimespanMultiple(6300, Duration.Timespan.second);
+    const td = Duration.fromTimespanMultiple(6300, .second);
     try testing.expectEqual(1.75, td.totalHours());
 
     // Test large positive value
-    const large_td = Duration.fromTimespanMultiple(9223372036854775807, Duration.Timespan.second);
+    const large_td = Duration.fromTimespanMultiple(9223372036854775807, .second);
     try testing.expectEqual(9223372036854775807.0 / 3600.0, large_td.totalHours());
 
     // Test large negative value
-    const neg_td = Duration.fromTimespanMultiple(-9223372036854775807, Duration.Timespan.second);
+    const neg_td = Duration.fromTimespanMultiple(-9223372036854775807, .second);
     try testing.expectEqual(-9223372036854775807.0 / 3600.0, neg_td.totalHours());
 }
 
 test "total days" {
     // Regular case
-    const td = Duration.fromTimespanMultiple(3, Duration.Timespan.day);
+    const td = Duration.fromTimespanMultiple(3, .day);
     try testing.expectEqual(3.0, td.totalDays());
 
     // Test large positive value
-    const large_td = Duration.fromTimespanMultiple(9223372036854775807, Duration.Timespan.second);
+    const large_td = Duration.fromTimespanMultiple(9223372036854775807, .second);
     try testing.expectEqual(9223372036854775807.0 / 86400.0, large_td.totalDays());
 
     // Test large negative value
-    const neg_td = Duration.fromTimespanMultiple(-9223372036854775807, Duration.Timespan.second);
+    const neg_td = Duration.fromTimespanMultiple(-9223372036854775807, .second);
     try testing.expectEqual(-9223372036854775807.0 / 86400.0, neg_td.totalDays());
 
     // Test with nanosecond precision
@@ -340,7 +350,7 @@ test "add duration to datetime" {
     try testing.expectEqual(@as(i64, 42), dt.unix_sec);
     try testing.expectEqual(@as(u32, 0), dt.nanosecond);
 
-    dt = try dt.add(Duration.fromTimespanMultiple(1, Duration.Timespan.week));
+    dt = try dt.add(Duration.fromTimespanMultiple(1, .week));
     try testing.expectEqual(@as(u8, 8), dt.day);
 
     const err = dt.add(Duration.fromTimespanMultiple(9223372036854775807, .week));
@@ -498,10 +508,8 @@ test "iso duration parser, full valid input" {
     for (cases) |case| {
         const fields = try Duration.RelativeDelta.fromISO8601(case.string);
         try testing.expectEqual(case.fields, fields);
-
         // all test cases have year or month != 0, so conversion to duration fails:
-        const err = Duration.fromISO8601(case.string);
-        try testing.expectError(error.InvalidFormat, err);
+        try testing.expectError(error.InvalidFormat, Duration.fromISO8601(case.string));
     }
 }
 
@@ -536,51 +544,152 @@ test "iso duration to Duration type round-trip" {
         try testing.expectEqual(case.duration, dur);
 
         w = .fixed(&buf);
-        try dur.format(&w);
+        try case.duration.format(&w);
         try testing.expectEqualStrings(case.string, w.buffered());
     }
 }
 
+const TestCaseISODurFail = struct {
+    string: []const u8,
+    expected: anyerror,
+};
+
 test "iso duration fail cases" {
-    const cases = [_][]const u8{
-        "",
-        "0",
-        "P0", // insufficient; must at least be P0D
-        "PT7HT7S", // 'T' must only appear once
-        "PT7D", // 'T' must appear before D, W, M (months) and 'Y'
-        "P7HT7S", // 'H' must appear before 'T'
-        "P7S7M", // 'S' must appear before 'M'
-        "P7W7M", // 'W' must appear before 'M'
-        "P7.1W", // fraction only allowed for seconds
-        "P.1S", // fraction must have quantity before decimal sep
-        "P-7D", // individual components must not be signed
-        "-PT;0H46M59.789S",
-        "yPT0H46M59.789S",
-        "-P--T0H46M59.789S",
-        "P1Y2M3DT4K5M6.789S",
-        "PX2Y3M4DT5H6M7.89S",
-        "P999Y0M0D 0H0M0.123S",
-        "P+999Y0M0DT0H0M0.123S",
-        "P3Y4M5DT6H7M8.9>",
-        "P-+5Y6M7DT8H9M10.111000001S",
-        "P7Y8M9DT10H11M12;123S",
-        "P-8Y9M10XT11H12M13.145S",
-        "-P9Y10M11DT12H13M14.156s",
-        "UwKMxofSAIQSil8gW",
-        "gikNDeWiEh4yRt01haAPWqxQWOUSG2hC3EWSiAn3BNnt",
+    const cases = [_]TestCaseISODurFail{
+        .{ .string = "PT7HT7S", .expected = error.InvalidFormat },
+        .{ .string = "PT7D", .expected = error.InvalidFormat },
+        .{ .string = "P7HT7S", .expected = error.InvalidFormat },
+        .{ .string = "P7S7M", .expected = error.InvalidFormat },
+        .{ .string = "P7W7M", .expected = error.InvalidFormat },
+        .{ .string = "P7.1W", .expected = error.InvalidCharacter },
+        .{ .string = "P.1S", .expected = error.InvalidFormat },
+        .{ .string = "P-7D", .expected = error.InvalidFormat },
+        .{ .string = "P7M7M", .expected = error.InvalidFormat },
+        .{ .string = "PT3HT4S", .expected = error.InvalidFormat },
+        .{ .string = "P7M7S", .expected = error.InvalidFormat },
+        .{ .string = "PT7M7M", .expected = error.InvalidFormat },
+        .{ .string = "P7M7MT7S", .expected = error.InvalidFormat },
+        .{ .string = "−PT7D", .expected = error.InvalidFormat },
+        .{ .string = "PT59,789S", .expected = error.InvalidCharacter },
+        .{ .string = "PT59.789M", .expected = error.InvalidCharacter },
+        .{ .string = "P2020-01-01T00-00-01", .expected = error.InvalidFormat },
+        .{ .string = "P20200101T000001", .expected = error.InvalidFormat },
+        .{ .string = "-PT;0H46M59.789S", .expected = error.InvalidFormat },
+        .{ .string = "yPT0H46M59.789S", .expected = error.InvalidFormat },
+        .{ .string = "-P--T0H46M59.789S", .expected = error.InvalidFormat },
+        .{ .string = "P1Y2M3DT4K5M6.789S", .expected = error.InvalidFormat },
+        .{ .string = "PX2Y3M4DT5H6M7.89S", .expected = error.InvalidFormat },
+        .{ .string = "P999Y0M0D 0H0M0.123S", .expected = error.InvalidCharacter },
+        .{ .string = "P+999Y0M0DT0H0M0.123S", .expected = error.InvalidFormat },
+        .{ .string = "P3Y4M5DT6H7M8.9>", .expected = error.InvalidFormat },
+        .{ .string = "P-+5Y6M7DT8H9M10.111000001S", .expected = error.InvalidFormat },
+        .{ .string = "P7Y8M9DT10H11M12;123S", .expected = error.InvalidCharacter },
+        .{ .string = "P-8Y9M10XT11H12M13.145S", .expected = error.InvalidFormat },
+        .{ .string = "-P9Y10M11DT12H13M14.156s", .expected = error.InvalidFormat },
+        .{ .string = "UwKMxofSAIQSil8gW", .expected = error.InvalidFormat },
+        .{ .string = "gikNDeWiEh4yRt01haAPWqxQWOUSG2hC3EWSiAn3BNnt", .expected = error.InvalidFormat },
+        .{ .string = "PT1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000S", .expected = error.InvalidFormat },
+
+        // designator order / structure
+        .{ .string = "P1M1Y", .expected = error.InvalidFormat },
+        .{ .string = "PT1S1M", .expected = error.InvalidFormat },
+        .{ .string = "PT1M1H", .expected = error.InvalidFormat },
+        .{ .string = "P1DT", .expected = error.InvalidFormat },
+        .{ .string = "pt1h", .expected = error.InvalidFormat },
+        .{ .string = "P1d", .expected = error.InvalidFormat },
+        .{ .string = "PT1H1MT", .expected = error.InvalidFormat },
+        .{ .string = "P1T1H", .expected = error.InvalidFormat },
+
+        // sign / whitespace / separators
+        .{ .string = "-P1Y-2M", .expected = error.InvalidFormat },
+        .{ .string = "P1D ", .expected = error.InvalidFormat },
+        .{ .string = "P-1D ", .expected = error.InvalidFormat },
+        .{ .string = " P1D", .expected = error.InvalidFormat },
+        .{ .string = "P1,5D", .expected = error.InvalidCharacter },
+        .{ .string = "PT1H,5M", .expected = error.InvalidCharacter },
+
+        // fraction edge cases
+        .{ .string = "PT5.S", .expected = error.InvalidCharacter },
+        .{ .string = "PT.5S", .expected = error.InvalidFormat },
+        .{ .string = "PT1.2.3S", .expected = error.InvalidCharacter },
+        .{ .string = "PT0.5H", .expected = error.InvalidCharacter },
+        .{ .string = "P1.5W", .expected = error.InvalidCharacter },
+
+        // overflow boundaries
+        .{ .string = "PT4294967296S", .expected = error.Overflow },
+        .{ .string = "PT4294967296M", .expected = error.Overflow },
+        .{ .string = "PT4294967296H", .expected = error.Overflow },
+        .{ .string = "P4294967296D", .expected = error.Overflow },
+        .{ .string = "P4294967296W", .expected = error.Overflow },
+        .{ .string = "P4294967296M", .expected = error.Overflow },
+        .{ .string = "P4294967296Y", .expected = error.Overflow },
+
+        // minimal / degenerate
+        .{ .string = "", .expected = error.InvalidFormat },
+        .{ .string = "0", .expected = error.InvalidFormat },
+        .{ .string = "P", .expected = error.InvalidFormat },
+        .{ .string = "-P", .expected = error.InvalidFormat },
+        .{ .string = "T5S", .expected = error.InvalidFormat },
+        .{ .string = "P5S", .expected = error.InvalidFormat },
+        .{ .string = "PT", .expected = error.InvalidFormat },
+        .{ .string = "P0", .expected = error.InvalidFormat },
+        .{ .string = "-PT", .expected = error.InvalidFormat },
     };
 
     for (cases) |case| {
-        if (Duration.RelativeDelta.fromISO8601(case)) |_| {
-            log.err("did not error: {s}", .{case});
-            @panic("FAIL");
-        } else |err| switch (err) {
-            error.InvalidFormat => {}, // ok
-            error.InvalidCharacter => {}, // ok
-            error.Overflow => {}, // ok
-            else => log.err("incorrect error: {any}", .{err}),
-        }
+        try testing.expectError(case.expected, Duration.RelativeDelta.fromISO8601(case.string));
     }
+}
+
+test "iso duration valid edge cases" {
+    const cases = [_]TestCaseISODur{
+        .{ // smallest representable fraction
+            .string = "PT0.000000001S",
+            .duration = .{ .__sec = 0, .__nsec = 1 },
+        },
+        .{ // max u32 seconds and nanoseconds
+            .string = "PT4294967295.999999999S",
+            .duration = .{ .__sec = 4294967295, .__nsec = 999999999 },
+        },
+        .{ // shortest form
+            .string = "P0D",
+            .duration = .{},
+        },
+        .{
+            .string = "-P0D",
+            .duration = .{},
+        },
+        .{ // max u32 days
+            .string = "P4294967295D",
+            .duration = .{ .__sec = 4294967295 * 86400 },
+        },
+        .{ // max u32 weeks
+            .string = "P4294967295W",
+            .duration = .{ .__sec = 4294967295 * 86400 * 7 },
+        },
+        .{ // all maxed
+            .string = "P4294967295W4294967295DT4294967295H4294967295M4294967295.999999999S",
+            .duration = .{
+                .__sec = 4294967295 * 86400 * 7 + // weeks
+                    4294967295 * 86400 + // days
+                    4294967295 * 3600 + // hours
+                    4294967295 * 60 + // minutes
+                    4294967295, // seconds
+                .__nsec = 999999999,
+            },
+        },
+        // absolute duration type cannot represent months / years
+    };
+
+    for (cases) |case| {
+        try testing.expectEqual(case.duration, try Duration.fromISO8601(case.string));
+    }
+}
+
+test "Duration.fromISO8601 rejects ambiguous units" {
+    try testing.expectError(error.InvalidFormat, Duration.fromISO8601("P1M"));
+    try testing.expectError(error.InvalidFormat, Duration.fromISO8601("P1Y"));
+    try testing.expectError(error.InvalidFormat, Duration.fromISO8601("P1Y0M"));
 }
 
 test "relative delta normalizer" {
@@ -625,15 +734,39 @@ test "relative delta normalizer" {
             .fields = .{ .weeks = 1, .days = 2, .hours = 3, .minutes = 4, .seconds = 5, .negative = true },
             .duration = .{ .__sec = -(9 * 86400 + 3 * 3600 + 4 * 60 + 5) },
         },
+        .{
+            .string = "PT4294967295S",
+            .fields = .{ .weeks = 7101, .days = 3, .hours = 6, .minutes = 28, .seconds = 15 },
+            .duration = .{ .__sec = 4294967295 },
+        },
+        // boundary cases: exactly one day / week must carry over
+        .{
+            .string = "PT24H",
+            .fields = .{ .days = 1 },
+            .duration = .{ .__sec = 86400 },
+        },
+        .{
+            .string = "P7D",
+            .fields = .{ .weeks = 1 },
+            .duration = .{ .__sec = 7 * 86400 },
+        },
+        .{
+            .string = "PT48H",
+            .fields = .{ .days = 2 },
+            .duration = .{ .__sec = 2 * 86400 },
+        },
+        .{
+            .string = "P14D",
+            .fields = .{ .weeks = 2 },
+            .duration = .{ .__sec = 14 * 86400 },
+        },
     };
 
     for (cases) |case| {
         const fields = try Duration.RelativeDelta.fromISO8601(case.string);
         const normalized_fields = fields.normalize();
         try testing.expectEqual(case.fields, normalized_fields);
-
-        const from_dur = Duration.RelativeDelta.fromDuration(&case.duration);
-        try testing.expectEqual(normalized_fields, from_dur);
+        try testing.expectEqual(normalized_fields, Duration.RelativeDelta.fromDuration(&case.duration));
     }
 }
 
@@ -644,8 +777,8 @@ const TestCaseFormatter = struct {
 
 test "ISO8601 duration parse and normalize" {
     const cases = [_]TestCaseFormatter{
-        .{ .have = "P24H", .want = "P1D" },
-        .{ .have = "P24H60M", .want = "P1DT1H" },
+        .{ .have = "PT24H", .want = "P1D" },
+        .{ .have = "PT24H60M", .want = "P1DT1H" },
         .{ .have = "PT249H", .want = "P1W3DT9H" },
         .{ .have = "PT294423.9S", .want = "P3DT9H47M3.9S" },
         .{ .have = "PT10080000M", .want = "P1000W" },
@@ -658,117 +791,4 @@ test "ISO8601 duration parse and normalize" {
         try reldelta.format(&w);
         try testing.expectEqualStrings(case.want, w.buffered());
     }
-}
-
-const TestCaseRelDelta = struct {
-    datetime_a: Datetime = .{},
-    datetime_b: Datetime = .{},
-    rel_delta: Duration.RelativeDelta = .{},
-};
-
-test "add relative delta to naive datetime" {
-    const cases = [_]TestCaseRelDelta{
-        .{
-            .datetime_a = .{ .year = 1970, .hour = 1, .unix_sec = 3600 },
-            .datetime_b = .{ .year = 1970, .hour = 3, .unix_sec = 10800 },
-            .rel_delta = .{ .hours = 2 },
-        },
-        .{
-            .datetime_a = .{ .year = 1970, .unix_sec = 0 },
-            .datetime_b = .{ .year = 1970, .day = 2, .unix_sec = 86400 },
-            .rel_delta = .{ .days = 1 },
-        },
-        .{
-            .datetime_a = .{ .year = 1970, .unix_sec = 0 },
-            .datetime_b = .{ .year = 1970, .unix_sec = 0, .nanosecond = 1 },
-            .rel_delta = .{ .nanoseconds = 1 },
-        },
-        .{
-            .datetime_a = try Datetime.fromFields(.{ .year = 1970 }),
-            .datetime_b = try Datetime.fromFields(.{ .year = 1971 }),
-            .rel_delta = .{ .years = 1 },
-        },
-        .{
-            .datetime_a = try Datetime.fromFields(.{ .year = 1970 }),
-            .datetime_b = try Datetime.fromFields(.{ .year = 1971, .month = 2 }),
-            .rel_delta = .{ .years = 1, .months = 1 },
-        },
-        .{
-            .datetime_a = try Datetime.fromFields(.{ .year = 1970 }),
-            .datetime_b = try Datetime.fromFields(.{ .year = 1969, .month = 11 }),
-            .rel_delta = .{ .months = 2, .negative = true },
-        },
-        .{
-            .datetime_a = try Datetime.fromFields(.{ .year = 1970 }),
-            .datetime_b = try Datetime.fromFields(.{ .year = 1969, .month = 11, .day = 30, .hour = 23, .minute = 59, .second = 59, .nanosecond = 1 }),
-            .rel_delta = .{ .months = 1, .nanoseconds = 999_999_999, .negative = true },
-        },
-        .{
-            .datetime_a = try Datetime.fromFields(.{ .year = 1970, .day = 31 }),
-            .datetime_b = try Datetime.fromFields(.{ .year = 1970, .month = 2, .day = 28 }),
-            .rel_delta = .{ .months = 1 },
-        },
-        .{
-            .datetime_a = try Datetime.fromFields(.{ .year = 1970, .month = 1, .day = 31 }),
-            .datetime_b = try Datetime.fromFields(.{ .year = 1968, .month = 12, .day = 31 }),
-            .rel_delta = .{ .months = 13, .negative = true },
-        },
-        .{
-            .datetime_a = try Datetime.fromFields(.{ .year = 1970, .month = 1, .day = 31 }),
-            .datetime_b = try Datetime.fromFields(.{ .year = 1965, .month = 11, .day = 30 }),
-            .rel_delta = .{ .years = 3, .months = 14, .negative = true },
-        },
-        .{
-            .datetime_a = try Datetime.fromFields(.{ .year = 1970, .month = 1, .day = 31 }),
-            .datetime_b = try Datetime.fromFields(.{ .year = 2970, .month = 1, .day = 31 }),
-            .rel_delta = .{ .years = 1000 },
-        },
-    };
-
-    for (cases) |case| {
-        const dt_new = try case.datetime_a.addRelative(case.rel_delta);
-        try testing.expectEqual(case.datetime_b, dt_new);
-    }
-}
-
-test "add relative delta to aware datetime" {
-    var tz = try Timezone.fromTzdata(testing.io, "Europe/Berlin", testing.allocator);
-    defer tz.deinit();
-
-    var have: Datetime = try Datetime.fromFields(.{ .year = 1970, .tz_options = .{ .tz = &tz } });
-    var delta: Duration.RelativeDelta = try Duration.RelativeDelta.fromISO8601("P1Y");
-    var want: Datetime = try Datetime.fromFields(.{ .year = 1971, .tz_options = .{ .tz = &tz } });
-    var new: Datetime = try have.addRelative(delta);
-    try testing.expectEqual(want, new);
-    delta.negative = true;
-    new = try want.addRelative(delta);
-    try testing.expectEqual(have, new);
-
-    // 23 hours absolute is 1 day relative during DST off --> on
-    have = try Datetime.fromFields(.{ .year = 2024, .month = 3, .day = 30, .hour = 8, .tz_options = .{ .tz = &tz } });
-    delta = try Duration.RelativeDelta.fromISO8601("P1D");
-    want = try Datetime.fromFields(.{ .year = 2024, .month = 3, .day = 31, .hour = 8, .tz_options = .{ .tz = &tz } });
-    new = try have.addRelative(delta);
-    try testing.expectEqual(want, new);
-    var abs_diff: Duration = new.diff(have);
-    var wall_diff: Duration = try new.diffWall(have);
-    try testing.expectEqual(try Duration.fromISO8601("PT23H"), abs_diff);
-    try testing.expectEqual(try Duration.fromISO8601("PT24H"), wall_diff);
-    delta.negative = true;
-    new = try want.addRelative(delta);
-    try testing.expectEqual(have, new);
-
-    // 25 hours absolute is 1 day relative during DST on --> off
-    have = try Datetime.fromFields(.{ .year = 2024, .month = 10, .day = 26, .hour = 8, .tz_options = .{ .tz = &tz } });
-    delta = try Duration.RelativeDelta.fromISO8601("P1D");
-    want = try Datetime.fromFields(.{ .year = 2024, .month = 10, .day = 27, .hour = 8, .tz_options = .{ .tz = &tz } });
-    new = try have.addRelative(delta);
-    try testing.expectEqual(want, new);
-    abs_diff = new.diff(have);
-    wall_diff = try new.diffWall(have);
-    try testing.expectEqual(try Duration.fromISO8601("PT25H"), abs_diff);
-    try testing.expectEqual(try Duration.fromISO8601("PT24H"), wall_diff);
-    delta.negative = true;
-    new = try want.addRelative(delta);
-    try testing.expectEqual(have, new);
 }

@@ -20,13 +20,20 @@ jobs:
           submodules: true
 
       - name: Install Zig
-        uses: https://github.com/mlugg/setup-zig@v2
+        uses: https://codeberg.org/mlugg/setup-zig@v2
         with:
           version: master
           cache-size-limit: 10240 # 10 GiB
+
+      - name: Generate en_US.UTF-8 locale
+        run: |
+          sudo apt-get update && sudo apt-get install -y locales
+          sudo locale-gen en_US.UTF-8
 
       - name: Lint
         run: zig fmt --check build.zig lib/**/*.zig tests/*.zig
 
       - name: Test
+        env:
+          LC_TIME: "en_US.UTF-8"
         run: zig build test

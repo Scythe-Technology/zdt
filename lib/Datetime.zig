@@ -622,7 +622,7 @@ pub fn nowUTC(io: std.Io) Datetime {
         _now.nanoseconds,
         Duration.Resolution.nanosecond,
         .{ .tz = &Timezone.UTC },
-    ) catch unreachable;
+    ) catch unreachable; // Note: we do not mock clocks for out-of-range nanoseconds testing
 }
 
 /// Get current TAI time / UTC /wo leap seconds.
@@ -634,7 +634,7 @@ pub fn nowTAI(io: std.Io) Datetime {
         _now.nanoseconds + @as(u64, leaps) * ns_per_s,
         Duration.Resolution.nanosecond,
         null,
-    ) catch unreachable;
+    ) catch unreachable; // Note: we do not mock clocks for out-of-range nanoseconds testing
 }
 
 /// Check if a datetime is within a leap year
@@ -1072,7 +1072,7 @@ fn getSurroundingTimetypes(local_offset: UTCoffset, _tz: *const Timezone) TzErro
             // if we do not have DST, are not surrounding timetypes
             return surrounding;
         },
-        .utc => return TzError.NotImplemented,
+        .utc => return TzError.NotImplemented, // for UTC, ssurrounding timetypes are never used, so this is untested
     }
 }
 
@@ -1081,7 +1081,7 @@ fn getSurroundingTimetypes(local_offset: UTCoffset, _tz: *const Timezone) TzErro
 fn addTimes(t1: [4]u32, t2: [4]u32) [5]u32 {
     var new_sec: u32 = t1[2] + t2[2];
     var new_ns: u32 = t1[3] + t2[3];
-    if (new_ns > 1_000_000_000) {
+    if (new_ns >= 1_000_000_000) {
         new_sec += 1;
         new_ns %= 1_000_000_000;
     }
