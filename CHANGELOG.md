@@ -13,6 +13,24 @@ Types of changes
 
 ## [Unreleased]
 
+## 2026-08-27, v0.10.2-master
+
+### Added
+
+- test coverage report
+
+### Changed
+
+- UTC offset parser return type fixed to i32
+
+### Fixed
+
+- ISO calendar to string, %G directive, print without '+' if year is positive
+- ISO calendar from string, catch invalid input
+- UTC offset with incorrect sign character gives an error
+- trailing characters after ISO8601 datetime give an error
+- Datetime from string, catch directives longer than input string
+
 ## 2026-08-22, v0.10.1-master
 
 ### Changed

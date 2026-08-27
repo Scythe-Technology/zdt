@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Florian Obersteiner
+// SPDX-FileCopyrightText: 2025-2026 Florian Obersteiner
 // SPDX-FileContributor: Florian Obersteiner <f.obersteiner@posteo.de>
 //
 // SPDX-License-Identifier: Unlicense
@@ -33,6 +33,8 @@ test "posix tz has name and abbreviation" {
     dt = try Datetime.fromUnix(1690840800, Duration.Resolution.second, .{ .tz = &tzinfo });
     try testing.expectEqualStrings("CET-1CEST,M3.5.0,M10.5.0/3", dt.tzName());
     try testing.expectEqualStrings("CEST", dt.tzAbbreviation());
+
+    tzinfo.deinit(); // deinit is not needed but must be safe to call
 }
 
 test "Japan has only std time" {

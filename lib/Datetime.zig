@@ -57,6 +57,8 @@ const ms_per_s: u16 = 1_000;
 const us_per_s: u32 = 1_000_000;
 const ns_per_s: u32 = 1_000_000_000;
 
+const iso8601_max_len: usize = 38;
+
 const Datetime = @This();
 
 /// Year. Do not modify directly.
@@ -203,11 +205,17 @@ pub const ISOCalendar = struct {
         if (string.len < 10) return FormatError.InvalidFormat;
         if (string[4] != '-' or std.ascii.toLower(string[5]) != 'w' or string[8] != '-')
             return FormatError.InvalidFormat;
-        return .{
-            .isoyear = try std.fmt.parseInt(i16, string[0..4], 10),
-            .isoweek = try std.fmt.parseInt(u8, string[6..8], 10),
-            .isoweekday = try std.fmt.parseInt(u8, string[9..10], 10),
-        };
+
+        const _isoyear = try std.fmt.parseInt(i16, string[0..4], 10);
+        if (_isoyear > max_year or _isoyear < min_year) return FormatError.InvalidFormat;
+
+        const _isoweek = try std.fmt.parseInt(u8, string[6..8], 10);
+        if (_isoweek < 1 or _isoweek > 53) return FormatError.InvalidFormat;
+
+        const _isoweekday = try std.fmt.parseInt(u8, string[9..10], 10);
+        if (_isoweekday < 1 or _isoweekday > 7) return FormatError.InvalidFormat;
+
+        return .{ .isoyear = _isoyear, .isoweek = _isoweek, .isoweekday = _isoweekday };
     }
 
     pub fn format(
@@ -917,13 +925,15 @@ pub fn fromString(string: []const u8, directives: []const u8) ZdtError!Datetime 
 
 /// Make a datetime from a string with an ISO8601-compatible format.
 pub fn fromISO8601(string: []const u8) ZdtError!Datetime {
-    // 9 digits of fractional seconds and ±hh:mm:ss UTC offset: 38 characters
-    if (string.len > 38)
-        return FormatError.InvalidFormat;
+    if (string.len == 0) return FormatError.EmptyString;
+    if (string.len > iso8601_max_len) return FormatError.InvalidFormat;
+
     // last character must be Z (UTC) or a digit, otherwise the input is not ISO8601-compatible
     if (string[string.len - 1] == 'Z' or std.ascii.isDigit(string[string.len - 1])) {
         var idx: usize = 0; // assume datetime starts at beginning of string
-        return try Datetime.fromFields(try str.parseISO8601(string, &idx));
+        const fields = try str.parseISO8601(string, &idx);
+        if (idx != string.len) return FormatError.InvalidFormat; // trailing garbage
+        return try Datetime.fromFields(fields);
     }
     return FormatError.InvalidFormat;
 }
@@ -1072,7 +1082,7 @@ fn getSurroundingTimetypes(local_offset: UTCoffset, _tz: *const Timezone) TzErro
             // if we do not have DST, are not surrounding timetypes
             return surrounding;
         },
-        .utc => return TzError.NotImplemented, // for UTC, ssurrounding timetypes are never used, so this is untested
+        .utc => return TzError.NotImplemented, // for UTC, ssurrounding timetypes are never called, so this is untested
     }
 }
 

@@ -35,7 +35,7 @@ const TokenizerState = enum(u8) {
 const token_start: u8 = '%';
 const modifier: u8 = ':';
 
-const ParserFlags = enum(u32) {
+const ParserFlags = enum(u8) {
     OK = 0,
     AM = 1,
     PM = 2,
@@ -71,6 +71,7 @@ pub fn tokenizeAndParse(data: []const u8, directives: []const u8) ZdtError!Datet
             continue :tokenize .ProcessDirective;
         },
         TokenizerState.ProcessChar => {
+            if (data_idx >= data.len) return FormatError.InvalidFormat;
             if (data[data_idx] != directives[fmt_idx]) return FormatError.InvalidFormat;
             data_idx += 1;
             fmt_idx += 1;
@@ -218,7 +219,7 @@ fn parseIntoFields(
             fields.nanosecond *= f;
         },
         'z' => { // UTC offset (+|-)hh[:mm[:ss]] or Z
-            const utcoffset = try parseOffset(i32, string, idx_ptr, 9);
+            const utcoffset = try parseOffset(string, idx_ptr, 9);
             if (string[idx_ptr.* - 1] == 'Z')
                 fields.tz_options = .{ .utc_offset = UTCoffset.UTC }
             else
@@ -312,7 +313,7 @@ fn printIntoWriter(
         'Y' => try writer.print("{s}{d:0>4}", .{ if (dt.year < 0) "-" else "", @abs(dt.year) }),
         'y' => try writer.print("{s}{d:0>2}", .{ if (dt.year < 0) "-" else "", @abs(@mod(dt.year, 100)) }),
         'C' => try writer.print("{s}{d:0>2}", .{ if (dt.year < 0) "-" else "", @abs(@divFloor(dt.year, 100)) }),
-        'G' => try writer.print("{s}{d:0>4}", .{ if (dt.toISOCalendar().isoyear < 0) "-" else "", dt.toISOCalendar().isoyear }),
+        'G' => try writer.print("{s}{d:0>4}", .{ if (dt.toISOCalendar().isoyear < 0) "-" else "", @abs(dt.toISOCalendar().isoyear) }),
         'H' => try writer.print("{d:0>2}", .{dt.hour}),
         'k' => try writer.print("{d: >2}", .{dt.hour}),
         'I' => try writer.print("{d:0>2}", .{twelve_hour_format(dt.hour)}),
@@ -395,7 +396,6 @@ fn parseExactNDigits(comptime T: type, string: []const u8, idx_ptr: *usize, nDig
 /// Return error.InvalidFormat if something goes wrong.
 fn parseDigits(comptime T: type, string: []const u8, idx_ptr: *usize, maxDigits: usize) FormatError!T {
     const start_idx = idx_ptr.*;
-    idx_ptr.* += 1;
     while (idx_ptr.* < string.len and // check first if string depleted
         idx_ptr.* < start_idx + maxDigits and
         std.ascii.isDigit(string[idx_ptr.*])) : (idx_ptr.* += 1)
@@ -427,10 +427,10 @@ fn twelve_hour_format(hour: u8) u8 {
 }
 
 // Offset UTC in the from of (+|-)hh[:mm[:ss]] or Z.
-fn parseOffset(comptime T: type, string: []const u8, idx_ptr: *usize, maxDigits: usize) FormatError!T {
+fn parseOffset(string: []const u8, idx_ptr: *usize, maxDigits: usize) FormatError!i32 {
     const start_idx = idx_ptr.*;
 
-    var sign: i2 = 1;
+    var sign: i32 = 1;
     switch (string[start_idx]) {
         '+' => sign = 1,
         '-' => sign = -1,
@@ -459,12 +459,17 @@ fn parseOffset(comptime T: type, string: []const u8, idx_ptr: *usize, maxDigits:
     }
     if (index < 2) return FormatError.InvalidFormat; // offset must be at least 2 chars
 
-    const i = try std.fmt.parseInt(T, &offset_chars, 10);
+    const i = try std.fmt.parseInt(i32, &offset_chars, 10);
     const hours = @divFloor(i, 10000);
     const remainder = @mod(i, 10000);
     const minutes = @divFloor(remainder, 100);
     const seconds = @mod(remainder, 100);
     return sign * (hours * 3600 + minutes * 60 + seconds);
+}
+
+test "parse offset error" {
+    var idx: usize = 0;
+    try testing.expectError(FormatError.InvalidCharacter, parseOffset("~02:00", &idx, 9));
 }
 
 const ISOParserState = enum(u8) {
@@ -581,7 +586,7 @@ pub fn parseISO8601(string: []const u8, idx_ptr: *usize) ZdtError!Datetime.Field
             break :parsing;
         },
         .Offset => {
-            const utcoffset = try parseOffset(i32, string, idx_ptr, 9);
+            const utcoffset = try parseOffset(string, idx_ptr, 9);
             if (string[idx_ptr.* - 1] == 'Z')
                 fields.tz_options = .{ .utc_offset = UTCoffset.UTC }
             else

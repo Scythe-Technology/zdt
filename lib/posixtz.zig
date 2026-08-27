@@ -108,6 +108,8 @@ pub const PosixTz = struct {
                 .JulianDayZero => return false,
                 // There is also no way to specify "end of the year" with MonthNthWeekDay rules
                 .MonthNthWeekDay => return false,
+                // ...Effectively this means that for .JulianDayZero and .MonthNthWeekDay, we cannot specify
+                //      'has DST all year'.
             }
         }
 
@@ -424,6 +426,7 @@ test "posix TZ, valid strings" {
         "AAA4BBB,J60/-167:59:59,J300/2",
         "AAA4BBB,J60/2,J300/167:59:59",
         "AAA4BBB,J60/2,J300/-167:59:59",
+        "AAA4BBB,J060/2,J300/-167:59:59",
     };
     for (tzstrs) |valid_str| {
         _ = try parsePosixTzString(valid_str);

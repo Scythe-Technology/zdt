@@ -394,16 +394,17 @@ test "format with 12 hour clock" {
 test "format hour to am/pm" {
     const HourTestCase = struct {
         hour: u8,
+        format: []const u8,
         expected: []const u8,
     };
 
     const test_cases = [_]HourTestCase{
-        .{ .hour = 0, .expected = "12 am" },
-        .{ .hour = 1, .expected = "01 am" },
-        .{ .hour = 11, .expected = "11 am" },
-        .{ .hour = 12, .expected = "12 pm" },
-        .{ .hour = 13, .expected = "01 pm" },
-        .{ .hour = 23, .expected = "11 pm" },
+        .{ .hour = 0, .format = "%I %p", .expected = "12 am" },
+        .{ .hour = 1, .format = "%I %P", .expected = "01 AM" },
+        .{ .hour = 11, .format = "%I %p", .expected = "11 am" },
+        .{ .hour = 12, .format = "%I %p", .expected = "12 pm" },
+        .{ .hour = 13, .format = "%I %P", .expected = "01 PM" },
+        .{ .hour = 23, .format = "%I %P", .expected = "11 PM" },
     };
 
     var buf: [64]u8 = undefined;
@@ -413,7 +414,7 @@ test "format hour to am/pm" {
             .year = 2024,
             .hour = case.hour,
         });
-        try dt.toString("%I %p", &w);
+        try dt.toString(case.format, &w);
         try testing.expectEqualStrings(case.expected, w.buffered());
         w = .fixed(&buf);
     }
@@ -518,7 +519,7 @@ test "format with %s to get Unix time in seconds" {
     }
 }
 
-test "format isocalendar, %t" {
+test "format isocalendar, %t (%G)" {
     const cases = [_]TestCase{
         .{
             .dt = try Datetime.fromFields(.{ .year = 1970, .month = 1, .day = 1 }),
@@ -529,6 +530,11 @@ test "format isocalendar, %t" {
             .dt = try Datetime.fromFields(.{ .year = 2024, .month = 9, .day = 21 }),
             .string = "2024-W38-6",
             .directive = "%t",
+        },
+        .{
+            .dt = try Datetime.fromFields(.{ .year = 2005, .month = 1, .day = 1 }),
+            .string = "2004",
+            .directive = "%G",
         },
     };
 
@@ -620,24 +626,28 @@ test "comptime parse with comptime format string, am/pm and 12-hour input" {
     const cases = [_]TestCase{
         .{
             .string = "01/01/1970, 12 am",
+            .directive = "%d/%m/%Y, %I %p",
             .dt = try Datetime.fromFields(.{ .year = 1970 }),
         },
         .{
             .string = "18/02/2021, 11 AM",
+            .directive = "%d/%m/%Y, %I %P",
             .dt = try Datetime.fromFields(.{ .year = 2021, .month = 2, .day = 18, .hour = 11 }),
         },
         .{
             .string = "18/02/2021, 5 pm",
+            .directive = "%d/%m/%Y, %I %P",
             .dt = try Datetime.fromFields(.{ .year = 2021, .month = 2, .day = 18, .hour = 17 }),
         },
         .{
             .string = "01/01/1970, 11 PM",
+            .directive = "%d/%m/%Y, %I %p",
             .dt = try Datetime.fromFields(.{ .year = 1970, .hour = 23 }),
         },
     };
 
     inline for (cases) |case| {
-        const dt = try Datetime.fromString(case.string, "%d/%m/%Y, %I %p");
+        const dt = try Datetime.fromString(case.string, case.directive);
         try testing.expectEqual(case.dt, dt);
     }
 }
@@ -869,6 +879,18 @@ test "parsing directives do not match fields in string" {
     try testing.expectError(ZdtError.InvalidFormat, err);
 
     err = Datetime.fromString("1970-01-01 00:00:00 +7", "%Y-%m-%d %H:%M:%S %z");
+    try testing.expectError(ZdtError.InvalidFormat, err);
+
+    err = Datetime.fromString("1970-01-01 not-valid", "%Y-%m-%d %a");
+    try testing.expectError(ZdtError.InvalidFormat, err);
+
+    err = Datetime.fromString("1970-01-01 not-valid", "%Y-%m-%d %A");
+    try testing.expectError(ZdtError.InvalidFormat, err);
+
+    err = Datetime.fromString("1970-01-01 not-valid", "%Y-%m-%d %b");
+    try testing.expectError(ZdtError.InvalidFormat, err);
+
+    err = Datetime.fromString("1970-01-01 not-valid", "%Y-%m-%d %B");
     try testing.expectError(ZdtError.InvalidFormat, err);
 }
 
@@ -1105,6 +1127,39 @@ test "parse ISO" {
     dt_ref = try Datetime.fromFields(.{ .year = 2014, .month = 8, .day = 23, .hour = 12, .minute = 15, .second = 56, .tz_options = .{ .utc_offset = offset } });
     dt = try Datetime.fromISO8601("2014-08-23T12:15:56-0200");
     try testing.expect(std.meta.eql(dt_ref, dt));
+
+    // offset directly after minutes (no seconds)
+    offset = try UTCoffset.fromSeconds(3600, "", false);
+    dt_ref = try Datetime.fromFields(.{ .year = 2014, .month = 8, .day = 23, .hour = 12, .minute = 15, .tz_options = .{ .utc_offset = offset } });
+    dt = try Datetime.fromISO8601("2014-08-23T12:15+01:00");
+    try testing.expect(std.meta.eql(dt_ref, dt));
+
+    // hour only
+    dt_ref = try Datetime.fromFields(.{ .year = 2014, .month = 8, .day = 23, .hour = 12 });
+    dt = try Datetime.fromISO8601("2014-08-23T12");
+    try testing.expect(std.meta.eql(dt_ref, dt));
+
+    // minutes with Z
+    dt_ref = try Datetime.fromFields(.{ .year = 2014, .month = 8, .day = 23, .hour = 12, .minute = 15, .tz_options = .{ .tz = &Tz.UTC } });
+    dt = try Datetime.fromISO8601("2014-08-23T12:15Z");
+    try testing.expect(std.meta.eql(dt_ref, dt));
+
+    // first ordinal day
+    dt_ref = try Datetime.fromFields(.{ .year = 2024, .month = 1, .day = 1 });
+    dt = try Datetime.fromISO8601("2024-001");
+    try testing.expect(std.meta.eql(dt_ref, dt));
+
+    // fraction with comma and offset combined
+    offset = try UTCoffset.fromSeconds(2 * 3600, "", false);
+    dt_ref = try Datetime.fromFields(.{ .year = 2014, .month = 8, .day = 23, .hour = 12, .minute = 15, .second = 56, .nanosecond = 500_000_000, .tz_options = .{ .utc_offset = offset } });
+    dt = try Datetime.fromISO8601("2014-08-23 12:15:56,5+02:00");
+    try testing.expect(std.meta.eql(dt_ref, dt));
+
+    // negative offset with leading zeros
+    offset = try UTCoffset.fromSeconds(-30 * 60, "", false);
+    dt_ref = try Datetime.fromFields(.{ .year = 2014, .month = 8, .day = 23, .hour = 12, .minute = 15, .second = 56, .tz_options = .{ .utc_offset = offset } });
+    dt = try Datetime.fromISO8601("2014-08-23T12:15:56-00:30");
+    try testing.expect(std.meta.eql(dt_ref, dt));
 }
 
 test "parse ISO with %T" {
@@ -1178,5 +1233,122 @@ test "not ISO8601" {
     try testing.expectError(ZdtError.InvalidCharacter, err);
 
     err = Datetime.fromISO8601("2014-08-23T12:15:56+-0200"); // invalid offset
+    try testing.expectError(ZdtError.InvalidFormat, err);
+
+    err = Datetime.fromISO8601(""); // empty string must error, not panic
+    try testing.expectError(ZdtError.EmptyString, err);
+
+    // truncated fields (parseExactNDigits short-string path)
+    err = Datetime.fromISO8601("2014-08-23T12:1");
+    try testing.expectError(ZdtError.InvalidFormat, err);
+
+    err = Datetime.fromISO8601("2014-08-23T");
+    try testing.expectError(ZdtError.InvalidFormat, err);
+
+    err = Datetime.fromISO8601("2014-0");
+    try testing.expectError(ZdtError.InvalidFormat, err);
+
+    err = Datetime.fromISO8601("2014082T12"); // ordinal + trailing garbage
+    try testing.expectError(ZdtError.InvalidCharacter, err);
+
+    err = Datetime.fromISO8601("2014-08-23T12:15:56X0100"); // offset starts with X
+    try testing.expectError(ZdtError.InvalidFormat, err);
+
+    // structural errors
+    err = Datetime.fromISO8601("2014-08-23 "); // space sep, empty time
+    try testing.expectError(ZdtError.InvalidFormat, err);
+
+    err = Datetime.fromISO8601("2014-08-23TT12:15"); // double separator
+    try testing.expectError(ZdtError.InvalidCharacter, err);
+
+    err = Datetime.fromISO8601("2014--08-23"); // double y-m separator
+    try testing.expectError(ZdtError.InvalidCharacter, err);
+
+    err = Datetime.fromISO8601("2014-08-23T12::15"); // double h:m separator
+    try testing.expectError(ZdtError.InvalidCharacter, err);
+
+    err = Datetime.fromISO8601("2014-13-01"); // invalid month
+    try testing.expectError(ZdtError.MonthOutOfRange, err);
+
+    err = Datetime.fromISO8601("2014-02-30"); // Feb 30
+    try testing.expectError(ZdtError.DayOutOfRange, err);
+
+    err = Datetime.fromISO8601("2014-08-23T12:15:56."); // fraction sep, no digits
+    try testing.expectError(ZdtError.InvalidFormat, err);
+
+    err = Datetime.fromISO8601("2014-08-23T12:15:56,+02:00"); // empty fraction, then offset
+    try testing.expectError(ZdtError.InvalidCharacter, err);
+}
+
+test "parse modifier count" {
+    var dt = try Datetime.fromString("1970-01-01", "%::Y-%m-%d"); // 'Y' ignores modifier
+    try testing.expectEqual(try Datetime.fromFields(.{ .year = 1970 }), dt);
+
+    dt = try Datetime.fromString("1970-01-01 12", "%Y-%m-%d %:::f"); // 'f' ignores more than two modifiers
+    try testing.expectEqual(try Datetime.fromFields(.{ .year = 1970, .nanosecond = 120_000_000 }), dt);
+
+    dt = try Datetime.fromString("1970-01-01 +0100", "%Y-%m-%d %::::z"); // ignores more than three modifiers
+    try testing.expectEqual(
+        try Datetime.fromFields(.{ .year = 1970, .tz_options = .{ .utc_offset = try UTCoffset.fromSeconds(3600, "", false) } }),
+        dt,
+    );
+}
+
+test "parse %y - century fixed to 2k" {
+    const cases = [_]struct { string: []const u8, year: i16 }{
+        .{ .string = "00-01-01", .year = 2000 },
+        .{ .string = "68-01-01", .year = 2068 },
+        .{ .string = "69-01-01", .year = 2069 },
+        .{ .string = "99-01-01", .year = 2099 },
+    };
+
+    for (cases) |case| {
+        const dt = try Datetime.fromString(case.string, "%y-%m-%d");
+        try testing.expectEqual(case.year, dt.year);
+    }
+}
+
+// ---- edge cases for the format-string parser (fromString / tokenizeAndParse) ----
+
+test "parse tokenizer errors" {
+    var err = Datetime.fromString("1970-01-01", "%Y-%m-%d%"); // trailing '%' in directives
+    try testing.expectError(ZdtError.InvalidFormat, err);
+
+    err = Datetime.fromString("1970-01-01 00", "%Y-%m-%d"); // data longer than directives
+    try testing.expectError(ZdtError.InvalidFormat, err);
+
+    err = Datetime.fromString("1970", "%Y-%m-%d"); // directives longer than data
+    try testing.expectError(ZdtError.InvalidFormat, err);
+
+    err = Datetime.fromString("1970-01-01 00:00:00", "%Y-%m-%d %Q"); // unknown directive
+    try testing.expectError(ZdtError.InvalidDirective, err);
+
+    err = Datetime.fromString("1970x01-01", "%Yx-%m-%d"); // literal mismatch after directive
+    try testing.expectError(ZdtError.InvalidFormat, err);
+}
+
+test "parse field parser errors" {
+    var err = Datetime.fromString("1970--01", "%Y-%d-%m"); // no digits where a field is expected
+    try testing.expectError(ZdtError.InvalidCharacter, err);
+
+    err = Datetime.fromString("1970-000", "%Y-%j"); // day of year 0 is invalid
+    try testing.expectError(ZdtError.InvalidFormat, err);
+
+    err = Datetime.fromString("2019-366", "%Y-%j"); // 2019 is not a leap year
+    try testing.expectError(ZdtError.InvalidFormat, err);
+
+    err = Datetime.fromString("1970-01-01 00:00:00 0100", "%Y-%m-%d %H:%M:%S %z"); // offset w/o sign or Z
+    try testing.expectError(ZdtError.InvalidCharacter, err);
+
+    err = Datetime.fromString("1970-01-01 00:00:00 +", "%Y-%m-%d %H:%M:%S %z"); // sign only
+    try testing.expectError(ZdtError.InvalidFormat, err);
+
+    err = Datetime.fromString("-555-W01-1", "%t"); // invalid ISO year
+    try testing.expectError(ZdtError.InvalidFormat, err);
+
+    err = Datetime.fromString("1970-W99-1", "%t"); // invalid ISO week
+    try testing.expectError(ZdtError.InvalidFormat, err);
+
+    err = Datetime.fromString("1970-W33-9", "%t"); // invalid ISO weekday
     try testing.expectError(ZdtError.InvalidFormat, err);
 }

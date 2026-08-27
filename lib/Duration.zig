@@ -212,7 +212,7 @@ pub fn format(
 
     var frac = duration.__nsec;
     if (frac > 0) {
-        // truncate zeros from fractional part
+        // Truncate zeros from fractional part.
         // Note: kcov claims this is untested, which is incorrect
         while (frac % 10 == 0) : (frac /= 10) {}
     }

@@ -131,8 +131,6 @@ pub fn fromTzdata(io: std.Io, identifier: []const u8, allocator: ?std.mem.Alloca
 /// If an allocator is used, the caller must make sure to de-allocate memory used for
 /// storing the TZif file's content by calling the deinit method of the returned
 /// `Timezone` instance.
-///
-/// Uses `std.Io.Threaded`, i.e. normal, blocking io for reading the file.
 pub fn fromSystemTzdata(io: std.Io, identifier: []const u8, db_path: []const u8, allocator: ?std.mem.Allocator) ZdtError!Timezone {
     if (!identifierValid(identifier)) return TzError.InvalidIdentifier;
 
@@ -148,8 +146,7 @@ pub fn fromSystemTzdata(io: std.Io, identifier: []const u8, db_path: []const u8,
     var read_buf: [4096]u8 = undefined;
     var file_reader: std.Io.File.Reader = .init(file, io, &read_buf);
 
-    var tz = Timezone{ .rules = .{ .utc = .{} } };
-
+    var tz = UTC;
     if (allocator) |alcr| {
         const tzif_tz = try tzif.TzAlloc.parse(alcr, &file_reader.interface);
         tz = Timezone{ .rules = .{ .tzif = tzif_tz } };

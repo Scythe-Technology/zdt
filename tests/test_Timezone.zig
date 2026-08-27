@@ -41,6 +41,9 @@ test "offset from seconds" {
     err = UTCoffset.fromSeconds(99999, "invalid", false);
     try testing.expectError(ZdtError.InvalidOffset, err);
 
+    off = try UTCoffset.fromSeconds(0, "UTC", false);
+    try testing.expectEqual(UTCoffset.UTC, off);
+
     off = try UTCoffset.fromSeconds(3600, "UTC+1", false);
     const dt = try Datetime.fromFields(.{ .year = 1970, .tz_options = .{ .utc_offset = off } });
     try testing.expect(dt.unix_sec == -3600);
@@ -97,6 +100,17 @@ test "tz deinit is mem-safe" {
     try testing.expectEqual(0, dt.utc_offset.?.seconds_east);
     try testing.expectEqualStrings("", dt.tzName());
     try testing.expectEqualStrings("", dt.tzAbbreviation());
+
+    // tz without alloc should also deinit fine:
+    var _tzinfo = try Tz.fromTzdata(testing.io, "Asia/Tokyo", null);
+    var _dt = try Datetime.fromFields(.{ .year = 2027, .tz_options = .{ .tz = &_tzinfo } });
+    const _off = _dt.utc_offset.?;
+    _tzinfo.deinit();
+
+    try testing.expect(std.meta.eql(_off, _dt.utc_offset.?));
+    try testing.expectEqual(_off.seconds_east, _dt.utc_offset.?.seconds_east);
+    try testing.expectEqualStrings("", _dt.tzName());
+    try testing.expectEqualStrings("JST", _dt.tzAbbreviation());
 }
 
 test "tzfile tz manifests in Unix time" {
@@ -198,6 +212,9 @@ test "invalid tzfile name" {
     err = Tz.fromSystemTzdata(testing.io, "../test", db, testing.allocator);
     try testing.expectError(ZdtError.InvalidIdentifier, err);
     err = Tz.fromSystemTzdata(testing.io, "*=!?:.", db, testing.allocator);
+    try testing.expectError(ZdtError.InvalidIdentifier, err);
+
+    err = Tz.fromSystemTzdata(testing.io, "also-not-a-valid-tz-name?!", db, null);
     try testing.expectError(ZdtError.InvalidIdentifier, err);
 }
 

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 Florian Obersteiner
+// SPDX-FileCopyrightText: 2024-2026 Florian Obersteiner
 // SPDX-FileContributor: Florian Obersteiner <f.obersteiner@posteo.de>
 //
 // SPDX-License-Identifier: Unlicense
@@ -41,6 +41,7 @@ __transition_index: i32 = -1,
 /// Note that when working with time zones (not just offsets),
 /// preferably use Timezone.UTC.
 pub const UTC = UTCoffset{
+    // TODO : this a potentially misleading duplication of 'UTC' in the Timezone struct
     .__designation_data = [6:0]u8{ 'U', 'T', 'C', 0, 0, 0 },
 };
 
@@ -58,7 +59,7 @@ pub fn fromSeconds(offset_sec_East: i32, name: []const u8, is_dst: bool) TzError
     if (offset_sec_East < offset_range[0] or offset_sec_East > offset_range[1]) {
         return TzError.InvalidOffset;
     }
-    if (std.mem.eql(u8, name, "UTC")) {
+    if (std.mem.eql(u8, name, "UTC") and offset_sec_East == 0 and is_dst == false) {
         return UTC;
     }
 
@@ -121,8 +122,8 @@ pub fn atUnixtime(tz: *const Timezone, unixtime: i64) TzError!UTCoffset {
 
             const timet = switch (idx) {
                 -1 => blk: {
-                    assert(tz.rules.tzif_fixedsize.n_timetypes == 1);
-                    break :blk tz.rules.tzif_fixedsize.__timetypes_data[0];
+                    assert(tz.rules.tzif_fixedsize.n_timetypes == 1); // tested via .tzif
+                    break :blk tz.rules.tzif_fixedsize.__timetypes_data[0]; // tested via .tzif
                 },
 
                 -2 => blk: {
@@ -139,7 +140,7 @@ pub fn atUnixtime(tz: *const Timezone, unixtime: i64) TzError!UTCoffset {
                     ];
                 },
 
-                -3 => tz.rules.tzif_fixedsize.__timetypes_data[0],
+                -3 => tz.rules.tzif_fixedsize.__timetypes_data[0], // tested via .tzif
 
                 else => tz.rules.tzif_fixedsize.__timetypes_data[
                     tz.rules.tzif_fixedsize.__transitions_data[

@@ -1,0 +1,21 @@
+{
+  "files": [
+    {"file": "/home/floo/Code/Zig/zdt/lib/root.zig", "percent_covered": "100.00", "covered_lines": "2", "total_lines": "2"},
+    {"file": "/home/floo/Code/Zig/zdt/lib/unix/unix_mdnames.zig", "percent_covered": "100.00", "covered_lines": "28", "total_lines": "28"},
+    {"file": "/home/floo/Code/Zig/zdt/lib/Timezone.zig", "percent_covered": "98.04", "covered_lines": "100", "total_lines": "102"},
+    {"file": "/home/floo/Code/Zig/zdt/lib/Duration.zig", "percent_covered": "99.60", "covered_lines": "249", "total_lines": "250"},
+    {"file": "/home/floo/Code/Zig/zdt/lib/string.zig", "percent_covered": "100.00", "covered_lines": "476", "total_lines": "476"},
+    {"file": "/home/floo/Code/Zig/zdt/lib/posixtz.zig", "percent_covered": "99.14", "covered_lines": "345", "total_lines": "348"},
+    {"file": "/home/floo/Code/Zig/zdt/lib/tzif.zig", "percent_covered": "97.58", "covered_lines": "202", "total_lines": "207"},
+    {"file": "/home/floo/Code/Zig/zdt/lib/UTCoffset.zig", "percent_covered": "96.77", "covered_lines": "90", "total_lines": "93"},
+    {"file": "/home/floo/Code/Zig/zdt/lib/calendar.zig", "percent_covered": "99.89", "covered_lines": "936", "total_lines": "937"},
+    {"file": "/home/floo/Code/Zig/zdt/lib/Datetime.zig", "percent_covered": "99.60", "covered_lines": "504", "total_lines": "506"}
+  ],
+  "percent_covered": "99.42",
+  "covered_lines": 2932,
+  "total_lines": 2949,
+  "percent_low": 25,
+  "percent_high": 75,
+  "command": "",
+  "date": "2026-08-27 11:52:47"
+}
