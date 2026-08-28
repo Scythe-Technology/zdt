@@ -84,6 +84,7 @@ pub fn main(init: std.process.Init) !void {
 
 - `v0.10.x`: Zig 0.17 master
 - `v0.9.x`: Zig 0.16
+- ------ unsupported / EOL:
 - `v0.8.x`: Zig 0.15 / 0.15.2
 - `v0.7.x`: Zig 0.14 / 0.14.1
 - `v0.6.x`: Zig 0.14 / 0.14.1
@@ -99,7 +100,7 @@ pub fn main(init: std.process.Init) !void {
 ## IANA timezone database version
 
 - `v0.10.0+`: `2026c` (current)
-- `v0.9.4`: `2026c` (current)
+- `v0.9.4+`: `2026c` (current)
 - `v0.9.3`: `2026b`
 - `v0.9.1+`: `2026a`
 - `v0.8.3+`: `2026a`
