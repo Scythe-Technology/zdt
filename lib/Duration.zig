@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 Florian Obersteiner
+// SPDX-FileCopyrightText: 2024-2026 Florian Obersteiner
 // SPDX-FileContributor: Florian Obersteiner <f.obersteiner@posteo.de>
 //
 // SPDX-License-Identifier: Unlicense
@@ -6,8 +6,8 @@
 //! a period in time
 
 const std = @import("std");
-const testing = std.testing;
 const log = std.log.scoped(.zdt__Duration);
+const testing = std.testing;
 const Writer = std.Io.Writer;
 
 const FormatError = @import("./errors.zig").FormatError;

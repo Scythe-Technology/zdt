@@ -13,6 +13,11 @@ Types of changes
 
 ## [Unreleased]
 
+### Changed
+
+- make UTC offset range a struct with min and max field
+- include UTCoffset struct in Timezone type
+
 ## 2026-08-27, v0.10.2-master
 
 ### Added

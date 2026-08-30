@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 Florian Obersteiner
+// SPDX-FileCopyrightText: 2024-2026 Florian Obersteiner
 // SPDX-FileContributor: Florian Obersteiner <f.obersteiner@posteo.de>
 // SPDX-FileContributor: Lluc Simó Margalef <lluc.simo@protonmail.com>
 //
@@ -13,7 +13,7 @@ const zdt = @import("zdt");
 const Datetime = zdt.Datetime;
 const Duration = zdt.Duration;
 const Tz = zdt.Timezone;
-const UTCoffset = zdt.UTCoffset;
+const UTCoffset = Tz.UTCoffset;
 const ZdtError = zdt.ZdtError;
 
 const log = std.log.scoped(.test_datetime);

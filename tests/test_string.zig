@@ -5,7 +5,7 @@
 //
 // SPDX-License-Identifier: Unlicense
 
-//! test datetime <--> string conversion
+//! test datetime from a users's perspective (no internal functionality)
 
 const std = @import("std");
 const builtin = @import("builtin");

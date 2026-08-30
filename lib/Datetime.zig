@@ -16,16 +16,18 @@ const Writer = std.Io.Writer;
 
 const cal = @import("./calendar.zig");
 const str = @import("./string.zig");
-const tzif = @import("./tzif.zig");
+const tzif = @import("./tz_tzif.zig");
 
 const Duration = @import("./Duration.zig");
 const Timezone = @import("./Timezone.zig");
-const UTCoffset = @import("./UTCoffset.zig");
+const UTCoffset = Timezone.UTCoffset;
 
 const FormatError = @import("./errors.zig").FormatError;
 const RangeError = @import("./errors.zig").RangeError;
 const TzError = @import("./errors.zig").TzError;
 const ZdtError = @import("./errors.zig").ZdtError;
+
+const Datetime = @This();
 
 /// Minimum year that can be represented. The value must be positive to
 /// avoid ambiguities when parsing datetime strings.
@@ -42,7 +44,7 @@ pub const unix_s_min: i64 = -719528 * @as(i64, s_per_day);
 pub const unix_s_max: i64 = (2932897 * @as(i64, s_per_day)) - 1;
 
 /// The Unix epoch
-pub const epoch = Datetime{ .year = 1970, .unix_sec = 0, .utc_offset = UTCoffset.UTC };
+pub const epoch = Datetime{ .year = 1970, .unix_sec = 0, .utc_offset = UTCoffset._UTC };
 
 /// The current century
 pub const century: i16 = 2000;
@@ -58,8 +60,6 @@ const us_per_s: u32 = 1_000_000;
 const ns_per_s: u32 = 1_000_000_000;
 
 const iso8601_max_len: usize = 38;
-
-const Datetime = @This();
 
 /// Year. Do not modify directly.
 year: i16 = 1, // [-32768, 32676]
@@ -312,7 +312,7 @@ pub fn fromFields(fields: Fields) ZdtError!Datetime {
             .utc_offset => {
                 dt.utc_offset = fields.tz_options.?.utc_offset;
                 // if the offset represents UTC, also set the tz pointer for consistency:
-                if (std.meta.eql(dt.utc_offset.?, UTCoffset.UTC)) dt.tz = &Timezone.UTC;
+                if (std.meta.eql(dt.utc_offset.?, UTCoffset._UTC)) dt.tz = &Timezone.UTC;
                 // Shortcut #2: the tz pointer is not set here; we have a fixed offset,
                 // can calculate Unix time easily and return.
                 dt.unix_sec -= dt.utc_offset.?.seconds_east;
@@ -323,7 +323,7 @@ pub fn fromFields(fields: Fields) ZdtError!Datetime {
                 // if tz points to the UTC constant, we need to set the offset here
                 // and again can return immediately:
                 if (std.meta.eql(dt.tz.?.*, Timezone.UTC)) {
-                    dt.utc_offset = UTCoffset.UTC;
+                    dt.utc_offset = UTCoffset._UTC;
                     return dt;
                 }
             },
@@ -947,7 +947,7 @@ pub fn toString(dt: Datetime, directives: []const u8, writer: *Writer) anyerror!
 pub fn tzName(dt: *const Datetime) []const u8 {
     if (dt.tz) |tz_ptr| return tz_ptr.name();
     if (dt.utc_offset) |*off| {
-        if (std.meta.eql(off.*, UTCoffset.UTC)) return off.designation();
+        if (std.meta.eql(off.*, UTCoffset._UTC)) return off.designation();
     }
     return "";
 }

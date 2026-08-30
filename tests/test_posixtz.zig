@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: Unlicense
 
-//! test posix tz
+//! test datetime from a users's perspective (no internal functionality)
 
 const std = @import("std");
 const testing = std.testing;

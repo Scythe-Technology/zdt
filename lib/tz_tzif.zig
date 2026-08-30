@@ -34,11 +34,11 @@
 // ---
 
 const std = @import("std");
+const log = std.log.scoped(.zdt__tz_tzif);
 const builtin = @import("builtin");
 
 const testing = std.testing;
 const assert = std.debug.assert;
-const log = std.log.scoped(.test_tzif);
 const Reader = std.Io.Reader;
 
 const TZifReadError = @import("./errors.zig").TZifReadError;
@@ -455,4 +455,14 @@ test "load a lot of TZif" {
         }
     }
     try testing.expect(sz_footer <= footer_buf_sz);
+}
+
+test "embed TZif from lib dir" {
+    const tzfile = "./tzdata/zoneinfo/Europe/Berlin";
+    const data = @embedFile(tzfile);
+    var reader = std.Io.Reader.fixed(data);
+
+    var tz = try TzAlloc.parse(std.testing.allocator, &reader);
+    defer tz.deinit();
+    try std.testing.expectEqualStrings("LMT", tz.timetypes[0].designation());
 }

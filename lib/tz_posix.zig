@@ -35,7 +35,7 @@ const std = @import("std");
 const assert = std.debug.assert;
 const testing = std.testing;
 const cal = @import("./calendar.zig");
-const UTCoffset = @import("./UTCoffset.zig");
+const UTCoffset = @import("./Timezone.zig").UTCoffset;
 const FormatError = @import("./errors.zig").FormatError;
 const TzError = @import("./errors.zig").TzError;
 

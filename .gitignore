@@ -18,6 +18,7 @@ tz/
 
 # editor
 .ropeproject
+.zed
 
 # test coverage / kcov output
 coverage/**/*

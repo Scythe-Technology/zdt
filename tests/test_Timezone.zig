@@ -15,13 +15,13 @@ const zdt = @import("zdt");
 const Datetime = zdt.Datetime;
 const Duration = zdt.Duration;
 const Tz = zdt.Timezone;
-const UTCoffset = zdt.UTCoffset;
+const UTCoffset = Tz.UTCoffset;
 const ZdtError = zdt.ZdtError;
 
 const log = std.log.scoped(.test_timezone);
 
 test "utc" {
-    var utc = UTCoffset.UTC;
+    var utc = UTCoffset._UTC;
     try testing.expect(utc.seconds_east == 0);
     try testing.expectEqualStrings(utc.designation(), "UTC");
 
@@ -42,7 +42,7 @@ test "offset from seconds" {
     try testing.expectError(ZdtError.InvalidOffset, err);
 
     off = try UTCoffset.fromSeconds(0, "UTC", false);
-    try testing.expectEqual(UTCoffset.UTC, off);
+    try testing.expectEqual(UTCoffset._UTC, off);
 
     off = try UTCoffset.fromSeconds(3600, "UTC+1", false);
     const dt = try Datetime.fromFields(.{ .year = 1970, .tz_options = .{ .utc_offset = off } });
@@ -515,7 +515,7 @@ test "replace tz fails for non-existent datetime in target tz" {
     var tz_Berlin = try Tz.fromTzdata(testing.io, "Europe/Berlin", testing.allocator);
     defer tz_Berlin.deinit();
 
-    const dt_utc = try Datetime.fromFields(.{ .year = 2023, .month = 3, .day = 26, .hour = 2, .tz_options = .{ .utc_offset = UTCoffset.UTC } });
+    const dt_utc = try Datetime.fromFields(.{ .year = 2023, .month = 3, .day = 26, .hour = 2, .tz_options = .{ .utc_offset = UTCoffset._UTC } });
     const err = dt_utc.tzLocalize(.{ .tz = &tz_Berlin });
 
     try testing.expectError(ZdtError.NonexistentDatetime, err);

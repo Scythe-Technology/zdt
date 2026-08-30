@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 Florian Obersteiner
+// SPDX-FileCopyrightText: 2024-2026 Florian Obersteiner
 // SPDX-FileContributor: Florian Obersteiner <f.obersteiner@posteo.de>
 // SPDX-FileContributor: Ratakor <45130910+Ratakor@users.noreply.github.com>
 // SPDX-FileContributor: sethvincent <sethvincent@gmail.com>
@@ -17,7 +17,7 @@ const Writer = std.Io.Writer;
 const Datetime = @import("./Datetime.zig");
 const cal = @import("./calendar.zig");
 const Tz = @import("./Timezone.zig");
-const UTCoffset = @import("./UTCoffset.zig");
+const UTCoffset = Tz.UTCoffset;
 
 const ZdtError = @import("./errors.zig").ZdtError;
 const FormatError = @import("./errors.zig").FormatError;
@@ -221,7 +221,7 @@ fn parseIntoFields(
         'z' => { // UTC offset (+|-)hh[:mm[:ss]] or Z
             const utcoffset = try parseOffset(string, idx_ptr, 9);
             if (string[idx_ptr.* - 1] == 'Z')
-                fields.tz_options = .{ .utc_offset = UTCoffset.UTC }
+                fields.tz_options = .{ .utc_offset = UTCoffset._UTC }
             else
                 fields.tz_options = .{ .utc_offset = try UTCoffset.fromSeconds(utcoffset, "", false) };
         },
@@ -345,7 +345,7 @@ fn printIntoWriter(
             switch (modifier_count) {
                 0 => try writer.print("{s}", .{offset.designation()}),
                 1 => {
-                    if (std.meta.eql(offset, UTCoffset.UTC))
+                    if (std.meta.eql(offset, UTCoffset._UTC))
                         try writer.print("Z", .{})
                     else
                         try writer.print("{s}", .{offset.designation()});
@@ -588,7 +588,7 @@ pub fn parseISO8601(string: []const u8, idx_ptr: *usize) ZdtError!Datetime.Field
         .Offset => {
             const utcoffset = try parseOffset(string, idx_ptr, 9);
             if (string[idx_ptr.* - 1] == 'Z')
-                fields.tz_options = .{ .utc_offset = UTCoffset.UTC }
+                fields.tz_options = .{ .utc_offset = UTCoffset._UTC }
             else
                 fields.tz_options = .{ .utc_offset = try UTCoffset.fromSeconds(utcoffset, "", false) };
             break :parsing;

@@ -8,19 +8,18 @@
 //! A set of rules to describe date and time somewhere on earth, relative to universal time (UTC).
 
 const std = @import("std");
+const log = std.log.scoped(.zdt__Timezone);
 const builtin = @import("builtin");
 const assert = std.debug.assert;
-const log = std.log.scoped(.zdt__Timezone);
 const Writer = std.Io.Writer;
 
 const Datetime = @import("./Datetime.zig");
-const UTCoffset = @import("./UTCoffset.zig");
 const FormatError = @import("./errors.zig").FormatError;
 const TzError = @import("./errors.zig").TzError;
 const TZifReadError = @import("./errors.zig").TZifReadError;
 const ZdtError = @import("./errors.zig").ZdtError;
-const tzif = @import("./tzif.zig");
-const psx = @import("./posixtz.zig");
+const tzif = @import("./tz_tzif.zig");
+const psx = @import("./tz_posix.zig");
 const tzwin = @import("./windows/windows_tz.zig");
 
 const Timezone = @This();
@@ -34,8 +33,21 @@ pub const tzdb_version = @import("./tzdata.zig").tzdb_version;
 // anonymous import; see `build.zig`.
 pub const tzdb_prefix = @import("tzdb_prefix").tzdb_prefix;
 
+// might not work on all Unix systems:
+const tzlocal_default_ID = "/etc/localtime";
+
 // longest tz name is 'America/Argentina/ComodRivadavia' --> 32 ASCII chars
 const cap_name_data: usize = 48;
+
+// designation of a UTC offset like 'CEST' or 'MST'
+const cap_designation_data: usize = 6;
+
+/// Offset from UTC should be in range `(-25h ... +26h)` as specified by
+/// RFC9636, sect. 3.2, TZif data block.
+pub const offset_range = struct {
+    pub const min: i32 = -89999;
+    pub const max: i32 = 93599;
+};
 
 const ruleTypes = enum {
     tzif,
@@ -215,9 +227,7 @@ pub fn deinit(tz: *Timezone) void {
 pub fn tzLocal(io: std.Io, allocator: ?std.mem.Allocator) ZdtError!Timezone {
     switch (builtin.os.tag) {
         .linux, .macos => {
-            // NOTE : this might not work on all Unix systems:
-            const default_id = "/etc/localtime";
-            return try Timezone.fromSystemTzdata(io, default_id, "", allocator);
+            return try Timezone.fromSystemTzdata(io, tzlocal_default_ID, "", allocator);
         },
         .windows => {
             const win_name = try tzwin.getTzName();
@@ -236,7 +246,7 @@ pub fn format(
         .tzif => try writer.print("Source: TZif. Memory: dynamic.", .{}),
         .tzif_fixedsize => try writer.print("Source: TZif. Memory: static.", .{}),
         .posixtz => try writer.print("Source: POSIX string.", .{}),
-        else => return,
+        .utc => try writer.print("(UTC)", .{}),
     }
 }
 
@@ -268,16 +278,6 @@ pub fn identifierValid(id: []const u8) bool {
     return true;
 }
 
-test "embed TZif from lib dir" {
-    const tzfile = "./tzdata/zoneinfo/Europe/Berlin";
-    const data = @embedFile(tzfile);
-    var reader = std.Io.Reader.fixed(data);
-
-    var tz = try tzif.TzAlloc.parse(std.testing.allocator, &reader);
-    defer tz.deinit();
-    try std.testing.expectEqualStrings("LMT", tz.timetypes[0].designation());
-}
-
 test "validate name" {
     var result = identifierValid("asdf");
     try std.testing.expectEqual(true, result);
@@ -295,3 +295,224 @@ test "validate name" {
     result = identifierValid("?!");
     try std.testing.expectEqual(false, result);
 }
+
+pub const UTCoffset = struct {
+    /// Seconds East of Greenwich.
+    seconds_east: i32 = 0,
+
+    /// DST indicator - can only be determined if the UTC offset is derived
+    /// from a tz rule (POSIX, TZif) for given datetime.
+    is_dst: bool = false,
+
+    // 'internal'; data for the offset designation.
+    __designation_data: [6:0]u8 = [6:0]u8{ 0, 0, 0, 0, 0, 0 },
+
+    // 'internal'; TZif transitions index; < 0 means invalid.
+    __transition_index: i32 = -1,
+
+    /// UTC is constant. Presumably.
+    ///
+    /// Note that when working with time zones (not just offsets),
+    /// preferably use Timezone.UTC.
+    pub const _UTC = UTCoffset{
+        .__designation_data = [6:0]u8{ 'U', 'T', 'C', 0, 0, 0 },
+    };
+
+    /// Designation / abbreviated time zone name such as "CET" for
+    /// Central European Time in Europe/Berlin, winter.
+    ///
+    /// Note that multiple time zones can share the same abbreviated name;
+    /// the abbreviations are therefore ambiguous.
+    pub fn designation(offset: *const UTCoffset) []const u8 {
+        return std.mem.sliceTo(&offset.__designation_data, 0);
+    }
+
+    /// Make a UTC offset from a given number of seconds East of Greenwich.
+    pub fn fromSeconds(offset_sec_East: i32, desgnator: []const u8, is_dst: bool) TzError!UTCoffset {
+        if (offset_sec_East < offset_range.min or offset_sec_East > offset_range.max) {
+            return TzError.InvalidOffset;
+        }
+        if (std.mem.eql(u8, desgnator, "UTC") and offset_sec_East == 0 and is_dst == false) {
+            return _UTC;
+        }
+
+        var name_data = std.mem.zeroes([cap_designation_data:0]u8);
+        const len: usize = if (desgnator.len <= cap_designation_data) desgnator.len else cap_designation_data;
+        std.mem.copyForwards(u8, name_data[0..len], desgnator[0..len]);
+
+        return .{
+            .seconds_east = offset_sec_East,
+            .__designation_data = name_data,
+            .is_dst = is_dst,
+        };
+    }
+
+    /// Given time zone rules, get the UTC offset at a certain Unix time.
+    pub fn atUnixtime(tz: *const Timezone, unixtime: i64) TzError!UTCoffset {
+        switch (tz.rules) {
+            .tzif => {
+                // If the tz only has one timetype (offset spec.): use this.
+                // Otherwise try to determine it from the defined transitions.
+                const idx = if (tz.rules.tzif.timetypes.len == 1) -1 else findTransitionIdx(&tz.rules.tzif.transitions, unixtime);
+
+                const timet = switch (idx) {
+                    -1 => blk: {
+                        assert(tz.rules.tzif.timetypes.len == 1);
+                        break :blk tz.rules.tzif.timetypes[0];
+                    },
+
+                    // Unix time exceeds defined range of transitions => use POSIX from TZif footer
+                    -2 => blk: {
+                        // check the POSIX TZ from the footer.
+                        const psxtz = psx.parsePosixTzString(tz.rules.tzif.footer.?) catch return TzError.InvalidPosixTz;
+                        // If it has DST, make a UTC offset directly
+                        if (psxtz.dst_offset) |_| return psxtz.utcOffsetAt(unixtime);
+                        // ...otherwise use existing timetype
+                        break :blk tz.rules.tzif.timetypes[tz.rules.tzif.transitions[tz.rules.tzif.transitions.len - 1].timetype_idx];
+                    },
+
+                    // Unix time precedes defined range of transitions => use first entry in timetypes (likely a LMT)
+                    -3 => tz.rules.tzif.timetypes[0],
+
+                    else => tz.rules.tzif.timetypes[tz.rules.tzif.transitions[@intCast(idx)].timetype_idx],
+                };
+
+                return .{
+                    .seconds_east = @intCast(timet.offset),
+                    .is_dst = timet.isDst(),
+                    .__designation_data = timet.name_data,
+                    .__transition_index = idx,
+                };
+            },
+            .tzif_fixedsize => { // same as .tzif but for the fixed-size structure
+                const idx: i32 = if (tz.rules.tzif_fixedsize.n_timetypes == 1)
+                    -1
+                else
+                    findTransitionIdx(
+                        &tz.rules.tzif_fixedsize.__transitions_data[0..tz.rules.tzif_fixedsize.n_transitions],
+                        unixtime,
+                    );
+
+                const timet = switch (idx) {
+                    -1 => blk: {
+                        assert(tz.rules.tzif_fixedsize.n_timetypes == 1); // tested via .tzif
+                        break :blk tz.rules.tzif_fixedsize.__timetypes_data[0]; // tested via .tzif
+                    },
+
+                    -2 => blk: {
+                        const psxtz = psx.parsePosixTzString(std.mem.sliceTo(
+                            tz.rules.tzif_fixedsize.__footer_data[0..],
+                            '\n',
+                        )) catch
+                            return TzError.InvalidPosixTz;
+                        if (psxtz.dst_offset) |_| return psxtz.utcOffsetAt(unixtime);
+                        break :blk tz.rules.tzif_fixedsize.__timetypes_data[
+                            tz.rules.tzif_fixedsize.__transitions_data[
+                                tz.rules.tzif_fixedsize.n_transitions - 1
+                            ].timetype_idx
+                        ];
+                    },
+
+                    -3 => tz.rules.tzif_fixedsize.__timetypes_data[0], // tested via .tzif
+
+                    else => tz.rules.tzif_fixedsize.__timetypes_data[
+                        tz.rules.tzif_fixedsize.__transitions_data[
+                            @intCast(idx)
+                        ].timetype_idx
+                    ],
+                };
+
+                return .{
+                    .seconds_east = @intCast(timet.offset),
+                    .is_dst = timet.isDst(),
+                    .__designation_data = timet.name_data,
+                    .__transition_index = idx,
+                };
+            },
+            .posixtz => return tz.rules.posixtz.utcOffsetAt(unixtime),
+            .utc => return _UTC,
+        }
+    }
+
+    /// Default format for the Offset struct, gives [+|-][hh]:[mm] format
+    /// or 'Z' if UTC.
+    ///
+    /// Notes:
+    /// - seconds are shown if non-zero; [+|-][hh]:[mm]:[ss]
+    pub fn format(
+        offset: UTCoffset,
+        writer: *Writer,
+    ) Writer.Error!void {
+        if (std.meta.eql(offset, _UTC)) {
+            try writer.print("Z", .{});
+            return;
+        }
+        const off = offset.seconds_east;
+        const absoff: u32 = if (off < 0) @intCast(off * -1) else @intCast(off);
+        const sign = if (off < 0) "-" else "+";
+        const hours = absoff / 3600;
+        const minutes = (absoff % 3600) / 60;
+        const seconds = (absoff % 3600) % 60;
+        try writer.print("{s}{d:0>2}:{d:0>2}", .{ sign, hours, minutes });
+        if (seconds != 0) try writer.print(":{d:0>2}", .{seconds});
+    }
+
+    /// Custom formatter used by the %z directive.
+    pub fn formatB(
+        offset: UTCoffset,
+        options: std.fmt.Options,
+        writer: *Writer,
+    ) Writer.Error!void {
+        const off = offset.seconds_east;
+        const absoff: u32 = if (off < 0) @intCast(off * -1) else @intCast(off);
+        const sign = if (off < 0) "-" else "+";
+        const hours = absoff / 3600;
+        const minutes = (absoff % 3600) / 60;
+        const seconds = (absoff % 3600) % 60;
+
+        // precision: 0 - hours, 1 - hours:minutes, 2 - hours:minutes:seconds
+        const precision = if (options.precision) |p| p else 1;
+
+        if (options.fill != 0) {
+            try writer.print("{s}{d:0>2}", .{ sign, hours });
+            if (precision > 0)
+                try writer.print("{u}{d:0>2}", .{ options.fill, minutes });
+            if (precision > 1)
+                try writer.print("{u}{d:0>2}", .{ options.fill, seconds });
+        } else {
+            try writer.print("{s}{d:0>2}{d:0>2}", .{ sign, hours, minutes });
+        }
+    }
+
+    /// Get the index of the UTC offset transition equal to or less than the given target.
+    ///
+    /// Invalid value indicators:
+    /// ```
+    /// -1 : transition array has no elements (single offset tz)
+    /// -2 : target is larger than last transition element
+    /// -3 : target is smaller than first transition element
+    /// ```
+    fn findTransitionIdx(transitions_ptr: *const []const tzif.Transition, target: i64) i32 {
+        if (transitions_ptr.*.len == 0) return -1;
+        // we know that transitions in 'array' are sorted, so we can check first and last indices.
+        // if 'target' is out of range, caller should fall back to using tz.timetype[0]
+        // or tz.timetype[-1] resp.
+        if (target > transitions_ptr.*[transitions_ptr.*.len - 1].ts) return -2;
+        if (target < transitions_ptr.*[0].ts) return -3;
+
+        // now do a binary search:
+        var left: usize = 0;
+        var right: usize = transitions_ptr.*.len - 1;
+        while (left <= right) {
+            const middle = left + @divFloor(right - left, 2);
+            if (transitions_ptr.*[middle].ts < target) {
+                left = middle + 1;
+            } else if (transitions_ptr.*[middle].ts > target) {
+                right = middle - 1;
+            } else {
+                return @as(i32, @intCast(middle));
+            }
+        }
+        return @as(i32, @intCast(left - 1));
+    }
+};
