@@ -17,6 +17,7 @@ Types of changes
 
 - make UTC offset range a struct with min and max field
 - include UTCoffset struct in Timezone type
+- use struct with enum to keep track of string-to-datetime parsing, similar to ISO8601 Duration parser
 
 ## 2026-08-27, v0.10.2-master
 

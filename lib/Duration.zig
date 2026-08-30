@@ -265,12 +265,12 @@ const tracker = struct {
         self._flags |= @backingInt(new_flag);
     }
 
-    pub fn have(self: *tracker, check_flag: tracker.token) bool {
+    pub fn have(self: *const tracker, check_flag: tracker.token) bool {
         return self._flags & @backingInt(check_flag) != 0;
     }
 
     // Note that this depends on the ordering of the enum backing integer:
-    pub fn ge(self: *tracker, compare_flag: tracker.token) bool {
+    pub fn ge(self: *const tracker, compare_flag: tracker.token) bool {
         return self._flags >= @backingInt(compare_flag);
     }
 };

@@ -35,18 +35,31 @@ const TokenizerState = enum(u8) {
 const token_start: u8 = '%';
 const modifier: u8 = ':';
 
-const ParserFlags = enum(u8) {
-    OK = 0,
-    AM = 1,
-    PM = 2,
-    clock_12h = 4,
+// helper to keep track of what has been parsed from a string
+const tracker = struct {
+    _flags: u8 = 0,
+
+    pub const parser_flag = enum(u8) {
+        OK = 0,
+        AM = 1,
+        PM = (1 << 1),
+        clock_12h = (1 << 2),
+    };
+
+    pub fn add(self: *tracker, new_flag: tracker.parser_flag) void {
+        self._flags |= @backingInt(new_flag);
+    }
+
+    pub fn have(self: *const tracker, check_flag: tracker.parser_flag) bool {
+        return self._flags & @backingInt(check_flag) != 0;
+    }
 };
 
 /// Tokenize the parsing directives and parse the datetime string accordingly.
 pub fn tokenizeAndParse(data: []const u8, directives: []const u8) ZdtError!Datetime {
     var fmt_idx: usize = 0;
     var data_idx: usize = 0;
-    var flags: u32 = 0;
+    var tracking = tracker{};
     var modifier_count: u8 = 0;
     var fields = Datetime.Fields{};
 
@@ -79,7 +92,7 @@ pub fn tokenizeAndParse(data: []const u8, directives: []const u8) ZdtError!Datet
             continue :tokenize .ExpectChar;
         },
         TokenizerState.ProcessDirective => {
-            try parseIntoFields(&fields, data, directives[fmt_idx], &data_idx, &flags, modifier_count);
+            try parseIntoFields(&fields, data, directives[fmt_idx], &data_idx, &tracking, modifier_count);
             fmt_idx += 1;
             modifier_count = 0; // any directive starts with modifier = 0
             if (fmt_idx >= directives.len) continue :tokenize .Finalize;
@@ -88,7 +101,8 @@ pub fn tokenizeAndParse(data: []const u8, directives: []const u8) ZdtError!Datet
         TokenizerState.Finalize => {
             if (fmt_idx != directives.len) return FormatError.InvalidDirective;
             if (data_idx != data.len) return FormatError.InvalidFormat;
-            switch (flags) {
+            switch (tracking._flags) {
+                // TODO : need better solution here:
                 0b000 => {}, // neither %I nor am/pm in input string
                 0b101 => fields.hour = fields.hour % 12, //  %I and 'am'
                 0b110 => fields.hour = fields.hour % 12 + 12, //  %I and 'pm'
@@ -154,7 +168,7 @@ fn parseIntoFields(
     string: []const u8,
     directive: u8,
     idx_ptr: *usize,
-    flags: *u32,
+    tracking: *tracker,
     modifier_count: u8,
 ) ZdtError!void {
     switch (directive) {
@@ -202,11 +216,11 @@ fn parseIntoFields(
         // 'k' - use 'H'
         'I' => fields.hour = blk: { // must be in [1..12]
             const h = try parseDigits(u8, string, idx_ptr, 2);
-            flags.* |= @backingInt(ParserFlags.clock_12h);
+            tracking.add(.clock_12h);
             if (h >= 1 and h <= 12) break :blk h else return FormatError.InvalidFormat;
         },
-        'P' => flags.* |= @backingInt(try parseAmPm(string, idx_ptr)),
-        'p' => flags.* |= @backingInt(try parseAmPm(string, idx_ptr)),
+        'P' => tracking.add(@fromBackingInt(@intCast(try parseAmPm(string, idx_ptr)))),
+        'p' => tracking.add(@fromBackingInt(@intCast(try parseAmPm(string, idx_ptr)))),
         'M' => fields.minute = try parseDigits(u8, string, idx_ptr, 2),
         'S' => fields.second = try parseDigits(u8, string, idx_ptr, 2),
         'f' => {
@@ -405,12 +419,15 @@ fn parseDigits(comptime T: type, string: []const u8, idx_ptr: *usize, maxDigits:
 }
 
 // AM or PM string, no matter if upper or lower case.
-fn parseAmPm(string: []const u8, idx_ptr: *usize) FormatError!ParserFlags {
+// Returns 0 for AM and 1 for PM, error othervise
+fn parseAmPm(string: []const u8, idx_ptr: *usize) FormatError!u8 {
     if (idx_ptr.* + 2 > string.len) return FormatError.InvalidFormat;
 
     const flag = switch (std.ascii.toLower(string[idx_ptr.*])) {
-        'a' => ParserFlags.AM,
-        'p' => ParserFlags.PM,
+        // TODO : this is a hack:
+        // cannot return enum values form tracker since compiler fails to figure this out at comptime
+        'a' => @backingInt(tracker.parser_flag.AM),
+        'p' => @backingInt(tracker.parser_flag.PM),
         else => return FormatError.InvalidFormat,
     };
 
