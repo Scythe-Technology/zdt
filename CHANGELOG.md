@@ -13,11 +13,26 @@ Types of changes
 
 ## [Unreleased]
 
+### Added
+
+- plain 'OutOfRange' error (errors.zig, RangeError set)
+- more edge case tests for Duration type
+
 ### Changed
 
 - make UTC offset range a struct with min and max field
 - include UTCoffset struct in Timezone type
 - use struct with enum to keep track of string-to-datetime parsing, similar to ISO8601 Duration parser
+- complete revision of `Duration` type's internal handling of the timedelta (now all done via the `__nsec` field)
+- add bounds-check to `Duration.fromTimespanMultiple`; this may now raise `error.OutOfRange`
+- `RelativeDelta.fromDuration`: correctly carry over to next smaller units after u32 is fully used
+- `RelativeDelta.normalize`: disallow nanoseconds > 999_999_999 (gives `error.OutOfRange` otherwise)
+
+### Fixed
+
+- missing carry-over of the `dst_fold` property when a datetime is created from `Datetime.Fields`
+- parsing of ISO8601 durations without time separator 'T' that only have years, months and/or weeks
+- zdt types example
 
 ## 2026-08-27, v0.10.2-master
 

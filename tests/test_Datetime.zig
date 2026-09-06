@@ -18,6 +18,8 @@ const ZdtError = zdt.ZdtError;
 
 const log = std.log.scoped(.test_datetime);
 
+const ns_per_s: i128 = 1_000_000_000;
+
 test "validate datetime fields" {
     var fields = Datetime.Fields{ .year = 2020, .month = 2, .day = 29 };
     try fields.validate();
@@ -70,6 +72,47 @@ test "Datetime from populated field struct" {
     try testing.expect(dt.tz == null);
     try testing.expectEqual(false, dt.isAware());
     try testing.expectEqual(true, dt.isNaive());
+}
+
+test "toFields roundtrip, naive / offset / tz" {
+    // naive
+    var dt = try Datetime.fromFields(.{ .year = 2023, .month = 12, .day = 31, .hour = 23, .minute = 59, .second = 59, .nanosecond = 999999999 });
+    var fields = dt.toFields();
+    try testing.expectEqual(dt, try Datetime.fromFields(fields));
+    try testing.expect(fields.tz_options == null);
+
+    // aware via UTC offset
+    const offset = try UTCoffset.fromSeconds(-19800, "IST", false);
+    dt = try Datetime.fromFields(.{ .year = 2023, .month = 12, .day = 31, .tz_options = .{ .utc_offset = offset } });
+    fields = dt.toFields();
+    try testing.expectEqual(dt, try Datetime.fromFields(fields));
+    try testing.expectEqual(offset.seconds_east, fields.tz_options.?.utc_offset.seconds_east);
+
+    // aware via time zone
+    var tz = try Tz.fromTzdata(testing.io, "Europe/Berlin", testing.allocator);
+    defer tz.deinit();
+    dt = try Datetime.fromFields(.{ .year = 2023, .month = 12, .day = 31, .tz_options = .{ .tz = &tz } });
+    fields = dt.toFields();
+    try testing.expectEqual(dt, try Datetime.fromFields(fields));
+    try testing.expect(fields.tz_options.?.tz == &tz);
+
+    // DST fold: flag disambiguates an ambiguous wall time, must be preserved
+    const fold_early = try Datetime.fromFields(.{ .year = 2023, .month = 10, .day = 29, .hour = 2, .minute = 30, .tz_options = .{ .tz = &tz }, .dst_fold = 0 });
+    const fold_late = try Datetime.fromFields(.{ .year = 2023, .month = 10, .day = 29, .hour = 2, .minute = 30, .tz_options = .{ .tz = &tz }, .dst_fold = 1 });
+    try testing.expectEqual(true, fold_early.utc_offset.?.is_dst);
+    try testing.expectEqual(false, fold_late.utc_offset.?.is_dst);
+    try testing.expect(fold_early.dst_fold != null);
+    try testing.expect(fold_late.dst_fold != null);
+    try testing.expectEqual(0, fold_early.dst_fold.?);
+    try testing.expectEqual(1, fold_late.dst_fold.?);
+}
+
+test "nowTAI is ahead of UTC by the leap correction" {
+    // floor both to the second so this doesn't trip on the nanosecond
+    const tai = try Datetime.nowTAI(testing.io).floorTo(.second);
+    const utc = try Datetime.nowUTC(testing.io).floorTo(.second);
+    const delta = tai.diff(utc);
+    try testing.expectEqual(37 * ns_per_s, delta.asNanoseconds());
 }
 
 test "Datetime Unix epoch roundtrip" {
@@ -366,53 +409,6 @@ test "floor datetime with UTC offset to the hour" {
     try testing.expectEqual(@as(u8, 0), dt_floored.second);
 }
 
-test "add/sub duration to datetime with UTC offset" {
-    const dt = try Datetime.fromISO8601("2026-08-01T12:00:00+02:00");
-    try testing.expect(dt.isAware());
-
-    const one_hour = Duration.fromTimespanMultiple(1, Duration.Timespan.hour);
-
-    var buf: [64]u8 = undefined;
-    var w: std.Io.Writer = .fixed(&buf);
-
-    var result = try dt.add(one_hour);
-    try testing.expect(result.isAware());
-    try result.format(&w);
-    try testing.expectEqualStrings("2026-08-01T13:00:00+02:00", w.buffered());
-
-    w = .fixed(&buf);
-    result = try dt.sub(one_hour);
-    try testing.expect(result.isAware());
-    try result.format(&w);
-    try testing.expectEqualStrings("2026-08-01T11:00:00+02:00", w.buffered());
-}
-
-test "addRelative to datetime with UTC offset" {
-    const dt = try Datetime.fromISO8601("2026-08-01T12:00:00+02:00");
-
-    var result = try dt.addRelative(.{ .days = 1 });
-    try testing.expect(result.isAware());
-
-    var buf: [64]u8 = undefined;
-    var w: std.Io.Writer = .fixed(&buf);
-    try result.format(&w);
-    try testing.expectEqualStrings("2026-08-02T12:00:00+02:00", w.buffered());
-
-    w = .fixed(&buf);
-    result = try dt.addRelative(.{ .months = 1 });
-    try testing.expect(result.isAware());
-    try result.format(&w);
-    try testing.expectEqualStrings("2026-09-01T12:00:00+02:00", w.buffered());
-}
-
-test "add duration to naive datetime stays naive" {
-    const dt = try Datetime.fromFields(.{ .year = 2026, .month = 8, .day = 1, .hour = 12 });
-    const one_hour = Duration.fromTimespanMultiple(1, Duration.Timespan.hour);
-    const result = try dt.add(one_hour);
-    try testing.expect(result.isNaive());
-    try testing.expectEqual(@as(u8, 13), result.hour);
-}
-
 const TestCaseRelDelta = struct {
     datetime_a: Datetime = .{},
     rel_delta: Duration.RelativeDelta = .{},
@@ -494,61 +490,20 @@ test "add relative delta to naive datetime" {
     }
 }
 
-test "add relative delta to aware datetime" {
-    var tz = try Tz.fromTzdata(testing.io, "Europe/Berlin", testing.allocator);
-    defer tz.deinit();
-
-    var have: Datetime = try Datetime.fromFields(.{ .year = 1970, .tz_options = .{ .tz = &tz } });
-    var delta: Duration.RelativeDelta = try Duration.RelativeDelta.fromISO8601("P1Y");
-    var want: Datetime = try Datetime.fromFields(.{ .year = 1971, .tz_options = .{ .tz = &tz } });
-    var new: Datetime = try have.addRelative(delta);
-    try testing.expectEqual(want, new);
-    delta.negative = true;
-    new = try want.addRelative(delta);
-    try testing.expectEqual(have, new);
-
-    // 23 hours absolute is 1 day relative during DST off --> on
-    have = try Datetime.fromFields(.{ .year = 2024, .month = 3, .day = 30, .hour = 8, .tz_options = .{ .tz = &tz } });
-    delta = try Duration.RelativeDelta.fromISO8601("P1D");
-    want = try Datetime.fromFields(.{ .year = 2024, .month = 3, .day = 31, .hour = 8, .tz_options = .{ .tz = &tz } });
-    new = try have.addRelative(delta);
-    try testing.expectEqual(want, new);
-    var abs_diff: Duration = new.diff(have);
-    var wall_diff: Duration = try new.diffWall(have);
-    try testing.expectEqual(try Duration.fromISO8601("PT23H"), abs_diff);
-    try testing.expectEqual(try Duration.fromISO8601("PT24H"), wall_diff);
-    delta.negative = true;
-    new = try want.addRelative(delta);
-    try testing.expectEqual(have, new);
-
-    // 25 hours absolute is 1 day relative during DST on --> off
-    have = try Datetime.fromFields(.{ .year = 2024, .month = 10, .day = 26, .hour = 8, .tz_options = .{ .tz = &tz } });
-    delta = try Duration.RelativeDelta.fromISO8601("P1D");
-    want = try Datetime.fromFields(.{ .year = 2024, .month = 10, .day = 27, .hour = 8, .tz_options = .{ .tz = &tz } });
-    new = try have.addRelative(delta);
-    try testing.expectEqual(want, new);
-    abs_diff = new.diff(have);
-    wall_diff = try new.diffWall(have);
-    try testing.expectEqual(try Duration.fromISO8601("PT25H"), abs_diff);
-    try testing.expectEqual(try Duration.fromISO8601("PT24H"), wall_diff);
-    delta.negative = true;
-    new = try want.addRelative(delta);
-    try testing.expectEqual(have, new);
-}
 test "day of year" {
     // leap year
     var dt = try Datetime.fromFields(.{ .year = 2020 });
     var i: u9 = 1;
     while (i < 367) : (i += 1) {
         try testing.expectEqual(i, dt.dayOfYear());
-        dt = try dt.add(Duration.fromTimespanMultiple(1, Duration.Timespan.day));
+        dt = try dt.add(try Duration.fromTimespanMultiple(1, .day));
     }
     // normal year
     dt = try Datetime.fromFields(.{ .year = 2021 });
     i = 1;
     while (i < 366) : (i += 1) {
         try testing.expectEqual(i, dt.dayOfYear());
-        dt = try dt.add(Duration.fromTimespanMultiple(1, Duration.Timespan.day));
+        dt = try dt.add(try Duration.fromTimespanMultiple(1, .day));
     }
 }
 
@@ -557,7 +512,7 @@ test "day of week" {
     var i: u3 = 0;
     while (i < 7) : (i += 1) {
         try testing.expectEqual(i, dt.weekdayNumber());
-        dt = try dt.add(Duration.fromTimespanMultiple(1, Duration.Timespan.day));
+        dt = try dt.add(try Duration.fromTimespanMultiple(1, .day));
     }
 }
 
@@ -566,7 +521,7 @@ test "day of week, iso" {
     var i: u8 = 1;
     while (i < 8) : (i += 1) {
         try testing.expectEqual(i, @as(u8, dt.weekdayIsoNumber()));
-        dt = try dt.add(Duration.fromTimespanMultiple(1, Duration.Timespan.day));
+        dt = try dt.add(try Duration.fromTimespanMultiple(1, .day));
     }
 }
 

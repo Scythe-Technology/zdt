@@ -31,12 +31,16 @@ pub fn main(init: std.process.Init) !void {
     );
 
     // Durations from Timespans:
-    const tomorrow = try now_utc.add(Duration.fromTimespanMultiple(1, .day));
+    const tomorrow = try now_utc.add(try Duration.fromTimespanMultiple(1, .day));
     println(&stdout, "tomorrow, same time : {f}", .{tomorrow});
-    println(&stdout, "tomorrow, same time, is {d} seconds away from now\n", .{tomorrow.diff(now_utc).asSeconds()});
+    println(
+        &stdout,
+        "tomorrow, same time, is {d} seconds ahead of now\n",
+        .{tomorrow.diff(now_utc).asSeconds()},
+    );
 
     // Timespan units range from nanoseconds to weeks:
-    const two_weeks_ago = try now_utc.sub(Duration.fromTimespanMultiple(2, .week));
+    const two_weeks_ago = try now_utc.sub(try Duration.fromTimespanMultiple(2, .week));
     println(&stdout, "two weeks ago : {f}", .{two_weeks_ago});
 
     // ISO8601-duration parser on-board:
@@ -52,10 +56,19 @@ pub fn main(init: std.process.Init) !void {
     defer tz_berlin.deinit();
 
     const delta = try Duration.RelativeDelta.fromISO8601("P1D");
-    const dt_dst_off = try Datetime.fromFields(.{ .year = 2024, .month = 3, .day = 30, .hour = 8, .tz_options = .{ .tz = &tz_berlin } });
+    const dt_dst_off = try Datetime.fromFields(.{
+        .year = 2024,
+        .month = 3,
+        .day = 30,
+        .hour = 8,
+        .tz_options = .{ .tz = &tz_berlin },
+    });
     const dt_dst_on = try dt_dst_off.addRelative(delta);
     println(&stdout, "{f} --> {f}", .{ dt_dst_off, dt_dst_on });
-    println(&stdout, "wall diff: {f}, absolute diff: {f}", .{ try dt_dst_on.diffWall(dt_dst_off), dt_dst_on.diff(dt_dst_off) });
+    println(&stdout, "wall diff: {f}, absolute diff: {f}", .{
+        try dt_dst_on.diffWall(dt_dst_off),
+        dt_dst_on.diff(dt_dst_off),
+    });
 }
 
 fn println(stdout: *std.Io.File.Writer, comptime fmt: []const u8, args: anytype) void {

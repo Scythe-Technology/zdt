@@ -32,7 +32,10 @@ pub fn main(init: std.process.Init) !void {
     const now_utc: Datetime = Datetime.nowUTC(io);
     println(&stdout, "Now, UTC time    : {f}", .{now_utc});
     println(&stdout, "Now, Berlin time : {f} ({s})", .{ now_berlin, now_berlin.tzAbbreviation() });
-    println(&stdout, "Datetimes have UTC offset / time zone? : {}, {}\n", .{ now_utc.isAware(), now_berlin.isAware() });
+    println(&stdout, "Datetimes have UTC offset / time zone? : {}, {}\n", .{
+        now_utc.isAware(),
+        now_berlin.isAware(),
+    });
 
     println(&stdout, "load timezone, static memory:", .{});
     const tz_berlin_: Timezone = try Timezone.fromTzdata(io, "Europe/Berlin", null);
@@ -70,7 +73,9 @@ pub fn main(init: std.process.Init) !void {
 
     // non-existing datetime: DST gap
     // always errors:
-    const err_ne = Datetime.fromFields(.{ .year = 2024, .month = 3, .day = 10, .hour = 2, .minute = 30, .tz_options = .{ .tz = &tz_ny } });
+    const err_ne = Datetime.fromFields(
+        .{ .year = 2024, .month = 3, .day = 10, .hour = 2, .minute = 30, .tz_options = .{ .tz = &tz_ny } },
+    );
     println(&stdout, "Attempt to create non-existing datetime: {any}", .{err_ne});
 
     // ambiguous datetime: DST fold

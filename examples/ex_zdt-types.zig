@@ -21,20 +21,20 @@ pub fn main(init: std.process.Init) !void {
 
     println(&stdout, "---> Datetime", .{});
     println(&stdout, "size of {s}: {} bytes", .{ @typeName(Datetime), @sizeOf(Datetime) });
-    inline for (std.meta.fields(Datetime)) |field| {
-        println(&stdout, "  field {s} byte offset: {}", .{ field.name, @offsetOf(Datetime, field.name) });
+    inline for (@typeInfo(Datetime).@"struct".field_names) |field_name| {
+        println(&stdout, "  field {s} byte offset: {}", .{ field_name, @offsetOf(Datetime, field_name) });
     }
 
     println(&stdout, "\n---> Duration", .{});
     println(&stdout, "size of {s}: {} bytes", .{ @typeName(Duration), @sizeOf(Duration) });
-    inline for (std.meta.fields(Duration)) |field| {
-        println(&stdout, "  field {s} byte offset: {}", .{ field.name, @offsetOf(Duration, field.name) });
+    inline for (@typeInfo(Duration).@"struct".field_names) |field_name| {
+        println(&stdout, "  field {s} byte offset: {}", .{ field_name, @offsetOf(Duration, field_name) });
     }
 
     println(&stdout, "\n---> Timezone", .{});
     println(&stdout, "size of {s}: {} bytes", .{ @typeName(Timezone), @sizeOf(Timezone) });
-    inline for (std.meta.fields(Timezone)) |field| {
-        println(&stdout, "  field {s} byte offset: {}", .{ field.name, @offsetOf(Timezone, field.name) });
+    inline for (@typeInfo(Timezone).@"struct".field_names) |field_name| {
+        println(&stdout, "  field {s} byte offset: {}", .{ field_name, @offsetOf(Timezone, field_name) });
     }
 
     println(&stdout, "\n---> Timezone Database", .{});
@@ -42,8 +42,8 @@ pub fn main(init: std.process.Init) !void {
 
     println(&stdout, "\n---> UTCoffset", .{});
     println(&stdout, "size of {s}: {} bytes", .{ @typeName(UTCoffset), @sizeOf(UTCoffset) });
-    inline for (std.meta.fields(UTCoffset)) |field| {
-        println(&stdout, "  field {s} byte offset: {}", .{ field.name, @offsetOf(UTCoffset, field.name) });
+    inline for (@typeInfo(UTCoffset).@"struct".field_names) |field_name| {
+        println(&stdout, "  field {s} byte offset: {}", .{ field_name, @offsetOf(UTCoffset, field_name) });
     }
 }
 

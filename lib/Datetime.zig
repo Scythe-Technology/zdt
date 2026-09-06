@@ -183,10 +183,7 @@ pub const ISOCalendar = struct {
     fn yearStartDate(iso_year: i16) ZdtError!Datetime {
         const fourth_jan = try Datetime.fromFields(.{ .year = iso_year, .month = 1, .day = 4 });
         return fourth_jan.sub(
-            Duration.fromTimespanMultiple(
-                @as(u16, fourth_jan.weekdayIsoNumber() - 1),
-                Duration.Timespan.day,
-            ),
+            try Duration.fromTimespanMultiple(@as(u16, fourth_jan.weekdayIsoNumber() - 1), .day),
         );
     }
 
@@ -194,9 +191,9 @@ pub const ISOCalendar = struct {
     pub fn toDatetime(isocal: ISOCalendar) ZdtError!Datetime {
         const year_start = try yearStartDate(isocal.isoyear);
         return year_start.add(
-            Duration.fromTimespanMultiple(
+            try Duration.fromTimespanMultiple(
                 @as(u16, isocal.isoweekday - 1) + @as(u16, isocal.isoweek - 1) * 7,
-                Duration.Timespan.day,
+                .day,
             ),
         );
     }
@@ -266,6 +263,8 @@ pub const Fields = struct {
         if (fields.minute > 59) return RangeError.MinuteOutOfRange;
         if (fields.second > 60) return RangeError.SecondOutOfRange;
         if (fields.nanosecond > 999999999) return RangeError.NanosecondOutOfRange;
+        // could check dst_fold here; it makes no sense in combination with certain
+        //   other configurations, such as tz_options pointing to UTC
     }
 };
 
@@ -302,6 +301,7 @@ pub fn fromFields(fields: Fields) ZdtError!Datetime {
                 @as(u32, fields.hour) * s_per_hour +
                 @as(u16, fields.minute) * s_per_minute + s //
         ),
+        .dst_fold = fields.dst_fold,
     };
 
     // verify that provided leap second datetime is valid
@@ -336,12 +336,9 @@ pub fn fromFields(fields: Fields) ZdtError!Datetime {
     const local_offset: UTCoffset = try UTCoffset.atUnixtime(dt.tz.?, dt.unix_sec);
 
     const unix_guess_1 = dt.unix_sec - local_offset.seconds_east;
-    var dt_guess_1 = try Datetime.fromUnix(
-        unix_guess_1,
-        Duration.Resolution.second,
-        .{ .tz = dt.tz.? },
-    );
+    var dt_guess_1 = try Datetime.fromUnix(unix_guess_1, .second, .{ .tz = dt.tz.? });
     dt_guess_1.nanosecond = dt.nanosecond;
+    dt_guess_1.dst_fold = fields.dst_fold;
 
     // However, we could still have
     // - an ambiguous datetime or
@@ -364,17 +361,15 @@ pub fn fromFields(fields: Fields) ZdtError!Datetime {
     //        share the same UTC offset.
     const tt_guess = if (sts[0] != null) sts[0] else sts[2];
     const unix_guess_2 = dt.unix_sec - @as(i64, @intCast(tt_guess.?.offset));
-    var dt_guess_2 = try Datetime.fromUnix(
-        unix_guess_2,
-        Duration.Resolution.second,
-        .{ .tz = dt.tz.? },
-    );
+    var dt_guess_2 = try Datetime.fromUnix(unix_guess_2, .second, .{ .tz = dt.tz.? });
     dt_guess_2.nanosecond = dt.nanosecond;
+    dt_guess_2.dst_fold = fields.dst_fold;
 
     // Now we have
     // - dt         : the original fields
     // - dt_guess_1 : fields based on the initial guess of the UTC offset
     // - dt_guess_2 : fields based on the previous (or next) UTC offset of given time zone
+    //
     // This allows 3 outcomes:
     // dt neither matches dt_guess_1 nor dt_guess_2 => non-existent datetime
     // dt matches dt_guess_1 and dt_guess_2 => ambiguous datetime
@@ -564,7 +559,7 @@ pub fn tzConvert(dt: *const Datetime, opts: tz_options) ZdtError!Datetime {
     if (dt.isNaive()) return TzError.TzUndefined;
     return Datetime.fromUnix(
         @as(i128, dt.unix_sec) * ns_per_s + dt.nanosecond,
-        Duration.Resolution.nanosecond,
+        .nanosecond,
         opts,
     );
 }
@@ -615,22 +610,15 @@ pub fn floorTo(dt: *const Datetime, timespan: Duration.Timespan) ZdtError!Dateti
 /// If 'null' is supplied as tz_options, naive datetime resembling UTC is returned.
 pub fn now(io: std.Io, opts: ?tz_options) ZdtError!Datetime {
     const _now = std.Io.Clock.real.now(io);
-    return try Datetime.fromUnix(
-        _now.nanoseconds,
-        Duration.Resolution.nanosecond,
-        opts,
-    );
+    return try Datetime.fromUnix(_now.nanoseconds, .nanosecond, opts);
 }
 
 /// Get current UTC time, based on `std.Io.Clock.real`.
 /// Fail-safe since it sets UTC as a pre-defined time zone.
 pub fn nowUTC(io: std.Io) Datetime {
     const _now = std.Io.Clock.real.now(io);
-    return Datetime.fromUnix(
-        _now.nanoseconds,
-        Duration.Resolution.nanosecond,
-        .{ .tz = &Timezone.UTC },
-    ) catch unreachable; // Note: we do not mock clocks for out-of-range nanoseconds testing
+    // Note: we do not mock clocks for out-of-range nanoseconds testing:
+    return Datetime.fromUnix(_now.nanoseconds, .nanosecond, .{ .tz = &Timezone.UTC }) catch unreachable;
 }
 
 /// Get current TAI time / UTC /wo leap seconds.
@@ -638,11 +626,8 @@ pub fn nowUTC(io: std.Io) Datetime {
 pub fn nowTAI(io: std.Io) Datetime {
     const _now = std.Io.Clock.real.now(io);
     const leaps = cal.leapCorrection(@intCast(@divFloor(_now.nanoseconds, ns_per_s)));
-    return Datetime.fromUnix(
-        _now.nanoseconds + @as(u64, leaps) * ns_per_s,
-        Duration.Resolution.nanosecond,
-        null,
-    ) catch unreachable; // Note: we do not mock clocks for out-of-range nanoseconds testing
+    // Note: we do not mock clocks for out-of-range nanoseconds testing:
+    return Datetime.fromUnix(_now.nanoseconds + @as(u64, leaps) * ns_per_s, .nanosecond, null) catch unreachable;
 }
 
 /// Check if a datetime is within a leap year
@@ -683,12 +668,12 @@ pub fn add(dt: *const Datetime, td: Duration) ZdtError!Datetime {
     const opts: ?tz_options = if (dt.tz) |tz_ptr| .{ .tz = tz_ptr } //
         else if (dt.utc_offset) |off| .{ .utc_offset = off } //
         else null;
-    return try Datetime.fromUnix(ns, Duration.Resolution.nanosecond, opts);
+    return try Datetime.fromUnix(ns, .nanosecond, opts);
 }
 
 /// Subtract a duration from a datetime.
 pub fn sub(dt: *const Datetime, td: Duration) ZdtError!Datetime {
-    return dt.add(.{ .__sec = td.__sec * -1, .__nsec = td.__nsec });
+    return dt.add(.{ .__nsec = td.__nsec * -1 });
 }
 
 /// Add a duration which might include months and years to a datetime.
@@ -700,7 +685,7 @@ pub fn sub(dt: *const Datetime, td: Duration) ZdtError!Datetime {
 /// A resulting ambiguous datetime (DST fold) is resolved if the `dst_fold` attribute
 /// is set. If not (= null), this function will also return an error.
 pub fn addRelative(dt: *const Datetime, rel_delta: Duration.RelativeDelta) ZdtError!Datetime {
-    const nrd = rel_delta.normalize();
+    const nrd = try rel_delta.normalize();
     const new_time = if (nrd.negative) // [hours, minutes, seconds, nanoseconds, day_changed]
         subTimes(
             [4]u32{ dt.hour, dt.minute, dt.second, dt.nanosecond },
@@ -759,11 +744,16 @@ pub fn diff(this: Datetime, other: Datetime) Duration {
         s -= 1;
         ns += 1_000_000_000;
     }
+    // s is only an i64 and ns an i32, so we can ignore the errors:
+    const dur_s = Duration.fromTimespanMultiple(s, .second) catch unreachable;
+    const dur_ns = Duration.fromTimespanMultiple(ns, .nanosecond) catch unreachable;
     // We use 'addClip' here to avoid the error union from the normal 'add'.
     // Since we add < 1_000_000_000 ns, the Duration type will never overflow
     // and the result won't become incorrect from clipping.
-    return (Duration.fromTimespanMultiple(s, .second)
-        .addClip(Duration.fromTimespanMultiple(ns, .nanosecond)));
+    return dur_s.addClip(dur_ns);
+    // We use 'addClip' here to avoid the error union from the normal 'add'.
+    // Since we add < 1_000_000_000 ns, the Duration type will never overflow
+    // and the result won't become incorrect from clipping.
 }
 
 /// Calculate wall time difference between two aware datetimes.
@@ -782,11 +772,13 @@ pub fn diffWall(this: Datetime, other: Datetime) TzError!Duration {
         s -= 1;
         ns += 1_000_000_000;
     }
+    // s is only an i64 and ns an i32, so we can ignore the errors:
+    const dur_s = Duration.fromTimespanMultiple(s, .second) catch unreachable;
+    const dur_ns = Duration.fromTimespanMultiple(ns, .nanosecond) catch unreachable;
     // We use 'addClip' here to avoid the error union from the normal 'add'.
     // Since we add < 1_000_000_000 ns, the Duration type will never overflow
     // and the result won't become incorrect from clipping.
-    return (Duration.fromTimespanMultiple(s, .second)
-        .addClip(Duration.fromTimespanMultiple(ns, .nanosecond)));
+    return dur_s.addClip(dur_ns);
 }
 
 /// Validate a datetime in terms of leap seconds;
@@ -807,10 +799,7 @@ pub fn validateLeap(this: *const Datetime) RangeError!void {
 pub fn diffLeap(this: Datetime, other: Datetime) Duration {
     const this_leap: i16 = @as(i16, cal.leapCorrection(this.unix_sec));
     const other_leap: i16 = @as(i16, cal.leapCorrection(other.unix_sec));
-    return Duration.fromTimespanMultiple(
-        this_leap - other_leap,
-        Duration.Timespan.second,
-    );
+    return Duration.fromTimespanMultiple(this_leap - other_leap, .second) catch unreachable;
 }
 
 /// Day of the year starting with `1 == yyyy-01-01` (strftime/strptime: `%j`).
@@ -851,7 +840,7 @@ pub fn nextWeekday(dt: Datetime, d: Weekday) Datetime {
         daysdiff = cal.weekdayDifference(@backingInt(d), dt.weekdayNumber());
         if (daysdiff < 0) daysdiff += 7; // ensure a positive shift since we want 'next'
     }
-    const offset = Duration.fromTimespanMultiple(daysdiff, Duration.Timespan.day);
+    const offset = Duration.fromTimespanMultiple(daysdiff, .day) catch unreachable;
     return dt.add(offset) catch unreachable; // might fail on weird corner-cases!
 }
 
@@ -864,7 +853,7 @@ pub fn previousWeekday(dt: Datetime, d: Weekday) Datetime {
         daysdiff = cal.weekdayDifference(@backingInt(d), dt.weekdayNumber());
         if (daysdiff > 0) daysdiff -= 7;
     }
-    const offset = Duration.fromTimespanMultiple(daysdiff, Duration.Timespan.day);
+    const offset = Duration.fromTimespanMultiple(daysdiff, .day) catch unreachable;
     return dt.add(offset) catch unreachable; // might fail on weird corner-cases!
 }
 
@@ -875,7 +864,7 @@ pub fn nthWeekday(year: i16, month: u8, wd: Weekday, nth: u8) ZdtError!Datetime 
     var dt = try Datetime.fromFields(.{ .year = year, .month = month });
     if (dt.weekday() != wd) dt = dt.nextWeekday(wd);
     if (nth == 1) return dt;
-    dt = try dt.add(Duration.fromTimespanMultiple(7 * (nth - 1), Duration.Timespan.day));
+    dt = try dt.add(Duration.fromTimespanMultiple(7 * (nth - 1), .day) catch unreachable);
     if (dt.month != month) return RangeError.DayOutOfRange;
     return dt;
 }

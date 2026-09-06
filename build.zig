@@ -29,13 +29,13 @@ const example_files = [_][]const u8{
     "ex_offsetTz-posixTz",
     "ex_strings",
     "ex_timezones",
-    // "ex_zdt-types",
+    "ex_zdt-types",
 };
 
 const test_files = [_][]const u8{
     "test_Datetime",
     "test_Duration",
-    "test_Formats",
+    "test_integration",
     "test_posixtz",
     "test_string",
     "test_Timezone",

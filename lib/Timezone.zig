@@ -241,12 +241,12 @@ pub fn format(
     tz: *const Timezone,
     writer: *Writer,
 ) Writer.Error!void {
-    try writer.print("Time zone, name: {s}. ", .{tz.name()});
+    try writer.print("Time zone, name: {s}.", .{tz.name()});
     switch (tz.rules) {
-        .tzif => try writer.print("Source: TZif. Memory: dynamic.", .{}),
-        .tzif_fixedsize => try writer.print("Source: TZif. Memory: static.", .{}),
-        .posixtz => try writer.print("Source: POSIX string.", .{}),
-        .utc => try writer.print("(UTC)", .{}),
+        .tzif => try writer.print(" Source: TZif. Memory: dynamic.", .{}),
+        .tzif_fixedsize => try writer.print(" Source: TZif. Memory: static.", .{}),
+        .posixtz => try writer.print(" Source: POSIX string.", .{}),
+        .utc => return,
     }
 }
 

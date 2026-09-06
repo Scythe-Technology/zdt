@@ -61,6 +61,66 @@ test "offset from seconds" {
     try testing.expectEqualStrings(string, w.buffered());
 }
 
+test "offset from seconds, range boundaries" {
+    // RFC9636 range: -25h ... +26h; the exact boundaries must be accepted
+    var off = try UTCoffset.fromSeconds(-89999, "min", false);
+    try testing.expectEqual(@as(i32, -89999), off.seconds_east);
+
+    off = try UTCoffset.fromSeconds(93599, "max", false);
+    try testing.expectEqual(@as(i32, 93599), off.seconds_east);
+
+    // ... and one second beyond must fail
+    var err: zdt.ZdtError!zdt.UTCoffset = UTCoffset.fromSeconds(-90000, "invalid", false);
+    try testing.expectError(ZdtError.InvalidOffset, err);
+    err = UTCoffset.fromSeconds(93600, "invalid", false);
+    try testing.expectError(ZdtError.InvalidOffset, err);
+}
+
+test "UTC offset format" {
+    var buf: [16]u8 = undefined;
+    var w: std.Io.Writer = .fixed(&buf);
+
+    // UTC prints as 'Z'
+    try UTCoffset._UTC.format(&w);
+    try testing.expectEqualStrings("Z", w.buffered());
+
+    // negative offsets with and without seconds
+    var off = try UTCoffset.fromSeconds(-3600, "", false);
+    w = .fixed(&buf);
+    try off.format(&w);
+    try testing.expectEqualStrings("-01:00", w.buffered());
+
+    off = try UTCoffset.fromSeconds(-86399, "", false);
+    w = .fixed(&buf);
+    try off.format(&w);
+    try testing.expectEqualStrings("-23:59:59", w.buffered());
+
+    off = try UTCoffset.fromSeconds(93599, "max", false);
+    w = .fixed(&buf);
+    try off.format(&w);
+    try testing.expectEqualStrings("+25:59:59", w.buffered());
+}
+
+test "timezone format" {
+    var buf: [128]u8 = undefined;
+    var w: std.Io.Writer = .fixed(&buf);
+
+    try Tz.UTC.format(&w);
+    try testing.expectEqualStrings("Time zone, name: UTC.", w.buffered());
+
+    var tz = try Tz.fromTzdata(testing.io, "Europe/Berlin", testing.allocator);
+    defer tz.deinit();
+    w = .fixed(&buf);
+    try tz.format(&w);
+    try testing.expectEqualStrings("Time zone, name: Europe/Berlin. Source: TZif. Memory: dynamic.", w.buffered());
+
+    var ptz = try Tz.fromPosixTz("CET-1CEST,M3.5.0,M10.5.0/3");
+    defer ptz.deinit();
+    w = .fixed(&buf);
+    try ptz.format(&w);
+    try testing.expectEqualStrings("Time zone, name: CET-1CEST,M3.5.0,M10.5.0/3. Source: POSIX string.", w.buffered());
+}
+
 test "mem error" {
     const allocator = testing.failing_allocator;
     const err = Tz.fromTzdata(testing.io, "UTC", allocator);

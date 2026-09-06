@@ -22,6 +22,7 @@ pub const FormatError = error{
 };
 
 pub const RangeError = error{
+    OutOfRange,
     DayOutOfRange,
     HourOutOfRange,
     MinuteOutOfRange,

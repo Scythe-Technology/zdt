@@ -655,6 +655,8 @@ test "leap correction" {
     try testing.expectEqual(@as(u8, 36), corr);
     corr = leapCorrection(1483228800);
     try testing.expectEqual(@as(u8, 37), corr);
+    corr = leapCorrection(1788289951);
+    try testing.expectEqual(@as(u8, 37), corr);
 }
 
 test "against Python ordinal" {
