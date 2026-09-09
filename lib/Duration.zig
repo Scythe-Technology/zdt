@@ -463,7 +463,13 @@ pub const RelativeDelta = struct {
 
         var seen = tracker{};
 
-        const has_timesep = std.mem.containsAtLeastScalar(u8, string, 'T', 1);
+        var missing_timesep: bool = true;
+        for (string) |c| {
+            if (c == 'T') {
+                missing_timesep = false;
+                break;
+            }
+        }
 
         while (idx >= stop) {
             switch (string[idx]) {
@@ -477,7 +483,7 @@ pub const RelativeDelta = struct {
                 'M' => {
                     // 'M' may appear twice; it's either minutes or months;
                     //   depending on if the 'T' exists and if so, has been seen.
-                    if (seen.have(.time_separator) or !has_timesep) {
+                    if (seen.have(.time_separator) or missing_timesep) {
                         // 'T' seen, must be months...
                         if (seen.ge(.months)) return FormatError.InvalidFormat;
                         idx -= 1;
