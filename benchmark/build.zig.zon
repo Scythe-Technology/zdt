@@ -6,8 +6,8 @@
 .{
     .name = .benchmark,
     .fingerprint = 0xb70c48feaf3d5b02,
-    .version = "0.0.2",
-    .minimum_zig_version = "0.15.1",
+    .version = "0.0.3",
+    .minimum_zig_version = "0.17.0-dev",
     .dependencies = .{
         .zeit = .{
             .url = "https://github.com/rockorager/zeit/archive/refs/tags/v0.8.0.tar.gz",

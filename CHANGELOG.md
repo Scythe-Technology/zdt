@@ -13,6 +13,8 @@ Types of changes
 
 ## [Unreleased]
 
+## 2026-09-09, v0.10.3-master
+
 ### Added
 
 - plain 'OutOfRange' error (errors.zig, RangeError set)

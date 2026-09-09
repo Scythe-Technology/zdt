@@ -6,4 +6,4 @@
 
 ## run
 
-At the moment, it's just `zig build run` plus the mode you want, e.g. `zig build run --release=safe`.
+At the moment, it's just `zig build run` plus the build mode you want, e.g. `zig build run --release=safe`.
