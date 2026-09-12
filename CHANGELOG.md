@@ -17,13 +17,13 @@ Types of changes
 
 ### Changed
 
-- tzdb to 2026b
+- tzdb to 2026d
 
 ## 2026-09-12, v0.9.8
 
 ### Changed
 
-- tzdb to 2026b
+- tzdb to 2026d
 
 ## 2026-09-09, v0.10.3-master
 
