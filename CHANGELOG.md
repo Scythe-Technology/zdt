@@ -13,6 +13,18 @@ Types of changes
 
 ## [Unreleased]
 
+## 2026-09-12, v0.10.4-master
+
+### Changed
+
+- tzdb to 2026b
+
+## 2026-09-12, v0.9.8
+
+### Changed
+
+- tzdb to 2026b
+
 ## 2026-09-09, v0.10.3-master
 
 ### Added
@@ -36,7 +48,47 @@ Types of changes
 - parsing of ISO8601 durations without time separator 'T' that only have years, months and/or weeks
 - zdt types example
 
+## 2026-09-09, v0.9.7
+
+### Added
+
+- plain 'OutOfRange' error (errors.zig, RangeError set)
+- more edge case tests for Duration type
+
+### Changed
+
+- make UTC offset range a struct with min and max field
+- include UTCoffset struct in Timezone type
+- use struct with enum to keep track of string-to-datetime parsing, similar to ISO8601 Duration parser
+- complete revision of `Duration` type's internal handling of the timedelta (now all done via the `__nsec` field)
+- add bounds-check to `Duration.fromTimespanMultiple`; this may now raise `error.OutOfRange`
+- `RelativeDelta.fromDuration`: correctly carry over to next smaller units after u32 is fully used
+- `RelativeDelta.normalize`: disallow nanoseconds > 999_999_999 (gives `error.OutOfRange` otherwise)
+
+### Fixed
+
+- missing carry-over of the `dst_fold` property when a datetime is created from `Datetime.Fields`
+- parsing of ISO8601 durations without time separator 'T' that only have years, months and/or weeks
+
 ## 2026-08-27, v0.10.2-master
+
+### Added
+
+- test coverage report
+
+### Changed
+
+- UTC offset parser return type fixed to i32
+
+### Fixed
+
+- ISO calendar to string, %G directive, print without '+' if year is positive
+- ISO calendar from string, catch invalid input
+- UTC offset with incorrect sign character gives an error
+- trailing characters after ISO8601 datetime give an error
+- Datetime from string, catch directives longer than input string
+
+## 2026-08-28, v0.9.6
 
 ### Added
 
@@ -59,6 +111,19 @@ Types of changes
 ### Changed
 
 - `@intFromEnum` replaced by `@backingInt`
+- replace `std.meta.Fields` (deprecated) with more recent functionality
+- revise `Duration.RelativeDelta.fromISO8601` parser
+- `Duration.RelativeDelta.normalize` puts days > 7 into weeks
+
+### Fixed
+
+- `Datetime.add` keeps bare UTC offset (by @acrilique)
+- `Datetime.addRelative` correctly handles nanoseconds overflow
+
+## 2026-08-22, v0.9.5
+
+### Changed
+
 - replace `std.meta.Fields` (deprecated) with more recent functionality
 - revise `Duration.RelativeDelta.fromISO8601` parser
 - `Duration.RelativeDelta.normalize` puts days > 7 into weeks

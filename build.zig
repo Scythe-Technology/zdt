@@ -17,9 +17,9 @@ const builtin = @import("builtin");
 const std = @import("std");
 const log = std.log.scoped(.zdt_build);
 
-const zdt_version = std.SemanticVersion{ .major = 0, .minor = 10, .patch = 3 };
+const zdt_version = std.SemanticVersion{ .major = 0, .minor = 10, .patch = 4 };
 const minimum_zig_version = "0.17.0-dev";
-const tzdb_release = "2026c";
+const tzdb_release = "2026d";
 
 const example_files = [_][]const u8{
     "demo",
