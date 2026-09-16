@@ -26,7 +26,7 @@
 
 #### To string
 
-- [`zdt.Datetime.toString`](https://fobersteiner.codeberg.page/#zdt.Datetime.toString) - see [formatting directives](https://github.com/FObersteiner/zdt/wiki/String-parsing-and-formatting-directives). Can either be called as a library function (`zdt.Datetime.toString`) or as a method of a datetime instance `dt`; `dt.toString`.
+- [`zdt.Datetime.toString`](https://fobersteiner.codeberg.page/#zdt.Datetime.toString) - see [formatting directives](https://codeberg.org/FObersteiner/zdt/src/branch/main/docs/03-String-parsing-and-formatting-directives.md). Can either be called as a library function (`zdt.Datetime.toString`) or as a method of a datetime instance `dt`; `dt.toString`.
 
 #### To Unix time
 
