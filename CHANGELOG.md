@@ -13,6 +13,10 @@ Types of changes
 
 ## [Unreleased]
 
+### Changed
+
+- update documentation
+
 ## 2026-09-12, v0.10.4-master
 
 ### Changed
