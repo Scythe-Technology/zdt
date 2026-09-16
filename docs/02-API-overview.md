@@ -27,7 +27,7 @@
 #### To string
 
 - [`zdt.Datetime.toString`](https://fobersteiner.codeberg.page/#zdt.Datetime.toString) - see [formatting directives](https://github.com/FObersteiner/zdt/wiki/String-parsing-and-formatting-directives). Can either be called as a library function (`zdt.Datetime.toString`) or as a method of a datetime instance `dt`; `dt.toString`.
-- [`zdt.Datetime.format`](https://fobersteiner.codeberg.page/#zdt.Datetime.format) - default ISO8601 representation; this is used when printing a datetime with `{f}`.
+- [`zdt.Datetime.format`](https://fobersteiner.codeberg.page/#zdt.Datetime.format) - default ISO8601 representation including nanoseconds; this is used when printing a datetime with `{f}`.
 
 #### To Unix time
 
@@ -36,13 +36,13 @@
 #### To another time zone
 
 - [`zdt.Datetime.tzConvert`](https://fobersteiner.codeberg.page/#zdt.Datetime.tzConvert) - convert an aware datetime to another time zone or UTC offset; the instant in time is preserved.
-- [`zdt.Datetime.tzLocalize`](https://fobersteiner.codeberg.page/#zdt.Datetime.tzLocalize) - attach a time zone or UTC offset to a datetime; `null` turns an aware datetime naive again.
+- [`zdt.Datetime.tzLocalize`](https://fobersteiner.codeberg.page/#zdt.Datetime.tzLocalize) - attach a time zone or UTC offset to a datetime; `null` makes an aware datetime naive again.
 
 #### To ISO calendar
 
 - [`zdt.Datetime.toISOCalendar`](https://fobersteiner.codeberg.page/#zdt.Datetime.toISOCalendar)
 
-### _Operations:_ Datetime arithmetic
+### Datetime arithmetic
 
 #### Difference
 
