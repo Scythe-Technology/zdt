@@ -6,11 +6,14 @@
 # /// script
 # requires-python = ">=3.13"
 # dependencies = [
-#     "pandas"
+#     "pandas",
+#     "odfpy",
+#     "tabulate"
 # ]
 # ///
 
 from pathlib import Path
+
 import pandas as pd
 
 df = pd.read_excel(Path("./directives.ods")).fillna("")
