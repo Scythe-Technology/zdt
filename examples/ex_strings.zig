@@ -43,7 +43,7 @@ pub fn main(init: std.process.Init) !void {
     println(&stdout, "---> (usage): parse some non-standard format", .{});
     const dayfirst_dtstr = "23.7.2021, 9:45h";
     parsed = try Datetime.fromString(dayfirst_dtstr, "%d.%m.%Y, %H:%Mh");
-    // zdt.Datetime.strptime is also available for people used to strftime/strptime
+    // zdt.Datetime.fromString is also available for people used to strftime/strptime
     assert(parsed.day == 23);
     println(&stdout, "parsed '{s}'\n  to {f}\n", .{ dayfirst_dtstr, parsed });
 
