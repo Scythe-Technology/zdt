@@ -7,7 +7,7 @@ zig-pkg/
 
 scripts/*.ods
 scripts/*.md
-scripts/directives_to_md.md
+scripts/directives_to_md.py
 *~lock*
 
 # tz submodule
