@@ -13,11 +13,8 @@
 # and parsing it, and from this generating the file windows_tz.zig.
 
 import logging
-
 from datetime import datetime, timezone
-
 from pathlib import Path
-
 from urllib.request import urlopen
 from xml.dom import minidom
 
@@ -70,13 +67,11 @@ def update_windows_zones():
             "// windows_names are sorted alphabetically so we can do binary search (later)\n"
             "pub const windows_names = [_][]const u8{\n"
         )
-        for k in win_tz:
-            out.write(f'    "{k}",\n')
+        out.writelines(f'    "{k}",\n' for k in win_tz)
         out.write("};\n\n")
 
         out.write("pub const iana_names = [_][]const u8{\n")
-        for k in win_tz.values():
-            out.write(f'    "{k}",\n')
+        out.writelines(f'    "{k}",\n' for k in win_tz.values())
 
         out.write("};\n")
 

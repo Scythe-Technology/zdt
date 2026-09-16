@@ -3,10 +3,10 @@
 #
 # SPDX-License-Identifier: Unlicense
 
-import zoneinfo
 import sys
+import zoneinfo
+from datetime import UTC, datetime
 from pathlib import Path
-from datetime import datetime, UTC
 
 assert len(sys.argv) == 2, f"need exactly 1 arg, got {len(sys.argv) - 1}"
 tag = sys.argv[1]
