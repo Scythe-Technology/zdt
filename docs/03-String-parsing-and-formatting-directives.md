@@ -2,7 +2,7 @@
 
 ## string parsing, string generation
 
-Available (✔), maybe (o) and not-planned (-) directives as of `zdt` v0.8:
+Available (✔), maybe (o) and not-planned (-) directives as of `zdt` v0.10:
 
 | directive   | parse   | format   | example                                                                      | meaning (see also: technical notes)                                                                                                                                              |
 |:------------|:--------|:---------|:-----------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
