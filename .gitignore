@@ -5,8 +5,9 @@ zig-cache/
 zig-out/
 zig-pkg/
 
-util/*.ods
-util/directives.md
+scripts/*.ods
+scripts/*.md
+scripts/directives_to_md.py
 *~lock*
 
 # tz submodule
@@ -15,6 +16,7 @@ tz/
 # util / Python
 *.fish
 .python-version
+.ruff_cache
 
 # editor
 .ropeproject

@@ -4,8 +4,8 @@
 # SPDX-License-Identifier: Unlicense
 
 import random
-from pathlib import Path
 from datetime import datetime, timezone
+from pathlib import Path
 
 random.seed(487)
 

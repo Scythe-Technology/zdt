@@ -16,6 +16,7 @@ Verifies that version numbers are consistent across:
 - lib/tzdata.zig (tzdb_version)
 - README.md (tzdata badge)
 - CHANGELOG.md (latest version heading)
+- docs/03-String-parsing-and-formatting-directives.md (stated zdt version, major.minor)
 
 Exits with code 1 on any inconsistency.
 """
@@ -81,6 +82,19 @@ def extract_changelog_version(content: str) -> tuple[str, int] | None:
     # Match patterns like: ## 2026-04-23, v0.9.3
     pattern = r"^##\s+\d{4}-\d{2}-\d{2},\s+v(\d+\.\d+\.\d+)"
     match = re.search(pattern, content, re.MULTILINE)
+    if match:
+        line_num = content[: match.start()].count("\n") + 1
+        return match.group(1), line_num
+    return None
+
+
+def extract_docs_directives_version(content: str) -> tuple[str, int] | None:
+    """Extract the stated zdt version from the parsing/formatting directives doc.
+
+    The docs only state the major.minor version, e.g. "as of `zdt` v0.10".
+    """
+    pattern = r"as of\s+`?zdt`?\s+v(\d+\.\d+)"
+    match = re.search(pattern, content)
     if match:
         line_num = content[: match.start()].count("\n") + 1
         return match.group(1), line_num
@@ -203,12 +217,27 @@ def check_versions(project_root: Path) -> tuple[dict, list[str]]:
     else:
         errors.append(f"File not found: {changelog_path}")
 
+    # Check docs/03-String-parsing-and-formatting-directives.md
+    docs_directives_file = "docs/03-String-parsing-and-formatting-directives.md"
+    docs_directives_path = project_root / docs_directives_file
+    if docs_directives_path.exists():
+        content = docs_directives_path.read_text()
+        result = extract_docs_directives_version(content)
+        if result:
+            versions["docs_directives"] = {
+                "value": result[0],
+                "line": result[1],
+                "file": docs_directives_file,
+            }
+        else:
+            errors.append(f"Could not find version in {docs_directives_file}")
+    else:
+        errors.append(f"File not found: {docs_directives_path}")
+
     # Validate project version consistency
-    project_versions = [
-        k for k in ("zdt_version", "build.zig.zon", "changelog") if k in versions
-    ]
+    project_versions = [k for k in ("zdt_version", "build.zig.zon", "changelog") if k in versions]
     if len(project_versions) >= 2:
-        unique_values = set(versions[k]["value"] for k in project_versions)
+        unique_values = {versions[k]["value"] for k in project_versions}
         if len(unique_values) > 1:
             error_msg = "Project version inconsistency detected:\n"
             for k in project_versions:
@@ -217,11 +246,9 @@ def check_versions(project_root: Path) -> tuple[dict, list[str]]:
             errors.append(error_msg.rstrip())
 
     # Validate TZDB version consistency
-    tzdb_versions = [
-        k for k in ("tzdb_release", "tzdb_version", "readme_badge") if k in versions
-    ]
+    tzdb_versions = [k for k in ("tzdb_release", "tzdb_version", "readme_badge") if k in versions]
     if len(tzdb_versions) >= 2:
-        unique_values = set(versions[k]["value"] for k in tzdb_versions)
+        unique_values = {versions[k]["value"] for k in tzdb_versions}
         if len(unique_values) > 1:
             error_msg = "TZDB version inconsistency detected:\n"
             for k in tzdb_versions:
@@ -230,15 +257,24 @@ def check_versions(project_root: Path) -> tuple[dict, list[str]]:
             errors.append(error_msg.rstrip())
 
     # Validate minimum Zig version consistency
-    zig_versions = [
-        k for k in ("minimum_zig_version", "minimum_zig_version_zon") if k in versions
-    ]
-    if len(zig_versions) == 2:
-        if versions[zig_versions[0]]["value"] != versions[zig_versions[1]]["value"]:
-            error_msg = "Minimum Zig version inconsistency detected:\n"
-            for k in zig_versions:
+    zig_versions = [k for k in ("minimum_zig_version", "minimum_zig_version_zon") if k in versions]
+    if len(zig_versions) == 2 and versions[zig_versions[0]]["value"] != versions[zig_versions[1]]["value"]:
+        error_msg = "Minimum Zig version inconsistency detected:\n"
+        for k in zig_versions:
+            v = versions[k]
+            error_msg += f"  - {v['file']} (line {v['line']}): {v['value']}\n"
+        errors.append(error_msg.rstrip())
+
+    # Validate docs directives version against the project version
+    # (the directives doc states the major.minor version only)
+    if "docs_directives" in versions and "zdt_version" in versions:
+        project_minor = ".".join(versions["zdt_version"]["value"].split(".")[:2])  # ty: ignore[unresolved-attribute]
+        if versions["docs_directives"]["value"] != project_minor:
+            error_msg = "Docs directives version inconsistency detected:\n"
+            for k in ("zdt_version", "docs_directives"):
                 v = versions[k]
                 error_msg += f"  - {v['file']} (line {v['line']}): {v['value']}\n"
+            error_msg += f"  - docs state the major.minor version, expected: {project_minor}"
             errors.append(error_msg.rstrip())
 
     return versions, errors
@@ -262,13 +298,11 @@ def main() -> int:
     if versions:
         # Calculate column widths dynamically
         file_width = max(len(v["file"]) for v in versions.values())
-        key_width = max(len(k) for k in versions.keys())
+        key_width = max(len(k) for k in versions)
         value_width = max(len(v["value"]) for v in versions.values())
 
         # Print header
-        print(
-            f"  {'File':<{file_width}}  {'Key':<{key_width}}  {'Version':<{value_width}}  Line"
-        )
+        print(f"  {'File':<{file_width}}  {'Key':<{key_width}}  {'Version':<{value_width}}  Line")
         print(f"  {'-' * file_width}  {'-' * key_width}  {'-' * value_width}  ----")
 
         # Print each version entry

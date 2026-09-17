@@ -14,7 +14,7 @@ Related:
 
 - [zig-tzif](https://github.com/leroycep/zig-tzif), TZif and POSIX TZ string parsing library
 
-## why does `Datetime.now(null)` give a UTC-like datetime ?
+## why does `Datetime.now(io, null)` give a UTC-like datetime ?
 
 If you supply `null` (no time zone), the fields of the returned datetime will resemble UTC. This is a compromise. You can convert that to Unix time and it will be "correct". If the returned datetime would resemble your local time, the conversion to Unix time would not be possible without knowing the according offset from UTC. So the choice boils down to: you cannot convert naive datetime to Unix time _or_ naive datetime is _treated_ like it was UTC.
 

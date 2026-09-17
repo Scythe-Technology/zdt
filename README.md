@@ -13,10 +13,10 @@
 ## Resources
 
 - [API overview](https://codeberg.org/FObersteiner/zdt/src/branch/main/docs/02-API-overview.md)
-- [Autodocs](https://fobersteiner.codeberg.page/#zdt)
 - [Examples](https://codeberg.org/FObersteiner/zdt/src/branch/main/examples)
 - [String parsing / formatting directives](https://codeberg.org/FObersteiner/zdt/src/branch/main/docs/03-String-parsing-and-formatting-directives.md)
 - [Ideas / Roadmap](https://codeberg.org/FObersteiner/zdt/src/branch/main/docs/05-Roadmap.md)
+- [Autodocs](https://fobersteiner.codeberg.page/#zdt)
 
 ### [Demo](https://codeberg.org/FObersteiner/zdt/src/branch/main/examples/demo.zig)
 

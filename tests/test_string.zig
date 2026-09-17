@@ -1337,6 +1337,10 @@ test "parse field parser errors" {
     err = Datetime.fromString("2019-366", "%Y-%j"); // 2019 is not a leap year
     try testing.expectError(ZdtError.InvalidFormat, err);
 
+    // TODO :
+    // err = Datetime.fromString("2019-2020", "%Y-%Y"); // all entities must only appear once
+    // try testing.expectError(ZdtError.InvalidFormat, err);
+
     err = Datetime.fromString("1970-01-01 00:00:00 0100", "%Y-%m-%d %H:%M:%S %z"); // offset w/o sign or Z
     try testing.expectError(ZdtError.InvalidCharacter, err);
 

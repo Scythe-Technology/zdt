@@ -3,8 +3,8 @@
 #
 # SPDX-License-Identifier: Unlicense
 
-from datetime import datetime, timedelta, timezone
 from collections import namedtuple
+from datetime import datetime, timedelta, timezone
 
 # fmt: off
 

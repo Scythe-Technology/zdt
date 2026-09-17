@@ -26,15 +26,31 @@
 
 #### To string
 
-- [`zdt.Datetime.toString`](https://fobersteiner.codeberg.page/#zdt.Datetime.toString) - see [formatting directives](https://codeberg.org/FObersteiner/zdt/src/branch/main/docs/03-String-parsing-and-formatting-directives.md). Can either be called as a library function (`zdt.Datetime.toString`) or as a method of a datetime instance `dt`; `dt.toString`.
+- [`zdt.Datetime.toString`](https://fobersteiner.codeberg.page/#zdt.Datetime.toString) - see [formatting directives](https://github.com/FObersteiner/zdt/wiki/String-parsing-and-formatting-directives). Can either be called as a library function (`zdt.Datetime.toString`) or as a method of a datetime instance `dt`; `dt.toString`.
 
 #### To Unix time
 
 - [`zdt.Datetime.toUnix`](https://fobersteiner.codeberg.page/#zdt.Datetime.toUnix) - a resolution must be specified, see `fromUnix`. Also to be called either as a library function or instance method.
 
+#### To another time zone
+
+- [`zdt.Datetime.tzConvert`](https://fobersteiner.codeberg.page/#zdt.Datetime.tzConvert) - convert an aware datetime to another time zone or UTC offset; the instant in time is preserved.
+- [`zdt.Datetime.tzLocalize`](https://fobersteiner.codeberg.page/#zdt.Datetime.tzLocalize) - attach a time zone or UTC offset to a datetime; `null` makes an aware datetime naive again.
+
 #### To ISO calendar
 
 - [`zdt.Datetime.toISOCalendar`](https://fobersteiner.codeberg.page/#zdt.Datetime.toISOCalendar)
+
+### Datetime arithmetic
+
+#### Difference
+
+- [`zdt.Datetime.diff`](https://fobersteiner.codeberg.page/#zdt.Datetime.diff) - absolute (physical) time difference between two datetimes. The inputs must be comparable: naive with naive, aware with aware.
+- [`zdt.Datetime.diffWall`](https://fobersteiner.codeberg.page/#zdt.Datetime.diffWall) - wall-clock time difference, i.e. what a wall clock at the according locations would show.
+
+#### Relative arithmetic
+
+- [`zdt.Datetime.addRelative`](https://fobersteiner.codeberg.page/#zdt.Datetime.addRelative) - add a relative timespan which may include the ambiguous quantities years and months; see [`zdt.Duration.RelativeDelta`](https://fobersteiner.codeberg.page/#zdt.Duration.RelativeDelta).
 
 ## Duration
 
@@ -64,6 +80,11 @@
 
 ## Timezone
 
+#### Constants
+
+- [`zdt.Timezone.UTC`](https://fobersteiner.codeberg.page/#zdt.Timezone.UTC) - the built-in UTC time zone (no rules file required).
+- [`zdt.UTCoffset`](https://fobersteiner.codeberg.page/#zdt.UTCoffset) - a bare UTC offset without time zone rules, e.g. from `zdt.UTCoffset.fromSeconds`.
+
 #### From embedded tz database
 
 - [`zdt.Timezone.fromTzdata`](https://fobersteiner.codeberg.page/#zdt.Timezone.fromTzdata)
@@ -76,3 +97,11 @@
 #### From a POSIX TZ string
 
 - [`zdt.Timezone.fromPosixTz`](https://fobersteiner.codeberg.page/#zdt.Timezone.fromPosixTz)
+
+## Errors
+
+- [`zdt.ZdtError`](https://fobersteiner.codeberg.page/#zdt.ZdtError) - the union error set returned by the fallible API functions (string parsing, range validation, time zone handling).
+
+## Formats
+
+- [`zdt.Formats`](https://fobersteiner.codeberg.page/#zdt.Formats) - a collection of common format strings (e.g. RFC3339, ANSI C) to use with `zdt.Datetime.toString` and `zdt.Datetime.fromString`.

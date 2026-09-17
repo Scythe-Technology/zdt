@@ -2,11 +2,11 @@
 
 - extend range of datetimes that can be represented; 5-digit signed year
 
-- host/run docs and CI on codeberg (<https://codeberg.org/FObersteiner/zdt/issues/15>, <https://codeberg.org/FObersteiner/zdt/issues/7>)
+- host autodocs on codeberg (<https://codeberg.org/FObersteiner/zdt/issues/15>, <https://codeberg.org/FObersteiner/zdt/issues/7>)
 
 - experiment with comptime-generation of timezone database
 
-- iso-caledar parsing and formatting with `%G %V %u` directives
+- iso-caledar parsing with `%G %V %u` directives
 
 - improve parser flagging?
 

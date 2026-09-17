@@ -14,7 +14,7 @@ There is also a `Formats` struct that provides you with some common date/time fo
 
 ### Naive vs. Aware Datetime
 
-A datetime without time zone rules is **_naive_**. It has no concept of locality. Once you attach a time zone to it, it becomes **_aware_** - it knows where it belongs. This has implications on comparability and duration arithmetic:
+A datetime without associated time zone rules is **_naive_**. It has no concept of locality. Once you attach a time zone to it, it becomes **_aware_** - it knows where it belongs. This has implications on comparability and duration arithmetic:
 
 - you can only compare naive with naive, and aware with aware
 - you can only calculate the duration between two datetime instances if they are comparable
