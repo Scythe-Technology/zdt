@@ -13,8 +13,11 @@ Types of changes
 
 ## [Unreleased]
 
+## 2026-09-30, v0.10.5-master
+
 ### Changed
 
+- tzdb to 2026e
 - update documentation
 
 ## 2026-09-12, v0.10.4-master
