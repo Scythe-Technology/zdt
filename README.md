@@ -12,13 +12,13 @@
 
 ## Resources
 
-- [API overview](https://codeberg.org/FObersteiner/zdt/src/branch/main/docs/02-API-overview.md)
-- [Examples](https://codeberg.org/FObersteiner/zdt/src/branch/main/examples)
-- [String parsing / formatting directives](https://codeberg.org/FObersteiner/zdt/src/branch/main/docs/03-String-parsing-and-formatting-directives.md)
-- [Ideas / Roadmap](https://codeberg.org/FObersteiner/zdt/src/branch/main/docs/05-Roadmap.md)
+- [API overview](https://codeberg.org/FObersteiner/zdt/src/branch/zig-0.17/docs/02-API-overview.md)
+- [Examples](https://codeberg.org/FObersteiner/zdt/src/branch/zig-0.17/examples)
+- [String parsing / formatting directives](https://codeberg.org/FObersteiner/zdt/src/branch/zig-0.17/docs/03-String-parsing-and-formatting-directives.md)
+- [Ideas / Roadmap](https://codeberg.org/FObersteiner/zdt/src/branch/zig-0.17/docs/05-Roadmap.md)
 - [Autodocs](https://fobersteiner.codeberg.page/#zdt)
 
-### [Demo](https://codeberg.org/FObersteiner/zdt/src/branch/main/examples/demo.zig)
+### [Demo](https://codeberg.org/FObersteiner/zdt/src/branch/zig-0.17/examples/demo.zig)
 
 ```zig
 const std = @import("std");
@@ -82,9 +82,10 @@ pub fn main(init: std.process.Init) !void {
 
 ## Zig version requirements
 
-- `v0.10.x`: Zig 0.17 master
-- `v0.9.x`: Zig 0.16
+- `v0.11.x`: Zig master
+- `v0.10.x`: Zig 0.17
 - ------ unsupported / EOL:
+- `v0.9.x`: Zig 0.16
 - `v0.8.x`: Zig 0.15 / 0.15.2
 - `v0.7.x`: Zig 0.14 / 0.14.1
 - `v0.6.x`: Zig 0.14 / 0.14.1
@@ -122,7 +123,7 @@ pub fn main(init: std.process.Init) !void {
 
 ## Development
 
-See [changelog](https://codeberg.org/FObersteiner/zdt/src/branch/main/CHANGELOG.md).
+See [changelog](https://codeberg.org/FObersteiner/zdt/src/branch/zig-0.17/CHANGELOG.md).
 
 To update the time zone database and the version info, run the following build step: `zig build update-tzdb`. Some of the code generation is done with Python scripts, which require Python >= 3.9 but no third party packages, i.e. a system installation will do.
 
