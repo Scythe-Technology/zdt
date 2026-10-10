@@ -13,6 +13,10 @@ Types of changes
 
 ## [Unreleased]
 
+### Changed
+
+- update windows tz name mapping
+
 ## 2026-09-30, v0.10.5-master
 
 ### Changed

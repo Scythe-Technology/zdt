@@ -3,13 +3,14 @@
 //
 // --- Do not edit ---
 //
-// latest referesh: 2026-09-30T14:58:27+00:00
+// latest referesh: 2026-10-10T19:18:39+00:00
 // windows_names are sorted alphabetically so we can do binary search (later)
 pub const windows_names = [_][]const u8{
     "AUS Central Standard Time",
     "AUS Eastern Standard Time",
     "Afghanistan Standard Time",
     "Alaskan Standard Time",
+    "Alberta Standard Time",
     "Aleutian Standard Time",
     "Altai Standard Time",
     "Arab Standard Time",
@@ -25,6 +26,7 @@ pub const windows_names = [_][]const u8{
     "Bangladesh Standard Time",
     "Belarus Standard Time",
     "Bougainville Standard Time",
+    "British Columbia Standard Time",
     "Canada Central Standard Time",
     "Cape Verde Standard Time",
     "Caucasus Standard Time",
@@ -70,6 +72,7 @@ pub const windows_names = [_][]const u8{
     "Lord Howe Standard Time",
     "Magadan Standard Time",
     "Magallanes Standard Time",
+    "Manitoba Standard Time",
     "Marquesas Standard Time",
     "Mauritius Standard Time",
     "Middle East Standard Time",
@@ -152,6 +155,7 @@ pub const iana_names = [_][]const u8{
     "Australia/Sydney",
     "Asia/Kabul",
     "America/Anchorage",
+    "America/Edmonton",
     "America/Adak",
     "Asia/Barnaul",
     "Asia/Riyadh",
@@ -167,6 +171,7 @@ pub const iana_names = [_][]const u8{
     "Asia/Dhaka",
     "Europe/Minsk",
     "Pacific/Bougainville",
+    "America/Vancouver",
     "America/Regina",
     "Atlantic/Cape_Verde",
     "Asia/Yerevan",
@@ -212,6 +217,7 @@ pub const iana_names = [_][]const u8{
     "Australia/Lord_Howe",
     "Asia/Magadan",
     "America/Punta_Arenas",
+    "America/Winnipeg",
     "Pacific/Marquesas",
     "Indian/Mauritius",
     "Asia/Beirut",
