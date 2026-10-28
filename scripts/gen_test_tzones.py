@@ -52,8 +52,8 @@ content.append(
     var tz_a = try Tz.fromTzdata(testing.io, "{za}", testing.allocator);
     var tz_b = try Tz.fromTzdata(testing.io, "{zb}", testing.allocator);
 
-    var dt_a = try Datetime.fromUnix({ta}, Duration.Resolution.second, .{OPEN_BRACE} .tz = &tz_a {CLOSE_BRACE});
-    var dt_b = try Datetime.fromUnix({tb}, Duration.Resolution.second, .{OPEN_BRACE} .tz = &tz_b {CLOSE_BRACE});
+    var dt_a = try Datetime.fromUnix({ta}, .second, .{OPEN_BRACE} .tz = &tz_a {CLOSE_BRACE});
+    var dt_b = try Datetime.fromUnix({tb}, .second, .{OPEN_BRACE} .tz = &tz_b {CLOSE_BRACE});
     var dt_c = try dt_a.tzConvert(.{OPEN_BRACE} .tz = &tz_b {CLOSE_BRACE});
     dt_b = try dt_b.tzConvert(.{OPEN_BRACE} .tz = &tz_a {CLOSE_BRACE});
 
@@ -86,8 +86,8 @@ for _ in range(N):
     tz_a = try Tz.fromTzdata(testing.io, "{za}", testing.allocator);
     tz_b = try Tz.fromTzdata(testing.io, "{zb}", testing.allocator);
 
-    dt_a = try Datetime.fromUnix({ta}, Duration.Resolution.second, .{OPEN_BRACE} .tz = &tz_a {CLOSE_BRACE});
-    dt_b = try Datetime.fromUnix({tb}, Duration.Resolution.second, .{OPEN_BRACE} .tz = &tz_b {CLOSE_BRACE});
+    dt_a = try Datetime.fromUnix({ta}, .second, .{OPEN_BRACE} .tz = &tz_a {CLOSE_BRACE});
+    dt_b = try Datetime.fromUnix({tb}, .second, .{OPEN_BRACE} .tz = &tz_b {CLOSE_BRACE});
     dt_c = try dt_a.tzConvert(.{OPEN_BRACE} .tz = &tz_b {CLOSE_BRACE});
     dt_b = try dt_b.tzConvert(.{OPEN_BRACE} .tz = &tz_a {CLOSE_BRACE});
 

@@ -6,8 +6,8 @@
 .{
     .name = .zdt,
     .fingerprint = 0xf0de2f12bc3fbdc6,
-    .version = "0.10.5",
-    .minimum_zig_version = "0.17.0-dev",
+    .version = "0.10.6",
+    .minimum_zig_version = "0.17.0",
     .paths = .{
         // benchmark directory not included
         "lib", // anything from lib directory

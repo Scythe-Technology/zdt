@@ -13,8 +13,11 @@ Types of changes
 
 ## [Unreleased]
 
+## 2026-10-28, v0.10.6
+
 ### Changed
 
+- tzdb to 2026f
 - update windows tz name mapping
 
 ## 2026-09-30, v0.10.5-master
