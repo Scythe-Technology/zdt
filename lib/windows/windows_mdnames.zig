@@ -14,7 +14,7 @@ extern "kernel32" fn GetLocaleInfoEx(
     LCType: windows.DWORD, // LCTYPE
     lpLCData: ?[*:0]u16, // LPWSTR
     cchData: c_int, // int
-) callconv(std.os.windows.WINAPI) c_int;
+) callconv(.winapi) c_int;
 
 const default_locale_ptr = null; // LOCALE_NAME_USER_DEFAULT;
 const sz_abbr: usize = 32;
@@ -24,7 +24,7 @@ pub fn getDayNameAbbr_(n: u8) [sz_abbr]u8 {
     var result: [sz_abbr]u8 = std.mem.zeroes([sz_abbr]u8);
     result[0] = '?';
 
-    var buf: [sz_abbr]c_ushort = undefined; // u16
+    var buf: [sz_abbr:0]u16 = undefined; // u16
     const code = GetLocaleInfoEx(
         default_locale_ptr,
         day_names_abbr[n],
@@ -47,7 +47,7 @@ pub fn getDayName_(n: u8) [sz_normal]u8 {
     var result: [sz_normal]u8 = std.mem.zeroes([sz_normal]u8);
     result[0] = '?';
 
-    var buf: [sz_normal]c_ushort = undefined; // u16
+    var buf: [sz_normal:0]u16 = undefined; // u16
     const code = GetLocaleInfoEx(
         default_locale_ptr,
         day_names[n],
@@ -69,7 +69,7 @@ pub fn getMonthNameAbbr_(n: u8) [sz_abbr]u8 {
     var result: [sz_abbr]u8 = std.mem.zeroes([sz_abbr]u8);
     result[0] = '?';
 
-    var buf: [sz_abbr]c_ushort = undefined; // u16
+    var buf: [sz_abbr:0]u16 = undefined; // u16
     const code = GetLocaleInfoEx(
         default_locale_ptr,
         month_names_abbr[n],
@@ -91,7 +91,7 @@ pub fn getMonthName_(n: u8) [sz_normal]u8 {
     var result: [sz_normal]u8 = std.mem.zeroes([sz_normal]u8);
     result[0] = '?';
 
-    var buf: [sz_normal]c_ushort = undefined; // u16
+    var buf: [sz_normal:0]u16 = undefined; // u16
     const code = GetLocaleInfoEx(
         default_locale_ptr,
         month_names[n],

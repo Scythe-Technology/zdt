@@ -26,10 +26,10 @@ const RRF_RT_DWORD = RRF_RT_REG_BINARY | RRF_RT_REG_DWORD;
 const struct_HKEY__ = extern struct { unused: c_int = std.mem.zeroes(c_int) };
 const HKEY = ?*align(1) struct_HKEY__;
 
-const HKEY_LOCAL_MACHINE = trnsl.cast(HKEY, //
-    trnsl.cast(ULONG_PTR, //
-        trnsl.cast(LONG, //
-            trnsl.promoteIntLiteral( //
+const HKEY_LOCAL_MACHINE = trnsl.helpers.cast(HKEY, //
+    trnsl.helpers.cast(ULONG_PTR, //
+        trnsl.helpers.cast(LONG, //
+            trnsl.helpers.promoteIntLiteral( //
                 c_int,
                 0x80000002,
                 .hex,
